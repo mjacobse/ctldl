@@ -2,6 +2,8 @@
 
 #include <ctldl/factorization.hpp>
 #include <ctldl/factorization_subdiagonal_block.hpp>
+#include <ctldl/solve_backward_substitution.hpp>
+#include <ctldl/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/get_entries.hpp>
 #include <ctldl/sparsity/get_filled_in_is_nonzero_info.hpp>
 #include <ctldl/sparsity/get_is_nonzero_info.hpp>
@@ -132,10 +134,9 @@ class FactorizationRepeatingBlockTridiagonal {
 
   template <class Rhs>
   [[gnu::noinline]] void forwardSolve(Rhs& rhs) const {
-    m_diag[0].forwardSolve(rhs[0]);
+    solveForwardSubstitution(m_diag[0], rhs[0]);
     for (std::size_t i = 1; i <= m_num_repetitions; ++i) {
-      m_subdiag[i - 1].forwardSolve(rhs[i - 1], rhs[i]);
-      m_diag[i].forwardSolve(rhs[i]);
+      solveForwardSubstitution(m_diag[i], rhs[i], m_subdiag[i - 1], rhs[i - 1]);
     }
   }
 
@@ -149,10 +150,9 @@ class FactorizationRepeatingBlockTridiagonal {
   template <class Rhs>
   [[gnu::noinline]] void backwardSolve(Rhs& rhs) const {
     for (std::size_t i = m_num_repetitions; i > 0; --i) {
-      m_diag[i].backwardSolve(rhs[i]);
-      m_subdiag[i - 1].backwardSolve(rhs[i - 1], rhs[i]);
+      solveBackwardSubstitution(m_diag[i], rhs[i], m_subdiag[i - 1], rhs[i - 1]);
     }
-    m_diag[0].backwardSolve(rhs[0]);
+    solveBackwardSubstitution(m_diag[0], rhs[0]);
   }
 };
 
