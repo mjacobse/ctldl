@@ -58,7 +58,7 @@ class Matrix {
     return m_values[Sparsity::entryIndex(i, j)];
   }
 
- //private:
+ private:
   std::array<double, nnz> m_values;
 };
 
