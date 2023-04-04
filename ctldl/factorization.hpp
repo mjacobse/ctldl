@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/factorize.hpp>
 #include <ctldl/sparsity/filled_in_sparsity.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
@@ -20,13 +21,13 @@ class Factorization {
   using Value = Value_;
 
   template <class Matrix>
-  void init(const Matrix& matrix) {
-    initImplD(matrix);
-    initImplL(matrix);
+  void factor(const Matrix& matrix) {
+    factorize(*this, matrix);
   }
 
-  void factor() {
-    factorImpl();
+  template <class Matrix, class FactorDataLeft>
+  void factor(const Matrix& matrix, const FactorDataLeft& left) {
+    factorize(*this, matrix, left);
   }
 
   template <class Rhs>
@@ -48,61 +49,6 @@ class Factorization {
   std::array<Value, dim> D;
 
  private:
-  template <int i = 0, class Matrix>
-  [[gnu::always_inline]] void initImplD(const Matrix& matrix) {
-    if constexpr (i < dim) {
-      if constexpr (Matrix::Sparsity::is_nonzero[i][i]) {
-        D[i] = matrix.m_values[Matrix::Sparsity::entryIndex(i, i)];
-      } else {
-        D[i] = 0.0;
-      }
-      initImplD<i + 1>(matrix);
-    }
-  }
-
-  template <int entry_index_ij = 0, class Matrix>
-  [[gnu::always_inline]] void initImplL(const Matrix& matrix) {
-    if constexpr (entry_index_ij < nnz) {
-      constexpr auto i = Sparsity::entries[entry_index_ij].row_index;
-      constexpr auto j = Sparsity::entries[entry_index_ij].col_index;
-      if constexpr (Matrix::Sparsity::is_nonzero[i][j]) {
-        L[entry_index_ij] = matrix.m_values[Matrix::Sparsity::entryIndex(i, j)];
-      } else {
-        L[entry_index_ij] = 0.0;
-      }
-      initImplL<entry_index_ij + 1>(matrix);
-    }
-  }
-
-  template <int i = 0>
-  [[gnu::always_inline]] void factorImpl() {
-    if constexpr (i < dim) {
-      D[i] = factorImplRow<i>(D[i]);
-      factorImpl<i + 1>();
-    }
-  }
-
-  template <int i, int entry_index_ij = Sparsity::row_begin_indices[i]>
-  [[gnu::always_inline]] Value factorImplRow(const Value Di_prev) {
-    constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
-    if constexpr (entry_index_ij < row_end) {
-      constexpr auto j = Sparsity::entries[entry_index_ij].col_index;
-
-      static constexpr auto contributions =
-          getContributionsLowerTriangle<Sparsity, i, j>();
-      auto temp = L[entry_index_ij];
-      for (const auto c : contributions) {
-        temp -= L[c.entry_index_ik] * L[c.entry_index_jk] * D[c.k];
-      }
-      const auto Lij = temp / D[j];
-      L[entry_index_ij] = Lij;
-
-      const auto Di = factorImplRow<i, entry_index_ij + 1>(Di_prev);
-      return Di - square(Lij) * D[j];
-    }
-    return Di_prev;
-  }
-
   template <int i = 0>
   [[gnu::always_inline]] void forwardSolveImpl(
       Value* __restrict rhs_in_solution_out) const {

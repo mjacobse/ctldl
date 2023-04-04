@@ -51,6 +51,13 @@ class Matrix {
   explicit Matrix(std::array<double, nnz> values)
       : m_values(values) {}
 
+  constexpr double get(int i, int j) const {
+    if (!Sparsity::is_nonzero[i][j]) {
+      return 0.0;
+    }
+    return m_values[Sparsity::entryIndex(i, j)];
+  }
+
  //private:
   std::array<double, nnz> m_values;
 };

@@ -16,21 +16,9 @@ class FactorizationSubdiagonalBlock {
   static constexpr int num_rows = Sparsity::num_rows;
   using Value = Value_;
 
-  template <class Matrix>
-  void init(const Matrix& matrix) {
-    // static_assert(isSparsitySubset(Matrix::Sparsity{}, Sparsity{}));
-    initImplL(matrix);
-  }
-
-  template <class DiagonalBlock>
-  void factor(const DiagonalBlock& above) {
-    factorImpl(above);
-  }
-
-  template <class DiagonalBlock>
-  void contribute(const DiagonalBlock& above, DiagonalBlock& right) const {
-    contributeImpl(above, right);
-    contributeImplDiag(above, right);
+  template <class Matrix, class DiagonalBlock>
+  void factor(const Matrix& matrix, const DiagonalBlock& above) {
+    factorImpl(matrix, above);
   }
 
   template <class Rhs>
@@ -43,25 +31,12 @@ class FactorizationSubdiagonalBlock {
     backwardSolveImpl(solution.data(), rhs.data());
   }
 
- private:
   std::array<Value, Sparsity::nnz> L;
 
-  template <int entry_index_ij = 0, class Matrix>
-  [[gnu::always_inline]] void initImplL(const Matrix& matrix) {
-    if constexpr (entry_index_ij < nnz) {
-      constexpr auto i = Sparsity::entries[entry_index_ij].row_index;
-      constexpr auto j = Sparsity::entries[entry_index_ij].col_index;
-      if constexpr (Matrix::Sparsity::is_nonzero[i][j]) {
-        L[entry_index_ij] = matrix.m_values[Matrix::Sparsity::entryIndex(i, j)];
-      } else {
-        L[entry_index_ij] = 0.0;
-      }
-      initImplL<entry_index_ij + 1>(matrix);
-    }
-  }
-
-  template <int entry_index_ij = 0, class DiagonalBlock>
-  [[gnu::always_inline]] void factorImpl(const DiagonalBlock& above) {
+ private:
+  template <int entry_index_ij = 0, class Matrix, class DiagonalBlock>
+  [[gnu::always_inline]] void factorImpl(const Matrix& matrix,
+                                         const DiagonalBlock& above) {
     using DiagonalBlockSparsity = typename DiagonalBlock::Sparsity;
 
     if constexpr (entry_index_ij < nnz) {
@@ -70,56 +45,13 @@ class FactorizationSubdiagonalBlock {
 
       static constexpr auto contributions =
           getContributionsMixed<DiagonalBlockSparsity, Sparsity, i, j>();
-      auto temp = L[entry_index_ij];
+      auto Lij = matrix.get(i, j);
       for (const auto c : contributions) {
-        temp -= L[c.entry_index_ik] * above.L[c.entry_index_jk] * above.D[c.k];
+        Lij -= L[c.entry_index_ik] * above.L[c.entry_index_jk] * above.D[c.k];
       }
-      L[entry_index_ij] = temp / above.D[j];
+      L[entry_index_ij] = Lij / above.D[j];
 
-      factorImpl<entry_index_ij + 1>(above);
-    }
-  }
-
-  template <int entry_index_ij_diag = 0, class DiagonalBlock>
-  [[gnu::always_inline]] void contributeImpl(const DiagonalBlock& above,
-                                             DiagonalBlock& right) const {
-    using DiagonalBlockSparsity = typename DiagonalBlock::Sparsity;
-    // TODO: perhaps this should be done in the right DiagonalBlock instead?
-    // that way, the whole entry at entry_index_ij_diag would be completed in
-    // one go, which would also allow initializing it (with 0 or the original
-    // matrix) on the fly
-
-    if constexpr (entry_index_ij_diag < DiagonalBlockSparsity::nnz) {
-      constexpr auto i = DiagonalBlockSparsity::entries[entry_index_ij_diag].row_index;
-      constexpr auto j = DiagonalBlockSparsity::entries[entry_index_ij_diag].col_index;
-
-      static constexpr auto contributions =
-          getContributionsRectangular<Sparsity, i, j>();
-
-      auto temp = right.L[entry_index_ij_diag];
-      for (const auto c : contributions) {
-        temp -= L[c.entry_index_ik] * L[c.entry_index_jk] * above.D[c.k];
-      }
-      right.L[entry_index_ij_diag] = temp;
-
-      contributeImpl<entry_index_ij_diag + 1>(above, right);
-    }
-  }
-
-  template <int entry_index_ij = 0, class DiagonalBlock>
-  [[gnu::always_inline]] void contributeImplDiag(const DiagonalBlock& above,
-                                                 DiagonalBlock& right) const {
-    using DiagonalBlockSparsity = typename DiagonalBlock::Sparsity;
-    // TODO: perhaps this should be done in the right DiagonalBlock instead?
-    // that way, the whole entry at entry_index_ij_diag would be completed in
-    // one go, which would also allow initializing it (with 0 or the original
-    // matrix) on the fly
-
-    if constexpr (entry_index_ij < nnz) {
-      constexpr auto i = Sparsity::entries[entry_index_ij].row_index;
-      constexpr auto j = Sparsity::entries[entry_index_ij].col_index;
-      right.D[i] -= square(L[entry_index_ij]) * above.D[j];
-      contributeImplDiag<entry_index_ij + 1>(above, right);
+      factorImpl<entry_index_ij + 1>(matrix, above);
     }
   }
 
