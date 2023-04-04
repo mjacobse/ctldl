@@ -34,7 +34,7 @@ struct SparsityB {
   static constexpr int num_rows = dim_A;
   static constexpr int num_cols = dim_A;
   static constexpr int nnz = 1;
-  static constexpr std::array<ctldl::Entry, nnz> entries = {{0, dim_A - 1}}; 
+  static constexpr std::array<ctldl::Entry, nnz> entries = {{{0, dim_A - 1}}};
 };
 
 struct SparsityAtDiscretePoint {

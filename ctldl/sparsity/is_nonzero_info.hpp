@@ -29,7 +29,7 @@ class IsNonzeroInfo {
   }
 
  private:
-  std::array<std::array<bool, num_cols>, num_rows> m_data{false};
+  std::array<std::array<bool, num_cols>, num_rows> m_data{};
 };
 
 }  // namespace ctldl
