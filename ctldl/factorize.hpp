@@ -6,20 +6,21 @@
 
 #include <array>
 #include <cassert>
+#include <cstddef>
 
 namespace ctldl {
 
-template <int i, class FactorData>
+template <std::size_t i, class FactorData>
 [[gnu::always_inline]] inline auto applyContributionsRowDiagonal(
     const FactorData& left, const typename FactorData::Value value_init) {
   using Sparsity = typename FactorData::Sparsity;
 
-  constexpr auto row_begin = Sparsity::row_begin_indices[i];
-  constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
+  constexpr auto row_begin = std::size_t{Sparsity::row_begin_indices[i]};
+  constexpr auto row_end = std::size_t{Sparsity::row_begin_indices[i + 1]};
   auto value = value_init;
   for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
        ++entry_index_ij) {
-    const auto j = Sparsity::entries[entry_index_ij].col_index;
+    const std::size_t j = Sparsity::entries[entry_index_ij].col_index;
     value -= square(left.L[entry_index_ij]) * left.D[j];
   }
   return value;
@@ -37,17 +38,17 @@ template <class FactorData, std::size_t num_contributions>
   return value;
 }
 
-template <int i, int entry_index_ij, class FactorData, class Matrix,
-          class FactorDataLeft>
+template <std::size_t i, std::size_t entry_index_ij, class FactorData,
+          class Matrix, class FactorDataLeft>
 [[gnu::always_inline]] inline auto factorizeImplRow(
     FactorData& self, const Matrix& input, const FactorDataLeft& left,
     const typename FactorData::Value Di_init) {
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
 
-  constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
+  constexpr auto row_end = std::size_t{Sparsity::row_begin_indices[i + 1]};
   if constexpr (entry_index_ij < row_end) {
-    constexpr auto j = Sparsity::entries[entry_index_ij].col_index;
+    constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
     static constexpr auto contributions_left =
         getContributionsRectangular<SparsityLeft, i, j>();
@@ -67,9 +68,11 @@ template <int i, int entry_index_ij, class FactorData, class Matrix,
   return Di_init;
 }
 
-template <int i = 0, class FactorData, class Matrix, class FactorDataLeft>
-[[gnu::always_inline]] inline void factorizeImpl(
-    FactorData& self, const Matrix& input, const FactorDataLeft& left) {
+template <std::size_t i = 0, class FactorData, class Matrix,
+          class FactorDataLeft>
+[[gnu::always_inline]] inline void factorizeImpl(FactorData& self,
+                                                 const Matrix& input,
+                                                 const FactorDataLeft& left) {
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
   static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
@@ -90,21 +93,22 @@ void factorize(FactorData& self, const Matrix& input,
   factorizeImpl(self, input, left);
 }
 
-template <int num_rows_>
+template <std::size_t num_rows_>
 struct EmptyLeftSparsity {
   static constexpr auto num_rows = num_rows_;
-  static constexpr auto num_cols = 0;
-  static constexpr std::array<int, num_rows + 1> row_begin_indices{};
+  static constexpr auto num_cols = std::size_t{0};
+  static constexpr std::array<std::size_t, num_rows + 1> row_begin_indices{};
   static constexpr std::array<Entry, 0> entries{};
   static constexpr std::array<std::array<bool, 0>, num_rows> is_nonzero{};
 
-  static constexpr int entryIndex(const int /*i*/, const int /*j*/) {
+  static constexpr std::size_t entryIndex(const std::size_t /*i*/,
+                                          const std::size_t /*j*/) {
     assert(false);
-    return -1;
+    return 0;
   }
 };
 
-template <int num_rows_, class Value_>
+template <std::size_t num_rows_, class Value_>
 struct EmptyLeftFactorData {
   static constexpr auto num_rows = num_rows_;
   using Value = Value_;

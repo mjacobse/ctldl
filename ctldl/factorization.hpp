@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 
 namespace ctldl {
 
@@ -15,9 +16,9 @@ template <class OriginalSparsity, class Value_>
 class Factorization {
  public:
   static_assert(OriginalSparsity::num_rows == OriginalSparsity::num_cols);
-  static constexpr int dim = OriginalSparsity::num_rows;
+  static constexpr auto dim = std::size_t{OriginalSparsity::num_rows};
   using Sparsity = SparsityCSR<FilledInSparsity<OriginalSparsity>>;
-  static constexpr int nnz = Sparsity::nnz;
+  static constexpr auto nnz = std::size_t{Sparsity::nnz};
   using Value = Value_;
 
   template <class Matrix>
@@ -49,16 +50,16 @@ class Factorization {
   std::array<Value, dim> D;
 
  private:
-  template <int i = 0>
+  template <std::size_t i = 0>
   [[gnu::always_inline]] void forwardSolveImpl(
       Value* __restrict rhs_in_solution_out) const {
     if constexpr (i < dim) {
       auto temp = rhs_in_solution_out[i];
-      constexpr auto row_begin = Sparsity::row_begin_indices[i];
-      constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
-      for (int entry_index_ij = row_begin; entry_index_ij != row_end;
+      constexpr auto row_begin = std::size_t{Sparsity::row_begin_indices[i]};
+      constexpr auto row_end = std::size_t{Sparsity::row_begin_indices[i + 1]};
+      for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
            ++entry_index_ij) {
-        const int j = Sparsity::entries[entry_index_ij].col_index;
+        const std::size_t j = Sparsity::entries[entry_index_ij].col_index;
         temp -= L[entry_index_ij] * rhs_in_solution_out[j];
       }
       rhs_in_solution_out[i] = temp;
@@ -67,21 +68,21 @@ class Factorization {
   }
 
   void diagonalSolveImpl(Value* __restrict rhs_in_solution_out) const {
-    for (int i = 0; i < dim; ++i) {
+    for (std::size_t i = 0; i < dim; ++i) {
       rhs_in_solution_out[i] /= D[i];
     }
   }
 
-  template <int i = dim - 1>
+  template <std::size_t i = dim>
   [[gnu::always_inline]] void backwardSolveImpl(
       Value* __restrict rhs_in_solution_out) const {
-    if constexpr (i >= 0) {
-      const auto temp = rhs_in_solution_out[i];
-      constexpr auto row_begin = Sparsity::row_begin_indices[i];
-      constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
-      for (int entry_index_ij = row_begin; entry_index_ij != row_end;
+    if constexpr (i > 0) {
+      const auto temp = rhs_in_solution_out[i - 1];
+      constexpr auto row_begin = std::size_t{Sparsity::row_begin_indices[i - 1]};
+      constexpr auto row_end = std::size_t{Sparsity::row_begin_indices[i]};
+      for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
            ++entry_index_ij) {
-        const int j = Sparsity::entries[entry_index_ij].col_index;
+        const std::size_t j = Sparsity::entries[entry_index_ij].col_index;
         rhs_in_solution_out[j] -= L[entry_index_ij] * temp;
       }
       backwardSolveImpl<i - 1>(rhs_in_solution_out);

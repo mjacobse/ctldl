@@ -1,27 +1,29 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 
 namespace ctldl {
 
-template <int num_rows_, int num_cols_>
+template <std::size_t num_rows_, std::size_t num_cols_>
 class IsNonzeroInfo {
  public:
   static constexpr auto num_rows = num_rows_;
   static constexpr auto num_cols = num_cols_;
 
-  constexpr std::array<bool, num_cols>& operator[](const int i) {
+  constexpr std::array<bool, num_cols>& operator[](const std::size_t i) {
     return m_data[i];
   }
 
-  constexpr const std::array<bool, num_cols>& operator[](const int i) const {
+  constexpr const std::array<bool, num_cols>& operator[](
+      const std::size_t i) const {
     return m_data[i];
   }
 
-  constexpr int nnz() const {
-    int count = 0;
-    for (int i = 0; i < num_rows; ++i) {
-      for (int j = 0; j < num_cols; ++j) {
+  constexpr std::size_t nnz() const {
+    std::size_t count = 0;
+    for (std::size_t i = 0; i < num_rows; ++i) {
+      for (std::size_t j = 0; j < num_cols; ++j) {
         count += m_data[i][j];
       }
     }

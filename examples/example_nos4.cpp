@@ -52,12 +52,12 @@ template <class Sparsity_>
 class Matrix {
  public:
   using Sparsity = ctldl::SparsityCSR<Sparsity_>;
-  static constexpr int nnz = Sparsity::nnz;
+  static constexpr std::size_t nnz = Sparsity::nnz;
 
   explicit Matrix(std::array<double, nnz> values)
       : m_values(values) {}
 
-  constexpr double get(int i, int j) const {
+  constexpr double get(const std::size_t i, const std::size_t j) const {
     if (!Sparsity::is_nonzero[i][j]) {
       return 0.0;
     }

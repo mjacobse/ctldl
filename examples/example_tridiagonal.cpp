@@ -16,13 +16,13 @@ struct SparsityDiagonalAndSubdiagonal {
   static constexpr int num_cols = n;
   static constexpr int nnz = n + (n - 1);
   static constexpr auto entries = [] {
-    std::array<ctldl::Entry, nnz> ret{};
-    int entry_index = 0;
-    for (int i = 0; i < num_rows; ++i) {
+    std::array<ctldl::Entry, std::size_t{nnz}> ret{};
+    std::size_t entry_index = 0;
+    for (std::size_t i = 0; i < num_rows; ++i) {
       ret[entry_index] = ctldl::Entry{i, i};
       entry_index += 1;
     }
-    for (int i = 1; i < num_rows; ++i) {
+    for (std::size_t i = 1; i < num_rows; ++i) {
       ret[entry_index] = ctldl::Entry{i, i - 1};
       entry_index += 1;
     }
@@ -46,12 +46,12 @@ template <class Sparsity_>
 class Matrix {
  public:
   using Sparsity = ctldl::SparsityCSR<Sparsity_>;
-  static constexpr int nnz = Sparsity::nnz;
+  static constexpr auto nnz = std::size_t{Sparsity::nnz};
 
   explicit Matrix(std::array<double, nnz> values)
       : m_values(values) {}
 
-  constexpr double get(int i, int j) const {
+  constexpr double get(const std::size_t i, const std::size_t j) const {
     if (!Sparsity::is_nonzero[i][j]) {
       return 0.0;
     }
@@ -78,7 +78,7 @@ int main() {
     std::fill_n(values.begin(), dim_A, 2.0);
     std::fill(values.begin() + dim_A, values.end(), -1.0);
     values[0] = 2.0;
-    for (int i = 1; i < MatrixA::nnz; i += 2) {
+    for (std::size_t i = 1; i < MatrixA::nnz; i += 2) {
       values[i] = -1.0;
       values[i + 1] = 2.0;
     }
