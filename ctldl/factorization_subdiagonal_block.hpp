@@ -15,6 +15,7 @@ class FactorizationSubdiagonalBlock {
   using Sparsity = SparsityCSR<OriginalSparsity>;
   static constexpr auto nnz = std::size_t{Sparsity::nnz};
   static constexpr auto num_rows = std::size_t{Sparsity::num_rows};
+  static constexpr auto num_cols = std::size_t{Sparsity::num_cols};
   using Value = Value_;
 
   template <class Matrix, class DiagonalBlock>

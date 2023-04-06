@@ -10,6 +10,7 @@ namespace ctldl {
 
 template <class Sparsity>
 struct FilledInSparsity {
+  static_assert(Sparsity::num_rows == Sparsity::num_cols);
   static constexpr auto num_rows = Sparsity::num_rows;
   static constexpr auto num_cols = Sparsity::num_cols;
   static constexpr auto is_nonzero =
