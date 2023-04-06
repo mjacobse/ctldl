@@ -23,14 +23,16 @@ struct IsNonZeroPair {
 
 template <class Sparsity>
 struct RepeatedSparsity {
-  static constexpr auto is_nonzero_pair = [] {
-    static_assert(Sparsity::A::num_rows == Sparsity::A::num_cols);
-    static_assert(Sparsity::B::num_cols == Sparsity::A::num_cols);
-    static_assert(Sparsity::B::num_rows == Sparsity::A::num_rows);
-    constexpr auto dim = std::size_t{Sparsity::A::num_rows};
+  using SparsityA = typename Sparsity::A;
+  using SparsityB = typename Sparsity::B;
+  static_assert(SparsityA::num_rows == SparsityA::num_cols);
+  static_assert(SparsityB::num_cols == SparsityA::num_cols);
+  static_assert(SparsityB::num_rows == SparsityA::num_rows);
+  static constexpr auto dim = std::size_t{SparsityA::num_rows};
 
-    auto is_nonzero_A = getIsNonzeroInfo<typename Sparsity::A>();
-    auto is_nonzero_B = getIsNonzeroInfo<typename Sparsity::B>();
+  static constexpr auto is_nonzero_pair = [] {
+    auto is_nonzero_A = getIsNonzeroInfo<SparsityA>();
+    auto is_nonzero_B = getIsNonzeroInfo<SparsityB>();
 
     for (std::size_t iter = 0; iter < dim + 1; ++iter) {
       is_nonzero_A = getFilledInIsNonzeroInfo(is_nonzero_A);
@@ -59,14 +61,14 @@ struct RepeatedSparsity {
   }();
 
   struct A {
-    static constexpr auto num_rows = std::size_t{Sparsity::A::num_rows};
-    static constexpr auto num_cols = std::size_t{Sparsity::A::num_cols};
+    static constexpr auto num_rows = dim;
+    static constexpr auto num_cols = dim;
     static constexpr auto entries =
         getEntries([] { return is_nonzero_pair.A; });
   };
   struct B {
-    static constexpr auto num_rows = std::size_t{Sparsity::B::num_rows};
-    static constexpr auto num_cols = std::size_t{Sparsity::B::num_cols};
+    static constexpr auto num_rows = dim;
+    static constexpr auto num_cols = dim;
     static constexpr auto entries =
         getEntries([] { return is_nonzero_pair.B; });
   };
