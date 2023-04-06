@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/empty_factor_data.hpp>
+#include <ctldl/empty_factor_data_left.hpp>
 
 #include <cstddef>
 
@@ -56,8 +56,8 @@ void solveForwardSubstitution(const FactorData& diag,
                               Vector& rhs_in_solution_out) {
   using Value = typename FactorData::Value;
 
-  const EmptyFactorData<FactorData::Sparsity::num_rows, Value> empty_left;
-  const std::array<Value, 0> empty_solution_left;
+  constexpr EmptyFactorDataLeft<FactorData> empty_left;
+  constexpr std::array<Value, 0> empty_solution_left;
   solveForwardSubstitution(diag, rhs_in_solution_out, empty_left,
                            empty_solution_left);
 }

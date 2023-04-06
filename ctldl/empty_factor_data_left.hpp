@@ -9,7 +9,7 @@
 namespace ctldl {
 
 template <std::size_t num_rows_>
-struct EmptyFactorSparsity {
+struct EmptyFactorSparsityLeft {
   static constexpr auto num_rows = num_rows_;
   static constexpr auto num_cols = std::size_t{0};
   static constexpr std::array<std::size_t, num_rows + 1> row_begin_indices{};
@@ -23,11 +23,11 @@ struct EmptyFactorSparsity {
   }
 };
 
-template <std::size_t num_rows_, class Value_>
-struct EmptyFactorData {
-  static constexpr auto num_rows = num_rows_;
-  using Value = Value_;
-  using Sparsity = EmptyFactorSparsity<num_rows>;
+template <class FactorData>
+struct EmptyFactorDataLeft {
+  static constexpr auto num_rows = FactorData::Sparsity::num_rows;
+  using Value = typename FactorData::Value;
+  using Sparsity = EmptyFactorSparsityLeft<num_rows>;
   static constexpr std::array<Value, 0> L{};
   static constexpr std::array<Value, 0> D{};
 };

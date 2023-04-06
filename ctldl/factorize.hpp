@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/empty_factor_data.hpp>
+#include <ctldl/empty_factor_data_left.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/utility/square.hpp>
@@ -95,8 +95,7 @@ void factorize(FactorData& self, const Matrix& input,
 
 template <class FactorData, class Matrix>
 void factorize(FactorData& self, const Matrix& input) {
-  using Value = typename FactorData::Value;
-  const EmptyFactorData<FactorData::Sparsity::num_rows, Value> empty_left;
+  constexpr EmptyFactorDataLeft<FactorData> empty_left;
   factorize(self, input, empty_left);
 }
 
