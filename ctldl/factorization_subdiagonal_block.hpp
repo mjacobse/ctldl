@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctldl/permutation/permutation.hpp>
+#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/utility/square.hpp>
@@ -9,7 +11,9 @@
 
 namespace ctldl {
 
-template <class OriginalSparsity, class Value_>
+template <class OriginalSparsity, class Value_,
+          class PermutationRow = PermutationIdentity,
+          class PermutationCol = PermutationIdentity>
 class FactorizationSubdiagonalBlock {
  public:
   using Sparsity = SparsityCSR<OriginalSparsity>;
@@ -17,6 +21,10 @@ class FactorizationSubdiagonalBlock {
   static constexpr auto num_rows = std::size_t{Sparsity::num_rows};
   static constexpr auto num_cols = std::size_t{Sparsity::num_cols};
   using Value = Value_;
+  static constexpr Permutation<num_rows> permutation_row{
+      PermutationRow::permutation};
+  static constexpr Permutation<num_cols> permutation_col{
+      PermutationCol::permutation};
 
   template <class Matrix, class DiagonalBlock>
   void factor(const Matrix& matrix, const DiagonalBlock& above) {
@@ -35,9 +43,12 @@ class FactorizationSubdiagonalBlock {
       constexpr auto i = std::size_t{Sparsity::entries[entry_index_ij].row_index};
       constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
+      constexpr auto i_orig = permutation_row[i];
+      constexpr auto j_orig = permutation_col[j];
+      auto Lij = matrix.get(i_orig, j_orig);
+
       static constexpr auto contributions =
           getContributionsMixed<DiagonalBlockSparsity, Sparsity, i, j>();
-      auto Lij = matrix.get(i, j);
       for (const auto c : contributions) {
         Lij -= L[c.entry_index_ik] * above.L[c.entry_index_jk] * above.D[c.k];
       }

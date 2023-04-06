@@ -68,6 +68,11 @@ class Matrix {
   std::array<double, nnz> m_values;
 };
 
+struct Permutation {
+  static constexpr std::array<std::size_t, dim> permutation = {7, 8, 0, 4, 3,
+                                                               2, 6, 5, 9, 1};
+};
+
 }  // anonymous namespace
 
 
@@ -76,7 +81,8 @@ int main() {
   using MatrixB = Matrix<SparsityAtDiscretePoint::B>;
   const int num_repetitions = 9;
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityAtDiscretePoint, double>
+  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityAtDiscretePoint, double,
+                                                Permutation>
       factorization(num_repetitions);
 
   const auto matrix_values_A = [&] {

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <ctldl/factorize.hpp>
+#include <ctldl/permutation/permutation.hpp>
+#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/filled_in_sparsity.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
@@ -12,7 +14,8 @@
 
 namespace ctldl {
 
-template <class OriginalSparsity, class Value_>
+template <class OriginalSparsity, class Value_,
+          class PermutationIn = PermutationIdentity>
 class Factorization {
  public:
   static_assert(OriginalSparsity::num_rows == OriginalSparsity::num_cols);
@@ -20,6 +23,9 @@ class Factorization {
   using Sparsity = SparsityCSR<FilledInSparsity<OriginalSparsity>>;
   static constexpr auto nnz = std::size_t{Sparsity::nnz};
   using Value = Value_;
+  static constexpr Permutation<dim> permutation{PermutationIn::permutation};
+  static constexpr auto permutation_row = permutation;
+  static constexpr auto permutation_col = permutation;
 
   template <class Matrix>
   void factor(const Matrix& matrix) {
@@ -42,7 +48,8 @@ class Factorization {
  private:
   void diagonalSolveImpl(Value* __restrict rhs_in_solution_out) const {
     for (std::size_t i = 0; i < dim; ++i) {
-      rhs_in_solution_out[i] /= D[i];
+      const auto i_orig = permutation[i];
+      rhs_in_solution_out[i_orig] /= D[i];
     }
   }
 };

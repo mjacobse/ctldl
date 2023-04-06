@@ -18,7 +18,8 @@ template <std::size_t i, class FactorData, class Vector>
   for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
        ++entry_index_ij) {
     const std::size_t j = Sparsity::entries[entry_index_ij].col_index;
-    value -= fact.L[entry_index_ij] * solution[j];
+    const auto j_orig = FactorData::permutation_col[j];
+    value -= fact.L[entry_index_ij] * solution[j_orig];
   }
   return value;
 }
@@ -31,12 +32,14 @@ template <std::size_t i = 0, class FactorData, class Vector,
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
   static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
+  static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
 
   if constexpr (i < Sparsity::num_rows) {
-    auto temp = rhs_in_solution_out[i];
+    constexpr auto i_orig = FactorData::permutation[i];
+    auto temp = rhs_in_solution_out[i_orig];
     temp = solveForwardSubstitutionRow<i>(left, solution_left, temp);
     temp = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, temp);
-    rhs_in_solution_out[i] = temp;
+    rhs_in_solution_out[i_orig] = temp;
     solveForwardSubstitutionImpl<i + 1>(diag, rhs_in_solution_out, left,
                                         solution_left);
   }

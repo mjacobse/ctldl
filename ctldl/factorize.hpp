@@ -5,6 +5,7 @@
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/utility/square.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 
@@ -50,12 +51,17 @@ template <std::size_t i, std::size_t entry_index_ij, class FactorData,
   if constexpr (entry_index_ij < row_end) {
     constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
+    constexpr auto i_orig =
+        std::max(FactorData::permutation[i], FactorData::permutation[j]);
+    constexpr auto j_orig =
+        std::min(FactorData::permutation[i], FactorData::permutation[j]);
+    auto Lij = input.get(i_orig, j_orig);
+
     static constexpr auto contributions_left =
         getContributionsRectangular<SparsityLeft, i, j>();
     static constexpr auto contributions_self =
         getContributionsLowerTriangle<Sparsity, i, j>();
 
-    auto Lij = input.get(i, j);
     Lij = applyContributions(left, contributions_left, Lij);
     Lij = applyContributions(self, contributions_self, Lij);
     Lij /= self.D[j];
@@ -78,7 +84,8 @@ template <std::size_t i = 0, class FactorData, class Matrix,
   static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
 
   if constexpr (i < Sparsity::num_rows) {
-    auto Di = input.get(i, i);
+    constexpr auto i_orig = FactorData::permutation[i];
+    auto Di = input.get(i_orig, i_orig);
     Di = applyContributionsRowDiagonal<i>(left, Di);
     Di = factorizeImplRow<i, Sparsity::row_begin_indices[i]>(
         self, input, left, Di);

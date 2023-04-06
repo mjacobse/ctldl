@@ -2,6 +2,8 @@
 
 #include <ctldl/factorization.hpp>
 #include <ctldl/factorization_subdiagonal_block.hpp>
+#include <ctldl/permutation/permutation.hpp>
+#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/solve_backward_substitution.hpp>
 #include <ctldl/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/get_entries.hpp>
@@ -21,7 +23,7 @@ struct IsNonZeroPair {
   IsNonzeroInfo<dim, dim> B;
 };
 
-template <class Sparsity>
+template <class Sparsity, class PermutationIn>
 struct RepeatedSparsity {
   using SparsityA = typename Sparsity::A;
   using SparsityB = typename Sparsity::B;
@@ -29,10 +31,11 @@ struct RepeatedSparsity {
   static_assert(SparsityB::num_cols == SparsityA::num_cols);
   static_assert(SparsityB::num_rows == SparsityA::num_rows);
   static constexpr auto dim = std::size_t{SparsityA::num_rows};
+  static constexpr Permutation<dim> permutation{PermutationIn::permutation};
 
   static constexpr auto is_nonzero_pair = [] {
-    auto is_nonzero_A = getIsNonzeroInfo<SparsityA>();
-    auto is_nonzero_B = getIsNonzeroInfo<SparsityB>();
+    auto is_nonzero_A = getIsNonzeroInfoLowerTriangle<SparsityA>(permutation);
+    auto is_nonzero_B = getIsNonzeroInfo<SparsityB>(permutation, permutation);
 
     for (std::size_t iter = 0; iter < dim + 1; ++iter) {
       is_nonzero_A = getFilledInIsNonzeroInfo(is_nonzero_A);
@@ -97,14 +100,16 @@ struct FactorSubdiagonalBlockData {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <class Sparsity, class Value>
+template <class Sparsity, class Value,
+          class PermutationIn = PermutationIdentity>
 class FactorizationRepeatingBlockTridiagonal {
  private:
-  using SparsityFactor = RepeatedSparsity<Sparsity>;
+  using SparsityFactor = RepeatedSparsity<Sparsity, PermutationIn>;
   using SparsityFactorA = typename SparsityFactor::A;
   using SparsityFactorB = typename SparsityFactor::B;
-  using FactorA = Factorization<SparsityFactorA, Value>;
-  using FactorB = FactorizationSubdiagonalBlock<SparsityFactorB, Value>;
+  using FactorA = Factorization<SparsityFactorA, Value, PermutationIn>;
+  using FactorB = FactorizationSubdiagonalBlock<SparsityFactorB, Value,
+                                                PermutationIn, PermutationIn>;
   std::size_t m_num_repetitions;
   std::unique_ptr<FactorA[]> m_diag;
   std::unique_ptr<FactorB[]> m_subdiag;

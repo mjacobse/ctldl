@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/entry.hpp>
 
 #include <array>
@@ -30,6 +31,8 @@ struct EmptyFactorDataLeft {
   using Sparsity = EmptyFactorSparsityLeft<num_rows>;
   static constexpr std::array<Value, 0> L{};
   static constexpr std::array<Value, 0> D{};
+  static constexpr auto permutation_row = FactorData::permutation_row;
+  static constexpr Permutation<0> permutation_col{};
 };
 
 }  // namespace ctldl
