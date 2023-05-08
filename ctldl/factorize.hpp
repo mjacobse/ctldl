@@ -3,6 +3,7 @@
 #include <ctldl/empty_factor_data_left.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
+#include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/utility/square.hpp>
 
 #include <algorithm>
@@ -55,7 +56,7 @@ template <std::size_t i, std::size_t entry_index_ij, class FactorData,
         std::max(FactorData::permutation[i], FactorData::permutation[j]);
     constexpr auto j_orig =
         std::min(FactorData::permutation[i], FactorData::permutation[j]);
-    auto Lij = input.get(i_orig, j_orig);
+    auto Lij = getMatrixValueAt<i_orig, j_orig>(input);
 
     static constexpr auto contributions_left =
         getContributionsRectangular<SparsityLeft, i, j>();
@@ -85,7 +86,7 @@ template <std::size_t i = 0, class FactorData, class Matrix,
 
   if constexpr (i < Sparsity::num_rows) {
     constexpr auto i_orig = FactorData::permutation[i];
-    auto Di = input.get(i_orig, i_orig);
+    auto Di = getMatrixValueAt<i_orig, i_orig>(input);
     Di = applyContributionsRowDiagonal<i>(left, Di);
     Di = factorizeImplRow<i, Sparsity::row_begin_indices[i]>(
         self, input, left, Di);

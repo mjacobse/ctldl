@@ -3,6 +3,7 @@
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
+#include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/utility/square.hpp>
 
@@ -45,7 +46,7 @@ class FactorizationSubdiagonalBlock {
 
       constexpr auto i_orig = permutation_row[i];
       constexpr auto j_orig = permutation_col[j];
-      auto Lij = matrix.get(i_orig, j_orig);
+      auto Lij = getMatrixValueAt<i_orig, j_orig>(matrix);
 
       static constexpr auto contributions =
           getContributionsMixed<DiagonalBlockSparsity, Sparsity, i, j>();
