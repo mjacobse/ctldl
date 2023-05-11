@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/sparsity/sort_entries_row_major_sorted.hpp>
 #include <ctldl/symbolic/foreach_nonzero_with_fill.hpp>
 
 #include <array>
@@ -28,6 +29,8 @@ constexpr auto getEntriesWithFill() {
     entry_index += 1;
   };
   foreachNonZeroWithFill<Sparsity>(add_entry);
+  // sorting is not needed for correctness, but helps performance
+  sortEntriesRowMajorSorted(entries);
   return entries;
 }
 
