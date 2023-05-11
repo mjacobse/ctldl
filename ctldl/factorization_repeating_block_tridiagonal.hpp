@@ -7,8 +7,9 @@
 #include <ctldl/solve_backward_substitution.hpp>
 #include <ctldl/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/get_entries.hpp>
-#include <ctldl/sparsity/get_is_nonzero_info.hpp>
 #include <ctldl/sparsity/is_nonzero_info.hpp>
+#include <ctldl/sparsity/sparsity_lower_triangle.hpp>
+#include <ctldl/sparsity/sparsity_permuted.hpp>
 #include <ctldl/symbolic/compute_elimination_tree_repeating.hpp>
 
 #include <cstddef>
@@ -33,28 +34,16 @@ struct RepeatedSparsity {
   static constexpr auto dim = std::size_t{SparsityInA::num_rows};
   static constexpr Permutation<dim> permutation{PermutationIn::permutation};
 
-  struct SparsityPermutedA {
-    static constexpr auto num_rows = dim;
-    static constexpr auto num_cols = dim;
-    static constexpr auto entries = getEntries(
-        [] { return getIsNonzeroInfoLowerTriangle<SparsityInA>(permutation); });
-  };
-  struct SparsityPermutedB {
-    static constexpr auto num_rows = dim;
-    static constexpr auto num_cols = dim;
-    static constexpr auto entries = getEntries(
-        [] { return getIsNonzeroInfo<SparsityInB>(permutation, permutation); });
-  };
-
-  using SparsityA = SparsityCSR<SparsityPermutedA>;
-  using SparsityB = SparsityCSR<SparsityPermutedB>;
+  using SparsityA =
+      SparsityCSR<SparsityLowerTriangle<SparsityInA, PermutationIn>>;
+  using SparsityB =
+      SparsityCSR<SparsityPermuted<SparsityInB, PermutationIn, PermutationIn>>;
   static constexpr auto tree =
       computeEliminationTreeRepeating<SparsityA, SparsityB>();
 
   static constexpr auto is_nonzero_pair = [] {
-    auto is_nonzero_A = getIsNonzeroInfoLowerTriangle<SparsityA>();
-    auto is_nonzero_B = getIsNonzeroInfo<SparsityB>();
-
+    IsNonzeroInfo<dim, dim> is_nonzero_A;
+    IsNonzeroInfo<dim, dim> is_nonzero_B;
     const auto mark_nonzero = [&is_nonzero_A, &is_nonzero_B](
                                   const std::size_t i, const std::size_t j) {
       if (j >= dim) {
