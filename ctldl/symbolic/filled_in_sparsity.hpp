@@ -3,8 +3,8 @@
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/get_entries.hpp>
-#include <ctldl/sparsity/get_filled_in_is_nonzero_info.hpp>
 #include <ctldl/sparsity/get_is_nonzero_info.hpp>
+#include <ctldl/symbolic/get_filled_in_is_nonzero_info.hpp>
 
 #include <cassert>
 
