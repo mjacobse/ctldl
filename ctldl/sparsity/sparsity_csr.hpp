@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/sparsity/get_entries.hpp>
+#include <ctldl/sparsity/get_entries_csr.hpp>
 
 #include <algorithm>
 #include <cassert>

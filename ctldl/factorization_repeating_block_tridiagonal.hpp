@@ -6,23 +6,18 @@
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/solve_backward_substitution.hpp>
 #include <ctldl/solve_forward_substitution.hpp>
-#include <ctldl/sparsity/get_entries.hpp>
-#include <ctldl/sparsity/is_nonzero_info.hpp>
+#include <ctldl/sparsity/sort_entries_row_major_sorted.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
 #include <ctldl/symbolic/foreach_nonzero_with_fill_repeated.hpp>
 
+#include <array>
 #include <cstddef>
 #include <memory>
+#include <utility>
 
 
 namespace ctldl {
-
-template <std::size_t dim>
-struct IsNonZeroPair {
-  IsNonzeroInfo<dim, dim> A;
-  IsNonzeroInfo<dim, dim> B;
-};
 
 template <class Sparsity, class PermutationIn>
 struct RepeatedSparsity {
@@ -39,32 +34,51 @@ struct RepeatedSparsity {
   using SparsityB =
       SparsityCSR<SparsityPermuted<SparsityInB, PermutationIn, PermutationIn>>;
 
-  static constexpr auto is_nonzero_pair = [] {
-    IsNonzeroInfo<dim, dim> is_nonzero_A;
-    IsNonzeroInfo<dim, dim> is_nonzero_B;
-    const auto mark_nonzero = [&is_nonzero_A, &is_nonzero_B](
-                                  const std::size_t i, const std::size_t j) {
+  static constexpr auto nnz_pair = [] {
+    std::size_t nnz_A = 0;
+    std::size_t nnz_B = 0;
+    const auto count_nonzero = [&](const std::size_t /*i*/,
+                                   const std::size_t j) {
       if (j >= dim) {
-        is_nonzero_A[i][j - dim] = true;
+        nnz_A += 1;
       } else {
-        is_nonzero_B[i][j] = true;
+        nnz_B += 1;
       }
     };
-    foreachNonZeroWithFillRepeated<SparsityA, SparsityB>(mark_nonzero);
-    return IsNonZeroPair<dim>{is_nonzero_A, is_nonzero_B};
+    foreachNonZeroWithFillRepeated<SparsityA, SparsityB>(count_nonzero);
+    return std::pair{nnz_A, nnz_B};
+  }();
+
+  static constexpr auto entries_pair = [] {
+    std::array<Entry, nnz_pair.first> entries_A;
+    std::array<Entry, nnz_pair.second> entries_B;
+    std::size_t entry_index_A = 0;
+    std::size_t entry_index_B = 0;
+    const auto add_nonzero = [&](const std::size_t i, const std::size_t j) {
+      if (j >= dim) {
+        entries_A[entry_index_A] = Entry{i, j - dim};
+        entry_index_A += 1;
+      } else {
+        entries_B[entry_index_B] = Entry{i, j};
+        entry_index_B += 1;
+      }
+    };
+    foreachNonZeroWithFillRepeated<SparsityA, SparsityB>(add_nonzero);
+    // sorting is not needed for correctness, but helps performance
+    sortEntriesRowMajorSorted(entries_A);
+    sortEntriesRowMajorSorted(entries_B);
+    return std::pair{entries_A, entries_B};
   }();
 
   struct A {
     static constexpr auto num_rows = dim;
     static constexpr auto num_cols = dim;
-    static constexpr auto entries =
-        getEntries([] { return is_nonzero_pair.A; });
+    static constexpr auto entries = entries_pair.first;
   };
   struct B {
     static constexpr auto num_rows = dim;
     static constexpr auto num_cols = dim;
-    static constexpr auto entries =
-        getEntries([] { return is_nonzero_pair.B; });
+    static constexpr auto entries = entries_pair.second;
   };
 };
 
