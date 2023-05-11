@@ -7,9 +7,9 @@
 #include <ctldl/solve_backward_substitution.hpp>
 #include <ctldl/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/get_entries.hpp>
-#include <ctldl/sparsity/get_filled_in_is_nonzero_info.hpp>
 #include <ctldl/sparsity/get_is_nonzero_info.hpp>
 #include <ctldl/sparsity/is_nonzero_info.hpp>
+#include <ctldl/symbolic/compute_elimination_tree_repeating.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -25,40 +25,54 @@ struct IsNonZeroPair {
 
 template <class Sparsity, class PermutationIn>
 struct RepeatedSparsity {
-  using SparsityA = typename Sparsity::A;
-  using SparsityB = typename Sparsity::B;
-  static_assert(SparsityA::num_rows == SparsityA::num_cols);
-  static_assert(SparsityB::num_cols == SparsityA::num_cols);
-  static_assert(SparsityB::num_rows == SparsityA::num_rows);
-  static constexpr auto dim = std::size_t{SparsityA::num_rows};
+  using SparsityInA = typename Sparsity::A;
+  using SparsityInB = typename Sparsity::B;
+  static_assert(SparsityInA::num_rows == SparsityInA::num_cols);
+  static_assert(SparsityInB::num_cols == SparsityInA::num_cols);
+  static_assert(SparsityInB::num_rows == SparsityInA::num_rows);
+  static constexpr auto dim = std::size_t{SparsityInA::num_rows};
   static constexpr Permutation<dim> permutation{PermutationIn::permutation};
 
+  struct SparsityPermutedA {
+    static constexpr auto num_rows = dim;
+    static constexpr auto num_cols = dim;
+    static constexpr auto entries = getEntries(
+        [] { return getIsNonzeroInfoLowerTriangle<SparsityInA>(permutation); });
+  };
+  struct SparsityPermutedB {
+    static constexpr auto num_rows = dim;
+    static constexpr auto num_cols = dim;
+    static constexpr auto entries = getEntries(
+        [] { return getIsNonzeroInfo<SparsityInB>(permutation, permutation); });
+  };
+
+  using SparsityA = SparsityCSR<SparsityPermutedA>;
+  using SparsityB = SparsityCSR<SparsityPermutedB>;
+  static constexpr auto tree =
+      computeEliminationTreeRepeating<SparsityA, SparsityB>();
+
   static constexpr auto is_nonzero_pair = [] {
-    auto is_nonzero_A = getIsNonzeroInfoLowerTriangle<SparsityA>(permutation);
-    auto is_nonzero_B = getIsNonzeroInfo<SparsityB>(permutation, permutation);
+    auto is_nonzero_A = getIsNonzeroInfoLowerTriangle<SparsityA>();
+    auto is_nonzero_B = getIsNonzeroInfo<SparsityB>();
 
-    for (std::size_t iter = 0; iter < dim + 1; ++iter) {
-      is_nonzero_A = getFilledInIsNonzeroInfo(is_nonzero_A);
-
-      for (std::size_t i = 0; i < dim; ++i) {
-        for (std::size_t j = 0; j < dim; ++j) {
-          for (std::size_t k = 0; k < j; ++k) {
-            if (is_nonzero_B[i][k] && is_nonzero_A[j][k]) {
-              is_nonzero_B[i][j] = true;
-            }
-          }
-        }
+    const auto mark_nonzero = [&is_nonzero_A, &is_nonzero_B](
+                                  const std::size_t i, const std::size_t j) {
+      if (j >= dim) {
+        is_nonzero_A[i][j - dim] = true;
+      } else {
+        is_nonzero_B[i][j] = true;
       }
+    };
 
-      for (std::size_t i = 0; i < dim; ++i) {
-        for (std::size_t j = 0; j < i; ++j) {
-          for (std::size_t k = 0; k < dim; ++k) {
-            if (is_nonzero_B[i][k] && is_nonzero_B[j][k]) {
-              is_nonzero_A[i][j] = true;
-            }
-          }
-        }
-      }
+    std::array<std::size_t, 2*dim> visitor;
+    std::iota(visitor.begin(), visitor.end(), 0);
+    for (std::size_t i = 0; i < dim; ++i) {
+      constexpr auto row_offset = dim;
+      constexpr auto col_offset = dim;
+      foreachAncestorInSubtree<SparsityB>(tree, i, visitor, mark_nonzero,
+                                          row_offset);
+      foreachAncestorInSubtree<SparsityA>(tree, i, visitor, mark_nonzero,
+                                          row_offset, col_offset);
     }
     return IsNonZeroPair<dim>{is_nonzero_A, is_nonzero_B};
   }();
