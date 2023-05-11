@@ -1,25 +1,33 @@
 #pragma once
 
 #include <ctldl/sparsity/is_nonzero_info.hpp>
+#include <ctldl/symbolic/compute_elimination_tree.hpp>
+#include <ctldl/symbolic/foreach_ancestor_in_subtree.hpp>
 
+#include <array>
 #include <cstddef>
+#include <numeric>
 
 namespace ctldl {
 
-template <std::size_t dim>
-constexpr auto getFilledInIsNonzeroInfo(
-    const IsNonzeroInfo<dim, dim> is_nonzero_original_matrix) {
+template <class Sparsity>
+constexpr auto getFilledInIsNonzeroInfo() {
+  static_assert(Sparsity::num_rows == Sparsity::num_cols);
+  constexpr auto dim = Sparsity::num_rows;
+
   IsNonzeroInfo<dim, dim> is_nonzero;
+  const auto mark_nonzero = [&is_nonzero](const std::size_t i,
+                                          const std::size_t j) {
+    is_nonzero[i][j] = true;
+  };
+
+  constexpr auto tree = computeEliminationTree<Sparsity>();
+  std::array<std::size_t, dim> visitor;
+  std::iota(visitor.begin(), visitor.end(), 0);
   for (std::size_t i = 0; i < dim; ++i) {
-    for (std::size_t j = 0; j < i; ++j) {
-      is_nonzero[i][j] = is_nonzero_original_matrix[i][j];
-      for (std::size_t k = 0; k < j; ++k) {
-        if (is_nonzero[i][k] && is_nonzero[j][k]) {
-          is_nonzero[i][j] = true;
-        }
-      }
-    }
+    foreachAncestorInSubtree<Sparsity>(tree, i, visitor, mark_nonzero);
   }
+
   return is_nonzero;
 }
 
