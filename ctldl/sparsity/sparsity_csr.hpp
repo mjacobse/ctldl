@@ -15,7 +15,7 @@ class SparsityCSR {
   static constexpr auto num_cols = std::size_t{Sparsity::num_cols};
   static constexpr auto is_nonzero = getIsNonzeroInfo<Sparsity>();
  private:
-  static constexpr auto m_helper = getEntriesCSR([] { return is_nonzero; });
+  static constexpr auto m_helper = getEntriesCSR<Sparsity>();
 
  public:
   static constexpr auto entries = m_helper.first;
