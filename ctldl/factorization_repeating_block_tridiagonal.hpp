@@ -10,7 +10,7 @@
 #include <ctldl/sparsity/is_nonzero_info.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
-#include <ctldl/symbolic/compute_elimination_tree_repeating.hpp>
+#include <ctldl/symbolic/foreach_nonzero_with_fill_repeated.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -38,8 +38,6 @@ struct RepeatedSparsity {
       SparsityCSR<SparsityLowerTriangle<SparsityInA, PermutationIn>>;
   using SparsityB =
       SparsityCSR<SparsityPermuted<SparsityInB, PermutationIn, PermutationIn>>;
-  static constexpr auto tree =
-      computeEliminationTreeRepeating<SparsityA, SparsityB>();
 
   static constexpr auto is_nonzero_pair = [] {
     IsNonzeroInfo<dim, dim> is_nonzero_A;
@@ -52,17 +50,7 @@ struct RepeatedSparsity {
         is_nonzero_B[i][j] = true;
       }
     };
-
-    std::array<std::size_t, 2*dim> visitor;
-    std::iota(visitor.begin(), visitor.end(), 0);
-    for (std::size_t i = 0; i < dim; ++i) {
-      constexpr auto row_offset = dim;
-      constexpr auto col_offset = dim;
-      foreachAncestorInSubtree<SparsityB>(tree, i, visitor, mark_nonzero,
-                                          row_offset);
-      foreachAncestorInSubtree<SparsityA>(tree, i, visitor, mark_nonzero,
-                                          row_offset, col_offset);
-    }
+    foreachNonZeroWithFillRepeated<SparsityA, SparsityB>(mark_nonzero);
     return IsNonZeroPair<dim>{is_nonzero_A, is_nonzero_B};
   }();
 
