@@ -59,14 +59,29 @@ class FactorizationSubdiagonalBlock {
   }
 
   template <std::size_t... EntryIndices, class Matrix, class DiagonalBlock>
-  void factorImpl(const Matrix& matrix, const DiagonalBlock& above,
-                  std::index_sequence<EntryIndices...>) {
+  [[gnu::always_inline]] void factorImplRow(
+      const Matrix& matrix, const DiagonalBlock& above,
+      std::index_sequence<EntryIndices...>) {
     (factorImplEntry<EntryIndices>(matrix, above), ...);
+  }
+
+  template <std::size_t i, class Matrix, class DiagonalBlock>
+  [[gnu::always_inline]] void factorImplRow(const Matrix& matrix,
+                                            const DiagonalBlock& above) {
+    constexpr auto row_begin = std::size_t{Sparsity::row_begin_indices[i]};
+    constexpr auto row_end = std::size_t{Sparsity::row_begin_indices[i + 1]};
+    factorImplRow(matrix, above, makeIndexSequence<row_begin, row_end>());
+  }
+
+  template <std::size_t... RowIndices, class Matrix, class DiagonalBlock>
+  void factorImpl(const Matrix& matrix, const DiagonalBlock& above,
+                  std::index_sequence<RowIndices...>) {
+    (factorImplRow<RowIndices>(matrix, above), ...);
   }
 
   template <class Matrix, class DiagonalBlock>
   void factorImpl(const Matrix& matrix, const DiagonalBlock& above) {
-    factorImpl(matrix, above, std::make_index_sequence<nnz>());
+    factorImpl(matrix, above, std::make_index_sequence<num_rows>());
   }
 };
 
