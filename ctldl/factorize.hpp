@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/empty_factor_data_left.hpp>
+#include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
@@ -52,11 +53,10 @@ template <std::size_t i, std::size_t entry_index_ij, class FactorData,
   if constexpr (entry_index_ij < row_end) {
     constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
-    constexpr auto i_orig =
-        std::max(FactorData::permutation[i], FactorData::permutation[j]);
-    constexpr auto j_orig =
-        std::min(FactorData::permutation[i], FactorData::permutation[j]);
-    auto Lij = getMatrixValueAt<i_orig, j_orig>(input);
+    constexpr auto entry_orig =
+        permutedEntryLowerTriangle(Entry{i, j}, FactorData::permutation);
+    auto Lij =
+        getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input);
 
     static constexpr auto contributions_left =
         getContributionsRectangular<SparsityLeft, i, j>();

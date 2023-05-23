@@ -2,6 +2,7 @@
 
 #include <ctldl/permutation/invert_permutation.hpp>
 #include <ctldl/permutation/permutation.hpp>
+#include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/entry.hpp>
 
 #include <array>
@@ -24,8 +25,8 @@ struct SparsityPermuted {
     std::array<Entry, nnz> entries;
     std::size_t entry_index = 0;
     for (const auto entry : Sparsity::entries) {
-      entries[entry_index] = Entry{inverse_permutation_row[entry.row_index],
-                                   inverse_permutation_col[entry.col_index]};
+      entries[entry_index] = permutedEntry(entry, inverse_permutation_row,
+                                           inverse_permutation_col);
       entry_index += 1;
     }
     return entries;

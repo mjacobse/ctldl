@@ -2,6 +2,7 @@
 
 #include <ctldl/permutation/invert_permutation.hpp>
 #include <ctldl/permutation/permutation.hpp>
+#include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 
 #include <algorithm>
@@ -34,11 +35,8 @@ struct SparsityLowerTriangle {
       if (entry.row_index <= entry.col_index) {
         continue;
       }
-      const auto new_row_index = std::max(inverse_permutation[entry.row_index],
-                                          inverse_permutation[entry.col_index]);
-      const auto new_col_index = std::min(inverse_permutation[entry.row_index],
-                                          inverse_permutation[entry.col_index]);
-      entries[entry_index] = Entry{new_row_index, new_col_index};
+      entries[entry_index] =
+          permutedEntryLowerTriangle(entry, inverse_permutation);
       entry_index += 1;
     }
     return entries;

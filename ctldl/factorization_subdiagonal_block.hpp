@@ -2,6 +2,7 @@
 
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
+#include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
@@ -44,9 +45,10 @@ class FactorizationSubdiagonalBlock {
       constexpr auto i = std::size_t{Sparsity::entries[entry_index_ij].row_index};
       constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
-      constexpr auto i_orig = permutation_row[i];
-      constexpr auto j_orig = permutation_col[j];
-      auto Lij = getMatrixValueAt<i_orig, j_orig>(matrix);
+      constexpr auto entry_orig =
+          permutedEntry(Entry{i, j}, permutation_row, permutation_col);
+      auto Lij =
+          getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(matrix);
 
       static constexpr auto contributions =
           getContributionsMixed<DiagonalBlockSparsity, Sparsity, i, j>();
