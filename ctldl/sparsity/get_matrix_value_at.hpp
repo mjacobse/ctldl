@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctldl/sparsity/entry.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -15,11 +17,7 @@ constexpr auto getMatrixValueAt(const Matrix& matrix) {
   constexpr auto entries_begin = std::cbegin(Sparsity::entries);
   constexpr auto entries_end = std::cend(Sparsity::entries);
 
-  constexpr auto it =
-      std::find_if(entries_begin, entries_end, [](const auto entry) {
-        return entry.row_index == i && entry.col_index == j;
-      });
-
+  constexpr auto it = std::find(entries_begin, entries_end, Entry{i, j});
   if constexpr (it != entries_end) {
     constexpr auto entry_index = std::size_t{it - entries_begin};
     return matrix.valueAt(entry_index);
