@@ -10,6 +10,7 @@
 
 #include <array>
 #include <cstddef>
+#include <utility>
 
 namespace ctldl {
 
@@ -36,29 +37,36 @@ class FactorizationSubdiagonalBlock {
   std::array<Value, nnz> L;
 
  private:
-  template <std::size_t entry_index_ij = 0, class Matrix, class DiagonalBlock>
-  [[gnu::always_inline]] void factorImpl(const Matrix& matrix,
-                                         const DiagonalBlock& above) {
+  template <std::size_t entry_index_ij, class Matrix, class DiagonalBlock>
+  [[gnu::always_inline]] void factorImplEntry(const Matrix& matrix,
+                                              const DiagonalBlock& above) {
     using DiagonalBlockSparsity = typename DiagonalBlock::Sparsity;
 
-    if constexpr (entry_index_ij < nnz) {
-      constexpr auto i = std::size_t{Sparsity::entries[entry_index_ij].row_index};
-      constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
+    constexpr auto i = std::size_t{Sparsity::entries[entry_index_ij].row_index};
+    constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
-      constexpr auto entry_orig =
-          permutedEntry(Entry{i, j}, permutation_row, permutation_col);
-      auto Lij =
-          getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(matrix);
+    constexpr auto entry_orig =
+        permutedEntry(Entry{i, j}, permutation_row, permutation_col);
+    auto Lij =
+        getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(matrix);
 
-      static constexpr auto contributions =
-          getContributionsMixed<DiagonalBlockSparsity, Sparsity, i, j>();
-      for (const auto c : contributions) {
-        Lij -= L[c.entry_index_ik] * above.L[c.entry_index_jk] * above.D[c.k];
-      }
-      L[entry_index_ij] = Lij / above.D[j];
-
-      factorImpl<entry_index_ij + 1>(matrix, above);
+    static constexpr auto contributions =
+        getContributionsMixed<DiagonalBlockSparsity, Sparsity, i, j>();
+    for (const auto c : contributions) {
+      Lij -= L[c.entry_index_ik] * above.L[c.entry_index_jk] * above.D[c.k];
     }
+    L[entry_index_ij] = Lij / above.D[j];
+  }
+
+  template <std::size_t... EntryIndices, class Matrix, class DiagonalBlock>
+  void factorImpl(const Matrix& matrix, const DiagonalBlock& above,
+                  std::index_sequence<EntryIndices...>) {
+    (factorImplEntry<EntryIndices>(matrix, above), ...);
+  }
+
+  template <class Matrix, class DiagonalBlock>
+  void factorImpl(const Matrix& matrix, const DiagonalBlock& above) {
+    factorImpl(matrix, above, std::make_index_sequence<nnz>());
   }
 };
 

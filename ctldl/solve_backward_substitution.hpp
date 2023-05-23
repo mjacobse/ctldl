@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/empty_factor_data_left.hpp>
+#include <ctldl/utility/make_index_sequence.hpp>
 
 #include <cstddef>
 
@@ -36,10 +37,18 @@ template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
   const auto solution_i = rhs_in_solution_out[i_orig];
   solveBackwardSubstitutionRow<i>(diag, solution_i, rhs_in_solution_out);
   solveBackwardSubstitutionRow<i>(left, solution_i, rhs_in_solution_out_left);
-  if constexpr (i > 0) {
-    solveBackwardSubstitutionImpl<i - 1>(diag, rhs_in_solution_out, left,
-                                         rhs_in_solution_out_left);
-  }
+}
+
+template <std::size_t... RowIndices, class FactorData, class Vector,
+          class FactorDataLeft, class VectorLeft>
+void solveBackwardSubstitutionImpl(const FactorData& diag,
+                                   Vector& rhs_in_solution_out,
+                                   const FactorDataLeft& left,
+                                   VectorLeft& rhs_in_solution_out_left,
+                                   std::index_sequence<RowIndices...>) {
+  (solveBackwardSubstitutionImpl<RowIndices>(diag, rhs_in_solution_out, left,
+                                             rhs_in_solution_out_left),
+   ...);
 }
 
 template <class FactorData, class Vector, class FactorDataLeft,
@@ -49,10 +58,9 @@ void solveBackwardSubstitution(const FactorData& diag,
                                const FactorDataLeft& left,
                                VectorLeft& rhs_in_solution_out_left) {
   constexpr auto num_rows = std::size_t{FactorData::Sparsity::num_rows};
-  if constexpr (num_rows > 0) {
-    solveBackwardSubstitutionImpl<num_rows - 1>(diag, rhs_in_solution_out, left,
-                                                rhs_in_solution_out_left);
-  }
+  solveBackwardSubstitutionImpl(diag, rhs_in_solution_out, left,
+                                rhs_in_solution_out_left,
+                                makeIndexSequenceReversed<0, num_rows>());
 }
 
 template <class FactorData, class Vector>
