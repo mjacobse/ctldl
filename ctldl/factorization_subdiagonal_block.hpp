@@ -6,7 +6,6 @@
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
-#include <ctldl/utility/square.hpp>
 
 #include <array>
 #include <cstddef>

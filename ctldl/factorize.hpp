@@ -8,7 +8,6 @@
 #include <ctldl/utility/make_index_sequence.hpp>
 #include <ctldl/utility/square.hpp>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <utility>

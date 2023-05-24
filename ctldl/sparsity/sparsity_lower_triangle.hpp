@@ -5,7 +5,6 @@
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 

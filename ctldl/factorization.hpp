@@ -3,12 +3,9 @@
 #include <ctldl/factorize.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
-#include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/filled_in_sparsity.hpp>
-#include <ctldl/utility/square.hpp>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 
