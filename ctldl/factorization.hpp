@@ -26,12 +26,12 @@ class Factorization {
 
   template <class Matrix>
   void factor(const Matrix& matrix) {
-    factorize(*this, matrix);
+    factorizeEntryWise(*this, matrix);
   }
 
   template <class Matrix, class FactorDataLeft>
   void factor(const Matrix& matrix, const FactorDataLeft& left) {
-    factorize(*this, matrix, left);
+    factorizeEntryWise(*this, matrix, left);
   }
 
   template <class Rhs>
