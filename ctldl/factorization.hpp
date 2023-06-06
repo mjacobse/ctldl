@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/factorize.hpp>
+#include <ctldl/factorize_entry_wise.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
