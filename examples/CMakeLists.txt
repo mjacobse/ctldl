@@ -1,14 +1,14 @@
-add_executable(example_tridiagonal
-    example_tridiagonal.cpp
-)
-add_executable(example_nos4
-    example_nos4.cpp
-)
-target_link_libraries(example_tridiagonal PRIVATE
-    ctldl
-    ctldl_warnings
-)
-target_link_libraries(example_nos4 PRIVATE
-    ctldl
-    ctldl_warnings
-)
+function(add_example EXAMPLE_NAME)
+    set(TARGET_NAME example_${EXAMPLE_NAME})
+    add_executable(${TARGET_NAME}
+        ${TARGET_NAME}.cpp
+    )
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        ctldl
+        ctldl_warnings
+    )
+endfunction()
+
+add_example(nos2)
+add_example(nos4)
+add_example(tridiagonal)
