@@ -2,6 +2,9 @@
 
 #include <ctldl/factorization.hpp>
 #include <ctldl/factorization_subdiagonal_block.hpp>
+#include <ctldl/factorize/factorize_entry_wise.hpp>
+#include <ctldl/factorize/factorize_method.hpp>
+#include <ctldl/factorize/factorize_up_looking.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/solve_backward_substitution.hpp>
@@ -119,6 +122,24 @@ class FactorizationRepeatingBlockTridiagonal {
   std::unique_ptr<FactorA[]> m_diag;
   std::unique_ptr<FactorB[]> m_subdiag;
 
+  template <class MatrixValuesA, class MatrixValuesB>
+  void factorizeBlockRow(const FactorA& diag_previous,
+                         const MatrixValuesB& values_B,
+                         const MatrixValuesA& values_A, FactorB& subdiag,
+                         FactorA& diag, FactorizeMethodEntryWise) {
+    subdiag.factor(values_B, diag_previous);
+    factorizeEntryWise(diag, values_A,
+                       FactorSubdiagonalBlockData{subdiag, diag_previous});
+  }
+
+  template <class MatrixValuesA, class MatrixValuesB>
+  void factorizeBlockRow(const FactorA& diag_previous,
+                         const MatrixValuesB& values_B,
+                         const MatrixValuesA& values_A, FactorB& subdiag,
+                         FactorA& diag, FactorizeMethodUpLooking) {
+    factorizeUpLooking(diag_previous, values_B, values_A, subdiag, diag);
+  }
+
  public:
   explicit FactorizationRepeatingBlockTridiagonal(
       const std::size_t num_repetitions)
@@ -126,14 +147,14 @@ class FactorizationRepeatingBlockTridiagonal {
         m_diag(new FactorA[num_repetitions + 1]),
         m_subdiag(new FactorB[num_repetitions]) {}
 
-  template <class MatrixValuesA, class MatrixValuesB>
+  template <class MatrixValuesA, class MatrixValuesB,
+            FactorizeMethod method = FactorizeMethod::UpLooking>
   [[gnu::noinline]] void factor(const MatrixValuesA& values_A,
                                 const MatrixValuesB& values_B) {
     m_diag[0].factor(values_A[0]);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
-      m_subdiag[i].factor(values_B[i], m_diag[i]);
-      m_diag[i + 1].factor(values_A[i + 1],
-                           FactorSubdiagonalBlockData{m_subdiag[i], m_diag[i]});
+      factorizeBlockRow(m_diag[i], values_B[i], values_A[i + 1], m_subdiag[i],
+                        m_diag[i + 1], getFactorizeMethodTag<method>());
     }
   }
 
