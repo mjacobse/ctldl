@@ -1,5 +1,8 @@
 #pragma once
 
+#include <ctldl/empty_factor_data_diagonal.hpp>
+#include <ctldl/empty_factor_data_left.hpp>
+#include <ctldl/empty_matrix_input.hpp>
 #include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/get_influenced.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
@@ -73,9 +76,10 @@ template <std::size_t entry_index, class FactorData, class FactorDataLeft>
   return Lij_scaled * Lij;
 }
 
-template <std::size_t... EntryIndices, class FactorData, class FactorDataLeft>
+template <std::size_t... EntryIndices, class FactorDataAbove,
+          class FactorDataLeft, class FactorData>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
-    const FactorData& above, FactorDataLeft& left, FactorData& self,
+    const FactorDataAbove& above, FactorDataLeft& left, FactorData& self,
     typename FactorData::Value Di_init, std::index_sequence<EntryIndices...>) {
   return (Di_init - ... -
           factorizeUpLookingInnerLeft<EntryIndices>(above, left, self));
@@ -136,10 +140,10 @@ template <std::size_t i, class Matrix, class FactorData>
       input, fact, makeIndexSequence<row_begin, row_end>());
 }
 
-template <std::size_t i, class FactorData, class MatrixLeft, class MatrixSelf,
-          class FactorDataLeft>
+template <std::size_t i, class FactorDataAbove, class MatrixLeft,
+          class MatrixSelf, class FactorDataLeft, class FactorData>
 [[gnu::always_inline]] inline void factorizeUpLookingImpl(
-    const FactorData& above, const MatrixLeft& input_left,
+    const FactorDataAbove& above, const MatrixLeft& input_left,
     const MatrixSelf& input_self, FactorDataLeft& left, FactorData& self) {
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
@@ -162,9 +166,9 @@ template <std::size_t i, class FactorData, class MatrixLeft, class MatrixSelf,
   self.D[i] = Di;
 }
 
-template <std::size_t... RowIndices, class FactorData, class MatrixLeft,
-          class MatrixSelf, class FactorDataLeft>
-void factorizeUpLookingImpl(const FactorData& above,
+template <std::size_t... RowIndices, class FactorDataAbove, class MatrixLeft,
+          class MatrixSelf, class FactorDataLeft, class FactorData>
+void factorizeUpLookingImpl(const FactorDataAbove& above,
                             const MatrixLeft& input_left,
                             const MatrixSelf& input_self, FactorDataLeft& left,
                             FactorData& self,
@@ -174,14 +178,23 @@ void factorizeUpLookingImpl(const FactorData& above,
    ...);
 }
 
-template <class FactorData, class MatrixLeft, class MatrixSelf,
-          class FactorDataLeft>
-void factorizeUpLooking(const FactorData& above, const MatrixLeft& input_left,
+template <class FactorDataAbove, class MatrixLeft, class MatrixSelf,
+          class FactorDataLeft, class FactorData>
+void factorizeUpLooking(const FactorDataAbove& above,
+                        const MatrixLeft& input_left,
                         const MatrixSelf& input_self, FactorDataLeft& left,
                         FactorData& self) {
   constexpr auto num_rows = std::size_t{FactorData::Sparsity::num_rows};
   factorizeUpLookingImpl(above, input_left, input_self, left, self,
                          std::make_index_sequence<num_rows>());
+}
+
+template <class FactorData, class Matrix>
+void factorizeUpLooking(FactorData& self, const Matrix& matrix) {
+  constexpr EmptyFactorDataLeft<FactorData> empty_left;
+  constexpr EmptyFactorDataDiagonal<decltype(empty_left)> empty_above;
+  constexpr EmptyMatrixInput empty_input_left;
+  factorizeUpLooking(empty_above, empty_input_left, matrix, empty_left, self);
 }
 
 }  // namespace ctldl
