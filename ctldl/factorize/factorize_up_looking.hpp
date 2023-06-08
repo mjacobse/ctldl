@@ -13,7 +13,7 @@ namespace ctldl {
 template <std::size_t entry_index, class FactorData>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerSelf(
     FactorData& fact) {
-  using Sparsity = FactorData::Sparsity;
+  using Sparsity = typename FactorData::Sparsity;
 
   constexpr auto i = Sparsity::entries[entry_index].row_index;
   constexpr auto j = Sparsity::entries[entry_index].col_index;
@@ -43,8 +43,8 @@ template <std::size_t... EntryIndices, class FactorData>
 template <std::size_t entry_index, class FactorData, class FactorDataLeft>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
     const FactorData& above, FactorDataLeft& left, FactorData& self) {
-  using Sparsity = FactorData::Sparsity;
-  using SparsityLeft = FactorDataLeft::Sparsity;
+  using Sparsity = typename FactorData::Sparsity;
+  using SparsityLeft = typename FactorDataLeft::Sparsity;
 
   constexpr auto i = SparsityLeft::entries[entry_index].row_index;
   constexpr auto j = SparsityLeft::entries[entry_index].col_index;
