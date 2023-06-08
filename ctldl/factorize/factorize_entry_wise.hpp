@@ -3,6 +3,7 @@
 #include <ctldl/empty_factor_data_diagonal.hpp>
 #include <ctldl/empty_factor_data_left.hpp>
 #include <ctldl/empty_matrix_input.hpp>
+#include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
@@ -182,6 +183,12 @@ void factorizeEntryWise(FactorData& self, const Matrix& input) {
   constexpr EmptyFactorDataDiagonal<decltype(empty_left)> empty_above;
   constexpr EmptyMatrixInput empty_input_left;
   factorizeEntryWise(empty_above, empty_input_left, input, empty_left, self);
+}
+
+template <class FactorData, class Matrix>
+void factorize(FactorData& self, const Matrix& matrix,
+               FactorizeMethodEntryWise) {
+  factorizeEntryWise(self, matrix);
 }
 
 }  // namespace ctldl

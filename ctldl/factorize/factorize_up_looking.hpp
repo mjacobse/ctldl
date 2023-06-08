@@ -3,6 +3,7 @@
 #include <ctldl/empty_factor_data_diagonal.hpp>
 #include <ctldl/empty_factor_data_left.hpp>
 #include <ctldl/empty_matrix_input.hpp>
+#include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/get_influenced.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
@@ -195,6 +196,12 @@ void factorizeUpLooking(FactorData& self, const Matrix& matrix) {
   constexpr EmptyFactorDataDiagonal<decltype(empty_left)> empty_above;
   constexpr EmptyMatrixInput empty_input_left;
   factorizeUpLooking(empty_above, empty_input_left, matrix, empty_left, self);
+}
+
+template <class FactorData, class Matrix>
+void factorize(FactorData& self, const Matrix& matrix,
+               FactorizeMethodUpLooking) {
+  factorizeUpLooking(self, matrix);
 }
 
 }  // namespace ctldl

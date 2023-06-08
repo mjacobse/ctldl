@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ctldl/factorize/factorize_entry_wise.hpp>
+#include <ctldl/factorize/factorize.hpp>
+#include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
@@ -24,14 +25,10 @@ class Factorization {
   static constexpr auto permutation_row = permutation;
   static constexpr auto permutation_col = permutation;
 
-  template <class Matrix>
-  void factor(const Matrix& matrix) {
-    factorizeEntryWise(*this, matrix);
-  }
-
-  template <class Matrix, class FactorDataLeft>
-  void factor(const Matrix& matrix, const FactorDataLeft& left) {
-    factorizeEntryWise(*this, matrix, left);
+  template <class FactorizeMethodTag = FactorizeMethodUpLooking,
+            class Matrix>
+  void factor(const Matrix& matrix, const FactorizeMethodTag method_tag = {}) {
+    factorize(*this, matrix, method_tag);
   }
 
   template <class Rhs>
