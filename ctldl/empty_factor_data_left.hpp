@@ -34,7 +34,6 @@ struct EmptyFactorDataLeft {
   using Value = typename FactorData::Value;
   using Sparsity = EmptyFactorSparsityLeft<num_rows>;
   static constexpr std::array<Value, 0> L{};
-  static constexpr std::array<Value, 0> D{};
   static constexpr auto permutation_row = FactorData::permutation_row;
   static constexpr Permutation<0> permutation_col{};
 };

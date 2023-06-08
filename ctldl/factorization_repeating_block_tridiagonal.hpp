@@ -85,22 +85,6 @@ struct RepeatedSparsity {
   };
 };
 
-template <class FactorData>
-struct FactorSubdiagonalBlockData {
-  using Sparsity = typename FactorData::Sparsity;
-  using Value = typename FactorData::Value;
-
-  template <class FactorDataAbove>
-  FactorSubdiagonalBlockData(const FactorData& self,
-                             const FactorDataAbove& above)
-      : L(self.L), D(above.D) {
-    static_assert(Sparsity::num_cols == FactorDataAbove::Sparsity::num_cols);
-  }
-
-  const std::array<Value, Sparsity::nnz>& L;
-  const std::array<Value, Sparsity::num_cols>& D;
-};
-
 // Factorization of a matrix of the form
 //
 // [A  B'         ]
@@ -127,9 +111,7 @@ class FactorizationRepeatingBlockTridiagonal {
                          const MatrixValuesB& values_B,
                          const MatrixValuesA& values_A, FactorB& subdiag,
                          FactorA& diag, FactorizeMethodEntryWise) {
-    subdiag.factor(values_B, diag_previous);
-    factorizeEntryWise(diag, values_A,
-                       FactorSubdiagonalBlockData{subdiag, diag_previous});
+    factorizeEntryWise(diag_previous, values_B, values_A, subdiag, diag);
   }
 
   template <class MatrixValuesA, class MatrixValuesB>
