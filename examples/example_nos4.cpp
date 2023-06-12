@@ -98,11 +98,6 @@ struct MatrixB {
   }
 };
 
-struct SparsityAtDiscretePoint {
-  using A = MatrixA::Sparsity;
-  using B = MatrixB::Sparsity;
-};
-
 struct Permutation {
   static constexpr std::array<std::size_t, dim> permutation = {7, 8, 0, 4, 3,
                                                                2, 6, 5, 9, 1};
@@ -114,8 +109,8 @@ struct Permutation {
 int main() {
   const int num_repetitions = 9;
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityAtDiscretePoint, double,
-                                                Permutation>
+  ctldl::FactorizationRepeatingBlockTridiagonal<
+      MatrixA::Sparsity, MatrixB::Sparsity, double, Permutation>
       factorization(num_repetitions);
 
   const auto matrix_values_A = [] {

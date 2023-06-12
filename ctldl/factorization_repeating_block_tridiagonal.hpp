@@ -22,10 +22,8 @@
 
 namespace ctldl {
 
-template <class Sparsity, class PermutationIn>
+template <class SparsityInA, class SparsityInB, class PermutationIn>
 struct RepeatedSparsity {
-  using SparsityInA = typename Sparsity::A;
-  using SparsityInB = typename Sparsity::B;
   static_assert(SparsityInA::num_rows == SparsityInA::num_cols);
   static_assert(SparsityInB::num_cols == SparsityInA::num_cols);
   static_assert(SparsityInB::num_rows == SparsityInA::num_rows);
@@ -92,11 +90,11 @@ struct RepeatedSparsity {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <class Sparsity, class Value,
+template <class SparsityA, class SparsityB, class Value,
           class PermutationIn = PermutationIdentity>
 class FactorizationRepeatingBlockTridiagonal {
  private:
-  using SparsityFactor = RepeatedSparsity<Sparsity, PermutationIn>;
+  using SparsityFactor = RepeatedSparsity<SparsityA, SparsityB, PermutationIn>;
   using SparsityFactorA = typename SparsityFactor::A;
   using SparsityFactorB = typename SparsityFactor::B;
   using FactorA = Factorization<SparsityFactorA, Value, PermutationIn>;

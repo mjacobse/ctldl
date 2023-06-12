@@ -52,18 +52,14 @@ struct MatrixB {
   constexpr double valueAt(const std::size_t /*i*/) const { return -1.0; }
 };
 
-struct SparsityAtDiscretePoint {
-  using A = MatrixA::Sparsity;
-  using B = MatrixB::Sparsity;
-};
-
 }  // anonymous namespace
 
 
 int main() {
   const int num_repetitions = 20 - 1;
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityAtDiscretePoint, double>
+  ctldl::FactorizationRepeatingBlockTridiagonal<MatrixA::Sparsity,
+                                                MatrixB::Sparsity, double>
       factorization(num_repetitions);
 
   const std::vector<MatrixA> matrix_values_A(num_repetitions + 1);

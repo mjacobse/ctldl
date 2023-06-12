@@ -29,11 +29,6 @@ struct SparsityB {
   static constexpr auto entries = getRepeatingMtxEntriesB();
 };
 
-struct SparsityAtDiscretePoint {
-  using A = SparsityA;
-  using B = SparsityB;
-};
-
 struct Permutation {
   static constexpr auto permutation = getRepeatingMtxPermutation();
 };
@@ -49,8 +44,8 @@ struct MatrixInput {
   }
 };
 
-using MatrixA = MatrixInput<SparsityAtDiscretePoint::A>;
-using MatrixB = MatrixInput<SparsityAtDiscretePoint::B>;
+using MatrixA = MatrixInput<SparsityA>;
+using MatrixB = MatrixInput<SparsityB>;
 
 
 class ReadMtxException : public std::runtime_error {
@@ -155,7 +150,7 @@ int main(const int argc, const char** argv) {
       readRepeatingMtxFile(path_mtx);
   const auto num_repetitions = matrix_values_B.size();
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityAtDiscretePoint, double,
+  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityA, SparsityB, double,
                                                 Permutation>
       factorization(num_repetitions);
   const auto rhs_single = [] {
