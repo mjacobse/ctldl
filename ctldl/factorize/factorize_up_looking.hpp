@@ -90,11 +90,12 @@ template <std::size_t entry_index, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValueSubdiagonal(
     const Matrix& input, FactorData& fact) {
   using Sparsity = typename FactorData::Sparsity;
+  using Value = typename FactorData::Value;
   constexpr auto entry_orig =
       permutedEntry(Sparsity::entries[entry_index], FactorData::permutation_row,
                     FactorData::permutation_col);
-  fact.L[entry_index] =
-      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input);
+  fact.L[entry_index] = static_cast<Value>(
+      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
 }
 
 template <std::size_t... EntryIndices, class Matrix, class FactorData>
@@ -118,10 +119,11 @@ template <std::size_t entry_index, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValueDiagonal(
     const Matrix& input, FactorData& fact) {
   using Sparsity = typename FactorData::Sparsity;
+  using Value = typename FactorData::Value;
   constexpr auto entry_orig = permutedEntryLowerTriangle(
       Sparsity::entries[entry_index], FactorData::permutation);
-  fact.L[entry_index] =
-      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input);
+  fact.L[entry_index] = static_cast<Value>(
+      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
 }
 
 template <std::size_t... EntryIndices, class Matrix, class FactorData>
@@ -149,9 +151,10 @@ template <std::size_t i, class FactorDataAbove, class MatrixLeft,
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
   static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
+  using Value = typename FactorData::Value;
 
   constexpr auto i_orig = FactorData::permutation[i];
-  auto Di = getMatrixValueAt<i_orig, i_orig>(input_self);
+  auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input_self));
 
   fillRowWithOriginalMatrixValuesSubdiagonal<i>(input_left, left);
   fillRowWithOriginalMatrixValuesDiagonal<i>(input_self, self);

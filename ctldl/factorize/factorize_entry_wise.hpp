@@ -23,14 +23,15 @@ template <std::size_t entry_index_ij, class FactorData, class Matrix,
     FactorData& self, const Matrix& matrix, const FactorDataAbove& above) {
   using Sparsity = typename FactorData::Sparsity;
   using SparsityAbove = typename FactorDataAbove::Sparsity;
+  using Value = typename FactorData::Value;
 
   constexpr auto i = std::size_t{Sparsity::entries[entry_index_ij].row_index};
   constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
   constexpr auto entry_orig = permutedEntry(
       Entry{i, j}, FactorData::permutation_row, FactorData::permutation_col);
-  auto Lij =
-      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(matrix);
+  auto Lij = static_cast<Value>(
+      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(matrix));
 
   static constexpr auto contributions =
       getContributionsMixed<SparsityAbove, Sparsity, i, j>();
@@ -103,14 +104,15 @@ template <std::size_t entry_index_ij, class FactorData, class Matrix,
     const FactorDataAbove& above) {
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
+  using Value = typename FactorData::Value;
 
   constexpr auto i = std::size_t{Sparsity::entries[entry_index_ij].row_index};
   constexpr auto j = std::size_t{Sparsity::entries[entry_index_ij].col_index};
 
   constexpr auto entry_orig =
       permutedEntryLowerTriangle(Entry{i, j}, FactorData::permutation);
-  auto Lij =
-      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input);
+  auto Lij = static_cast<Value>(
+      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
 
   static constexpr auto contributions_left =
       getContributionsRectangular<SparsityLeft, i, j>();
@@ -143,12 +145,13 @@ template <std::size_t i, class FactorData, class Matrix, class FactorDataLeft,
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
   static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
+  using Value = typename FactorData::Value;
 
   constexpr auto row_begin = std::size_t{Sparsity::row_begin_indices[i]};
   constexpr auto row_end = std::size_t{Sparsity::row_begin_indices[i + 1]};
 
   constexpr auto i_orig = FactorData::permutation[i];
-  auto Di = getMatrixValueAt<i_orig, i_orig>(input);
+  auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input));
   Di = applyContributionsRowDiagonal<i>(left, above, Di);
   Di = factorizeEntryWiseImplRow(self, input, left, above, Di,
                                  makeIndexSequence<row_begin, row_end>());

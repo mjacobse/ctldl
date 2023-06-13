@@ -32,9 +32,10 @@ template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
   using SparsityLeft = typename FactorDataLeft::Sparsity;
   static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
   static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
+  using Value = typename FactorData::Value;
 
   constexpr auto i_orig = FactorData::permutation[i];
-  const auto solution_i = rhs_in_solution_out[i_orig];
+  const auto solution_i = static_cast<Value>(rhs_in_solution_out[i_orig]);
   solveBackwardSubstitutionRow<i>(diag, solution_i, rhs_in_solution_out);
   solveBackwardSubstitutionRow<i>(left, solution_i, rhs_in_solution_out_left);
 }

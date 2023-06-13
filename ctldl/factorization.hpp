@@ -40,7 +40,8 @@ class Factorization {
   std::array<Value, dim> D;
 
  private:
-  void diagonalSolveImpl(Value* __restrict rhs_in_solution_out) const {
+  template <class ValueRhs>
+  void diagonalSolveImpl(ValueRhs* __restrict rhs_in_solution_out) const {
     for (std::size_t i = 0; i < dim; ++i) {
       const auto i_orig = permutation[i];
       rhs_in_solution_out[i_orig] /= D[i];
