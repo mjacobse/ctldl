@@ -2,7 +2,11 @@
 
 namespace ctldl {
 
-struct FactorizeMethodEntryWise{};
-struct FactorizeMethodUpLooking{};
+struct FactorizeMethodEntryWise {
+  static constexpr const char* description = "entry-wise";
+};
+struct FactorizeMethodUpLooking{
+  static constexpr const char* description = "up-looking";
+};
 
 }  // namespace ctldl
