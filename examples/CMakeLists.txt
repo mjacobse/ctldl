@@ -10,13 +10,21 @@ function(add_example EXAMPLE_NAME)
     add_example_target(example_${EXAMPLE_NAME} example_${EXAMPLE_NAME}.cpp)
 endfunction()
 
-function(add_example_mtx EXAMPLE_NAME)
-    add_example_target(example_${EXAMPLE_NAME} example_mtx.cpp)
-    target_include_directories(example_${EXAMPLE_NAME} PRIVATE
+function(add_example_target_mtx PREFIX EXAMPLE_NAME)
+    add_example_target(${PREFIX}_${EXAMPLE_NAME} ${PREFIX}_mtx.cpp)
+    target_include_directories(${PREFIX}_${EXAMPLE_NAME} PRIVATE
         mtx_includes/${EXAMPLE_NAME}
     )
-    target_link_libraries(example_${EXAMPLE_NAME} PRIVATE
+    target_link_libraries(${PREFIX}_${EXAMPLE_NAME} PRIVATE
         ctldl_fileio_mtx
+    )
+endfunction()
+
+function(add_example_mtx EXAMPLE_NAME)
+    add_example_target_mtx(example ${EXAMPLE_NAME})
+    add_example_target_mtx(benchmark ${EXAMPLE_NAME})
+    target_link_libraries(benchmark_${EXAMPLE_NAME} PRIVATE
+        benchmark::benchmark
     )
 endfunction()
 

@@ -19,4 +19,5 @@ target_include_directories(ctldl_includes INTERFACE .)
 
 add_subdirectory(ctldl)
 add_subdirectory(examples)
+add_subdirectory(external)
 add_subdirectory(tests)

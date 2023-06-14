@@ -127,6 +127,9 @@ class FactorizationRepeatingBlockTridiagonal {
         m_diag(new FactorA[num_repetitions + 1]),
         m_subdiag(new FactorB[num_repetitions]) {}
 
+  const FactorA* dataA() const noexcept { return m_diag.get(); }
+  const FactorB* dataB() const noexcept { return m_subdiag.get(); }
+
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixValuesA, class MatrixValuesB>
   [[gnu::noinline]] void factor(const MatrixValuesA& values_A,
