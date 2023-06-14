@@ -132,9 +132,8 @@ class FactorizationRepeatingBlockTridiagonal {
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixValuesA, class MatrixValuesB>
-  [[gnu::noinline]] void factor(const MatrixValuesA& values_A,
-                                const MatrixValuesB& values_B,
-                                const FactorizeMethodTag method_tag = {}) {
+  void factor(const MatrixValuesA& values_A, const MatrixValuesB& values_B,
+              const FactorizeMethodTag method_tag = {}) {
     m_diag[0].factor(values_A[0], method_tag);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
       factorizeBlockRow(m_diag[i], values_B[i], values_A[i + 1], m_subdiag[i],
@@ -143,14 +142,14 @@ class FactorizationRepeatingBlockTridiagonal {
   }
 
   template <class Rhs>
-  [[gnu::noinline]] void solveInPlace(Rhs& rhs) const {
+  void solveInPlace(Rhs& rhs) const {
     forwardSolve(rhs);
     diagonalSolve(rhs);
     backwardSolve(rhs);
   }
 
   template <class Rhs>
-  [[gnu::noinline]] void forwardSolve(Rhs& rhs) const {
+  void forwardSolve(Rhs& rhs) const {
     solveForwardSubstitution(m_diag[0], rhs[0]);
     for (std::size_t i = 1; i <= m_num_repetitions; ++i) {
       solveForwardSubstitution(m_diag[i], rhs[i], m_subdiag[i - 1], rhs[i - 1]);
@@ -158,14 +157,14 @@ class FactorizationRepeatingBlockTridiagonal {
   }
 
   template <class Rhs>
-  [[gnu::noinline]] void diagonalSolve(Rhs& rhs) const {
+  void diagonalSolve(Rhs& rhs) const {
     for (std::size_t i = 0; i <= m_num_repetitions; ++i) {
       m_diag[i].diagonalSolve(rhs[i]);
     }
   }
 
   template <class Rhs>
-  [[gnu::noinline]] void backwardSolve(Rhs& rhs) const {
+  void backwardSolve(Rhs& rhs) const {
     for (std::size_t i = m_num_repetitions; i > 0; --i) {
       solveBackwardSubstitution(m_diag[i], rhs[i], m_subdiag[i - 1], rhs[i - 1]);
     }
