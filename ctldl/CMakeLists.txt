@@ -7,3 +7,5 @@ target_sources(ctldl
 target_link_libraries(ctldl INTERFACE
     ctldl_includes
 )
+
+add_subdirectory(fileio)

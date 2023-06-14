@@ -1,15 +1,13 @@
-#include <ctldl/factorization_repeating_block_tridiagonal.hpp>
-#include <ctldl/sparsity/sparsity_csr.hpp>
-
 #include "ctldl_repeating_mtx_include.hpp"
+
+#include <ctldl/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal.hpp>
+#include <ctldl/sparsity/sparsity_csr.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdio>
-#include <fstream>
-#include <stdexcept>
-#include <string>
 #include <vector>
 
 
@@ -47,93 +45,6 @@ struct MatrixInput {
 using MatrixA = MatrixInput<SparsityA>;
 using MatrixB = MatrixInput<SparsityB>;
 
-
-class ReadMtxException : public std::runtime_error {
- public:
-  explicit ReadMtxException(const char* error_message)
-      : std::runtime_error(error_message) {}
-};
-
-void checkMtx(const bool condition, const char* message) {
-  if (!condition) {
-    throw ReadMtxException(message);
-  }
-}
-
-std::pair<std::vector<MatrixA>, std::vector<MatrixB>> readRepeatingMtxFile(
-    const char* filepath) {
-  std::ifstream file(filepath);
-  std::string line;
-
-  while (std::getline(file, line) && line[0] == '%') {
-    // skip comment lines
-  }
-
-  std::size_t num_repetitions;
-  {
-    std::size_t num_rows;
-    std::size_t num_cols;
-    std::size_t nnz;
-    const auto num_read = std::sscanf(line.c_str(), " %zu %zu %zu", &num_rows,
-                                      &num_cols, &nnz);
-    checkMtx(num_read == 3, "Error reading matrix dimensions");
-    checkMtx(num_rows == num_cols, "Matrix must be square");
-    checkMtx(num_rows > 0, "Matrix dimension must be non-zero");
-    checkMtx(num_rows % dim == 0,
-             "Matrix dimension must be multiple of expected repeating block "
-             "dimension");
-    num_repetitions = (num_rows / dim) - 1;
-  }
-
-  std::vector<std::array<double, MatrixA::nnz>> values_A(num_repetitions + 1,
-                                                         {0.0});
-  std::vector<std::array<double, MatrixB::nnz>> values_B(num_repetitions,
-                                                         {0.0});
-  while (std::getline(file, line)) {
-    std::size_t orig_row_index;
-    std::size_t orig_col_index;
-    double value;
-    const auto num_read = std::sscanf(line.c_str(), " %zu %zu %lf",
-                                      &orig_row_index, &orig_col_index, &value);
-    checkMtx(num_read == 3, "Error reading matrix entry");
-    checkMtx(orig_row_index >= orig_col_index,
-             "Matrix entries must be in lower triangle");
-    checkMtx(orig_row_index > 0, "Row index must be positive");
-    checkMtx(orig_col_index > 0, "Col index must be negative");
-    orig_row_index -= 1;
-    orig_col_index -= 1;
-
-    const std::size_t repetition_index = (orig_col_index / dim);
-    const bool is_diagonal_block =
-        (orig_row_index / dim == orig_col_index / dim);
-
-    const auto row_index = orig_row_index % dim;
-    const auto col_index = orig_col_index % dim;
-    if (is_diagonal_block) {
-      checkMtx(MatrixA::Sparsity::isNonZero(row_index, col_index),
-               "Entry is not covered by compiled diagonal block sparsity");
-      const auto entry_index =
-          MatrixA::Sparsity::entryIndex(row_index, col_index);
-      values_A[repetition_index][entry_index] = value;
-    } else {
-      checkMtx(MatrixB::Sparsity::isNonZero(row_index, col_index),
-               "Entry is not covered by compiled subdiagonal block sparsity");
-      const auto entry_index =
-          MatrixB::Sparsity::entryIndex(row_index, col_index);
-      values_B[repetition_index][entry_index] = value;
-    }
-  }
-
-  std::vector<MatrixA> matrices_A(values_A.size(), MatrixA({0.0}));
-  std::transform(values_A.cbegin(), values_A.cend(), matrices_A.begin(),
-                 [](const auto& values) { return MatrixA{values}; });
-  std::vector<MatrixB> matrices_B(values_B.size(), MatrixB({0.0}));
-  std::transform(values_B.cbegin(), values_B.cend(), matrices_B.begin(),
-                 [](const auto& values) { return MatrixB{values}; });
-
-  return {matrices_A, matrices_B};
-}
-
 }  // anonymous namespace
 
 
@@ -147,7 +58,7 @@ int main(const int argc, const char** argv) {
   const std::size_t num_iterations = (argc > 2) ? std::stoull(argv[2]) : 1;
 
   const auto [matrix_values_A, matrix_values_B] =
-      readRepeatingMtxFile(path_mtx);
+      ctldl::mtxFileReadRepeatingBlockTridiagonal<MatrixA, MatrixB>(path_mtx);
   const auto num_repetitions = matrix_values_B.size();
 
   ctldl::FactorizationRepeatingBlockTridiagonal<SparsityA, SparsityB, double,

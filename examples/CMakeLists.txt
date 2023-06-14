@@ -15,6 +15,9 @@ function(add_example_mtx EXAMPLE_NAME)
     target_include_directories(example_${EXAMPLE_NAME} PRIVATE
         mtx_includes/${EXAMPLE_NAME}
     )
+    target_link_libraries(example_${EXAMPLE_NAME} PRIVATE
+        ctldl_fileio_mtx
+    )
 endfunction()
 
 add_example(nos2)
