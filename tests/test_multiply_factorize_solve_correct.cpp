@@ -20,6 +20,7 @@
 #include <vector>
 
 namespace ctldl {
+namespace {
 
 template <class TestMatrix, class PermutationIn, class Value,
           class FactorizeMethod>
@@ -131,4 +132,5 @@ BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
 
 BOOST_AUTO_TEST_SUITE_END()
 
+}  // anonymous namespace
 }  // namespace ctldl
