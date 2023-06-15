@@ -11,11 +11,13 @@ function(add_example EXAMPLE_NAME)
 endfunction()
 
 function(add_example_target_mtx PREFIX EXAMPLE_NAME)
-    add_example_target(${PREFIX}_${EXAMPLE_NAME} ${PREFIX}_mtx.cpp)
-    target_include_directories(${PREFIX}_${EXAMPLE_NAME} PRIVATE
-        mtx_includes/${EXAMPLE_NAME}
+    set(TARGET_NAME ${PREFIX}_mtx_${EXAMPLE_NAME})
+    add_example_target(${TARGET_NAME} ${PREFIX}_mtx.cpp)
+    string(REPLACE _ / MTX_INCLUDE_DIRECTORY ${EXAMPLE_NAME})
+    target_include_directories(${TARGET_NAME} PRIVATE
+        mtx_includes/${MTX_INCLUDE_DIRECTORY}
     )
-    target_link_libraries(${PREFIX}_${EXAMPLE_NAME} PRIVATE
+    target_link_libraries(${TARGET_NAME} PRIVATE
         ctldl_fileio_mtx
     )
 endfunction()
@@ -23,7 +25,7 @@ endfunction()
 function(add_example_mtx EXAMPLE_NAME)
     add_example_target_mtx(example ${EXAMPLE_NAME})
     add_example_target_mtx(benchmark ${EXAMPLE_NAME})
-    target_link_libraries(benchmark_${EXAMPLE_NAME} PRIVATE
+    target_link_libraries(benchmark_mtx_${EXAMPLE_NAME} PRIVATE
         benchmark::benchmark
     )
 endfunction()
@@ -32,8 +34,8 @@ add_example(nos2)
 add_example(nos4)
 add_example(tridiagonal)
 
-add_example_mtx(mhdb416)
+add_example_mtx(suitesparse_Bai_mhdb416)
 
-add_example_mtx(laufkatze101)
-add_example_mtx(opal11)
-add_example_mtx(spline51)
+add_example_mtx(transworhp_laufkatze)
+add_example_mtx(transworhp_opal)
+add_example_mtx(transworhp_spline)
