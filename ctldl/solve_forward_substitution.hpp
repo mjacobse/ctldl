@@ -28,8 +28,8 @@ template <std::size_t i, class FactorData, class Vector>
 
 template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
           class VectorLeft>
-[[gnu::always_inline]] inline void solveForwardSubstitutionImpl(
-    const FactorData& diag, Vector& rhs_in_solution_out,
+[[gnu::always_inline]] inline auto solveForwardSubstitutionImpl(
+    const FactorData& diag, const Vector& rhs_in_solution_out,
     const FactorDataLeft& left, const VectorLeft& solution_left) {
   using Sparsity = typename FactorData::Sparsity;
   using SparsityLeft = typename FactorDataLeft::Sparsity;
@@ -38,10 +38,10 @@ template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
   using Value = typename FactorData::Value;
 
   constexpr auto i_orig = FactorData::permutation[i];
-  auto temp = static_cast<Value>(rhs_in_solution_out[i_orig]);
-  temp = solveForwardSubstitutionRow<i>(left, solution_left, temp);
-  temp = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, temp);
-  rhs_in_solution_out[i_orig] = temp;
+  auto solution_i = static_cast<Value>(rhs_in_solution_out[i_orig]);
+  solution_i = solveForwardSubstitutionRow<i>(left, solution_left, solution_i);
+  solution_i = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, solution_i);
+  return solution_i;
 }
 
 template <std::size_t... RowIndices, class FactorData, class Vector,
@@ -51,8 +51,9 @@ void solveForwardSubstitutionImpl(const FactorData& diag,
                                   const FactorDataLeft& left,
                                   const VectorLeft& solution_left,
                                   std::index_sequence<RowIndices...>) {
-  (solveForwardSubstitutionImpl<RowIndices>(diag, rhs_in_solution_out, left,
-                                            solution_left),
+  ((rhs_in_solution_out[FactorData::permutation[RowIndices]] =
+        solveForwardSubstitutionImpl<RowIndices>(diag, rhs_in_solution_out,
+                                                 left, solution_left)),
    ...);
 }
 
