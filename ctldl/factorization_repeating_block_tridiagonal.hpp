@@ -149,7 +149,7 @@ class FactorizationRepeatingBlockTridiagonal {
   }
 
   template <class Rhs>
-  void forwardSolve(Rhs& rhs) const {
+  [[gnu::flatten]] void forwardSolve(Rhs& rhs) const {
     solveForwardSubstitution(m_diag[0], rhs[0]);
     for (std::size_t i = 1; i <= m_num_repetitions; ++i) {
       solveForwardSubstitution(m_diag[i], rhs[i], m_subdiag[i - 1], rhs[i - 1]);
@@ -164,7 +164,7 @@ class FactorizationRepeatingBlockTridiagonal {
   }
 
   template <class Rhs>
-  void backwardSolve(Rhs& rhs) const {
+  [[gnu::flatten]] void backwardSolve(Rhs& rhs) const {
     solveBackwardSubstitution(m_diag[m_num_repetitions], rhs[m_num_repetitions]);
     for (std::size_t i = m_num_repetitions; i > 0; --i) {
       solveBackwardSubstitution(m_diag[i - 1], rhs[i - 1], m_subdiag[i - 1], rhs[i]);
