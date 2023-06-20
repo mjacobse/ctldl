@@ -50,12 +50,14 @@ using Factorization =
                                                   Permutation>;
 using RightHandSide = std::vector<std::array<double, dim>>;
 
+const auto factorize_method = ctldl::FactorizeMethodUpLooking{};
+
 
 [[gnu::noinline]] void runFactorize(
     const std::span<const MatrixA> matrix_values_A,
     const std::span<const MatrixB> matrix_values_B,
     Factorization& factorization) {
-  factorization.factor(matrix_values_A, matrix_values_B);
+  factorization.factor(matrix_values_A, matrix_values_B, factorize_method);
 }
 
 void benchmarkFactorize(benchmark::State& state,
@@ -90,7 +92,7 @@ void benchmarkSolve(benchmark::State& state,
   const auto num_repetitions = std::size_t{matrix_values_B.size()};
 
   Factorization factorization(num_repetitions);
-  factorization.factor(matrix_values_A, matrix_values_B);
+  factorization.factor(matrix_values_A, matrix_values_B, factorize_method);
 
   const auto rhs_single = [] {
     std::array<double, dim> rhs;
@@ -118,7 +120,7 @@ void benchmarkSolve(benchmark::State& state,
     const std::span<const MatrixA> matrix_values_A,
     const std::span<const MatrixB> matrix_values_B,
     Factorization& factorization, RightHandSide& rhs_in_solution_out) {
-  factorization.factor(matrix_values_A, matrix_values_B);
+  factorization.factor(matrix_values_A, matrix_values_B, factorize_method);
   factorization.solveInPlace(rhs_in_solution_out);
 }
 
