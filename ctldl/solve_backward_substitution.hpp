@@ -26,12 +26,11 @@ template <std::size_t i, class FactorData, class Vector>
 template <std::size_t i, class Vector, class FactorDataLeft, class VectorLeft>
 [[gnu::always_inline]] inline void solveBackwardSubstitutionImpl(
     Vector& rhs_in_solution_out, const FactorDataLeft& left,
-    const VectorLeft& rhs_in_solution_out_left) {
+    const VectorLeft& solution_left) {
   using Value = typename FactorDataLeft::Value;
 
   constexpr auto i_orig_left = FactorDataLeft::permutation_row[i];
-  const auto solution_i_left =
-      static_cast<Value>(rhs_in_solution_out_left[i_orig_left]);
+  const auto solution_i_left = static_cast<Value>(solution_left[i_orig_left]);
   solveBackwardSubstitutionRow<i>(left, solution_i_left, rhs_in_solution_out);
 }
 
@@ -49,10 +48,10 @@ template <std::size_t... RowIndices, class Vector, class FactorDataLeft,
           class VectorLeft>
 void solveBackwardSubstitutionImpl(Vector& rhs_in_solution_out,
                                    const FactorDataLeft& left,
-                                   const VectorLeft& rhs_in_solution_out_left,
+                                   const VectorLeft& solution_left,
                                    std::index_sequence<RowIndices...>) {
   (solveBackwardSubstitutionImpl<RowIndices>(rhs_in_solution_out, left,
-                                             rhs_in_solution_out_left),
+                                             solution_left),
    ...);
 }
 
@@ -68,10 +67,9 @@ template <class FactorData, class Vector, class FactorDataLeft,
 void solveBackwardSubstitution(const FactorData& diag,
                                Vector& rhs_in_solution_out,
                                const FactorDataLeft& left,
-                               const VectorLeft& rhs_in_solution_out_left) {
+                               const VectorLeft& solution_left) {
   constexpr auto num_rows = std::size_t{FactorData::Sparsity::num_rows};
-  solveBackwardSubstitutionImpl(rhs_in_solution_out, left,
-                                rhs_in_solution_out_left,
+  solveBackwardSubstitutionImpl(rhs_in_solution_out, left, solution_left,
                                 makeIndexSequenceReversed<0, num_rows>());
   solveBackwardSubstitutionImpl(diag, rhs_in_solution_out,
                                 makeIndexSequenceReversed<0, num_rows>());
@@ -83,9 +81,9 @@ void solveBackwardSubstitution(const FactorData& diag,
   using Value = typename FactorData::Value;
 
   constexpr EmptyFactorDataLeft<FactorData> empty_left;
-  std::array<Value, 0> empty_rhs_in_solution_out_left;
+  std::array<Value, 0> empty_solution_left;
   solveBackwardSubstitution(diag, rhs_in_solution_out, empty_left,
-                            empty_rhs_in_solution_out_left);
+                            empty_solution_left);
 }
 
 }  // namespace ctldl
