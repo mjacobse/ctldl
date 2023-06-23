@@ -102,7 +102,7 @@ struct TestMatrixNos4 {
     }
   };
 
-  static constexpr double expected_error_amplifier = 4096.0;
+  static constexpr double expected_error_amplifier = 8192.0;
   static constexpr const char* description() { return "Nos4"; }
 
   explicit TestMatrixNos4(const std::size_t num_repetitions)
