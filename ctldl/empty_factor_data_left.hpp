@@ -13,8 +13,9 @@ template <std::size_t num_rows_>
 struct EmptyFactorSparsityLeft {
   static constexpr auto num_rows = num_rows_;
   static constexpr auto num_cols = std::size_t{0};
+  static constexpr auto nnz = std::size_t{0};
   static constexpr std::array<std::size_t, num_rows + 1> row_begin_indices{};
-  static constexpr std::array<Entry, 0> entries{};
+  static constexpr std::array<Entry, nnz> entries{};
 
   static constexpr bool isNonZero(const std::size_t /*i*/,
                                   const std::size_t /*j*/) {
