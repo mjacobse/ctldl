@@ -9,9 +9,9 @@
 
 namespace ctldl {
 
-template <int dim_, class Value>
+template <int block_dim_, class Value>
 struct TestMatrixTridiagonal {
-  static constexpr int dim = dim_;
+  static constexpr int block_dim = block_dim_;
 
   struct MatrixA {
     struct Entry {
@@ -21,9 +21,9 @@ struct TestMatrixTridiagonal {
     };
 
     struct Sparsity {
-      static constexpr int num_rows = dim;
-      static constexpr int num_cols = dim;
-      static constexpr int nnz = dim + (dim - 1);
+      static constexpr int num_rows = block_dim;
+      static constexpr int num_cols = block_dim;
+      static constexpr int nnz = block_dim + (block_dim - 1);
       static constexpr auto entries = [] {
         std::array<Entry, std::size_t{nnz}> ret{};
         std::size_t entry_index = 0;
@@ -46,10 +46,11 @@ struct TestMatrixTridiagonal {
 
   struct MatrixB {
     struct Sparsity {
-      static constexpr int num_rows = dim;
-      static constexpr int num_cols = dim;
+      static constexpr int num_rows = block_dim;
+      static constexpr int num_cols = block_dim;
       static constexpr int nnz = 1;
-      static constexpr std::array<ctldl::Entry, nnz> entries = {{{0, dim - 1}}};
+      static constexpr std::array<ctldl::Entry, nnz> entries = {
+          {{0, block_dim - 1}}};
     };
 
     constexpr auto valueAt(const std::size_t /*i*/) const {

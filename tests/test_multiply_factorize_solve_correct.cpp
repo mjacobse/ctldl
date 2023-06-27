@@ -30,7 +30,7 @@ struct TesterMultiplyFactorizeSolveCorrectImpl {
     using SparsityA = typename TestMatrix::MatrixA::Sparsity;
     using SparsityB = typename TestMatrix::MatrixB::Sparsity;
 
-    constexpr auto block_dim = std::size_t{TestMatrix::dim};
+    constexpr auto block_dim = std::size_t{TestMatrix::block_dim};
 
     TestMatrix test_matrix(num_repetitions);
     FactorizationRepeatingBlockTridiagonal<SparsityA, SparsityB, Value,
@@ -82,7 +82,7 @@ auto getTestCasesFactorize(std::tuple<TestPermutations...>) {
 
 template <class TestMatrix>
 auto getTestCasesFactorizeAllPermutations() {
-  using Permutations = PermutationEnumeration<TestMatrix::dim>;
+  using Permutations = PermutationEnumeration<TestMatrix::block_dim>;
   return getTestCasesFactorize<TestMatrix>(Permutations{});
 }
 

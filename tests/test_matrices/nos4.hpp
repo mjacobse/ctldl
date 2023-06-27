@@ -10,13 +10,13 @@ namespace ctldl {
 
 template <class Value>
 struct TestMatrixNos4 {
-  static constexpr int dim = 10;
+  static constexpr int block_dim = 10;
 
   class MatrixA {
    public:
     struct Sparsity {
-      static constexpr int num_rows = dim;
-      static constexpr int num_cols = dim;
+      static constexpr int num_rows = block_dim;
+      static constexpr int num_cols = block_dim;
       static constexpr int nnz = 16;
       static constexpr std::array<Entry, nnz> entries = {{
           {0, 0},
@@ -70,8 +70,8 @@ struct TestMatrixNos4 {
 
   struct MatrixB {
     struct Sparsity {
-      static constexpr int num_rows = dim;
-      static constexpr int num_cols = dim;
+      static constexpr int num_rows = block_dim;
+      static constexpr int num_cols = block_dim;
       static constexpr int nnz = 21;
       static constexpr std::array<ctldl::Entry, nnz> entries = {{
           // empty row
@@ -116,7 +116,7 @@ struct TestMatrixNos4 {
 };
 
 struct TestPermutationNos4 {
-  static constexpr std::array<std::size_t, TestMatrixNos4<double>::dim>
+  static constexpr std::array<std::size_t, TestMatrixNos4<double>::block_dim>
       permutation = {7, 8, 0, 4, 3, 2, 6, 5, 9, 1};
 };
 
