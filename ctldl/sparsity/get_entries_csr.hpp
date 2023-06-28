@@ -36,7 +36,8 @@ constexpr auto getEntriesCSR() {
   std::array<Entry, nnz> entries;
   auto row_insert_indices = row_begin_indices;
   for (const auto entry : Sparsity::entries) {
-    entries[row_insert_indices[entry.row_index]] = entry;
+    entries[row_insert_indices[entry.row_index]] =
+        Entry{entry.row_index, entry.col_index};
     row_insert_indices[entry.row_index] += 1;
   }
   return std::pair{entries, row_begin_indices};
