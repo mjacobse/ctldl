@@ -74,7 +74,7 @@ int main(const int argc, const char** argv) {
   auto rhs_in_solution_out = rhs;
 
   for (std::size_t i = 0; i < num_iterations; ++i) {
-    factorization.factor(matrix_values_A, matrix_values_B);
+    factorization.factorize(matrix_values_A, matrix_values_B);
     std::copy(rhs.cbegin(), rhs.cend(), rhs_in_solution_out.begin());
     factorization.solveInPlace(rhs_in_solution_out);
   }

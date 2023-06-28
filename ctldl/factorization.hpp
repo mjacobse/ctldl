@@ -25,10 +25,10 @@ class Factorization {
   static constexpr auto permutation_row = permutation;
   static constexpr auto permutation_col = permutation;
 
-  template <class FactorizeMethodTag = FactorizeMethodUpLooking,
-            class Matrix>
-  void factor(const Matrix& matrix, const FactorizeMethodTag method_tag = {}) {
-    factorize(*this, matrix, method_tag);
+  template <class FactorizeMethodTag = FactorizeMethodUpLooking, class Matrix>
+  void factorize(const Matrix& matrix,
+                 const FactorizeMethodTag method_tag = {}) {
+    ::ctldl::factorize(*this, matrix, method_tag);
   }
 
   template <class Rhs>

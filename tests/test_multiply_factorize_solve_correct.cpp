@@ -36,8 +36,8 @@ struct TesterMultiplyFactorizeSolveCorrectImpl {
     FactorizationRepeatingBlockTridiagonal<SparsityA, SparsityB, Value,
                                            PermutationIn>
         factorization(num_repetitions);
-    factorization.factor(test_matrix.matrices_A, test_matrix.matrices_B,
-                         FactorizeMethod{});
+    factorization.factorize(test_matrix.matrices_A, test_matrix.matrices_B,
+                            FactorizeMethod{});
 
     const auto solution = block<block_dim, double>(
         solution_generator.generate((num_repetitions + 1) * block_dim));

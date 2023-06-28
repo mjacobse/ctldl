@@ -132,9 +132,9 @@ class FactorizationRepeatingBlockTridiagonal {
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixValuesA, class MatrixValuesB>
-  void factor(const MatrixValuesA& values_A, const MatrixValuesB& values_B,
-              const FactorizeMethodTag method_tag = {}) {
-    m_diag[0].factor(values_A[0], method_tag);
+  void factorize(const MatrixValuesA& values_A, const MatrixValuesB& values_B,
+                 const FactorizeMethodTag method_tag = {}) {
+    m_diag[0].factorize(values_A[0], method_tag);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
       factorizeBlockRow(m_diag[i], values_B[i], values_A[i + 1], m_subdiag[i],
                         m_diag[i + 1], method_tag);

@@ -65,7 +65,7 @@ int main() {
   const std::vector<MatrixA> matrix_values_A(num_repetitions + 1);
   const std::vector<MatrixB> matrix_values_B(num_repetitions);
   for (int i = 0; i < 10000000; ++i) {
-    factorization.factor(matrix_values_A, matrix_values_B);
+    factorization.factorize(matrix_values_A, matrix_values_B);
   }
 
   const auto rhs_single = [] {
