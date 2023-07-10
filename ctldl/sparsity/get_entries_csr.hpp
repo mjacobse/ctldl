@@ -10,7 +10,8 @@ namespace ctldl {
 
 template <class Sparsity>
 constexpr auto getRowCounts(const Sparsity& sparsity) {
-  std::array<std::size_t, Sparsity::num_rows> row_counts = {0};
+  std::array<std::size_t, Sparsity::num_rows> row_counts;
+  row_counts.fill(0);
   for (const auto entry : sparsity.entries) {
     row_counts[entry.row_index] += 1;
   }
