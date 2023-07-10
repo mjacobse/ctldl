@@ -4,6 +4,7 @@
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
+#include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/filled_in_sparsity.hpp>
 
@@ -17,7 +18,7 @@ template <auto sparsity_orig_in, class Value_,
 class Factorization {
  public:
   static constexpr auto sparsity_orig = makeSparsity(sparsity_orig_in);
-  static_assert(sparsity_orig.num_rows == sparsity_orig.num_cols);
+  static_assert(isSquare(sparsity_orig));
   static constexpr auto dim = std::size_t{sparsity_orig.num_rows};
   using Value = Value_;
   static constexpr Permutation<dim> permutation{permutation_in};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/symbolic/add_row_elimination_tree.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
 #include <ctldl/symbolic/elimination_tree_subtree.hpp>
@@ -15,8 +16,8 @@ namespace ctldl {
 template <class SparsityA, class SparsityB>
 constexpr auto computeEliminationTreeRepeating(const SparsityA& sparsity_A,
                                                const SparsityB& sparsity_B) {
-  static_assert(SparsityA::num_rows == SparsityA::num_cols);
-  static_assert(SparsityB::num_rows == SparsityB::num_cols);
+  static_assert(isSquare<SparsityA>());
+  static_assert(isSquare<SparsityB>());
   static_assert(SparsityA::num_rows == SparsityB::num_rows);
   constexpr auto dim = SparsityA::num_rows;
 

@@ -3,6 +3,7 @@
 #include <ctldl/permutation/invert_permutation.hpp>
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/sparsity/is_square.hpp>
 
 #include <array>
 #include <cstddef>
@@ -11,6 +12,7 @@ namespace ctldl {
 
 template <class Sparsity>
 constexpr auto getNnzLowerTriangle(const Sparsity& sparsity) {
+  static_assert(isSquare<Sparsity>());
   std::size_t nnz = 0;
   for (const auto entry : sparsity.entries) {
     nnz += (entry.row_index > entry.col_index);
@@ -21,6 +23,7 @@ constexpr auto getNnzLowerTriangle(const Sparsity& sparsity) {
 template <std::size_t nnz, class Sparsity, class PermutationIn>
 constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
                                        const PermutationIn& permutation) {
+  static_assert(isSquare<Sparsity>());
   const auto inverse_permutation = invertPermutation(permutation);
 
   std::array<Entry, nnz> entries;
@@ -38,7 +41,7 @@ constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
 
 template <auto sparsity, class PermutationIn>
 constexpr auto getSparsityLowerTriangle(const PermutationIn& permutation) {
-  static_assert(sparsity.num_rows == sparsity.num_cols);
+  static_assert(isSquare(sparsity));
   constexpr auto dim = std::size_t{sparsity.num_rows};
   constexpr auto nnz = getNnzLowerTriangle(sparsity);
   const auto entries = getEntriesLowerTriangle<nnz>(sparsity, permutation);

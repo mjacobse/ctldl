@@ -9,6 +9,7 @@
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/solve_backward_substitution.hpp>
 #include <ctldl/solve_forward_substitution.hpp>
+#include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/sparsity/sort_entries_row_major_sorted.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
@@ -24,8 +25,8 @@ namespace ctldl {
 
 template <auto sparsity_in_A, auto sparsity_in_B, auto permutation>
 struct RepeatedSparsity {
-  static_assert(sparsity_in_A.num_rows == sparsity_in_A.num_cols);
-  static_assert(sparsity_in_B.num_cols == sparsity_in_A.num_cols);
+  static_assert(isSquare(sparsity_in_A));
+  static_assert(isSquare(sparsity_in_B));
   static_assert(sparsity_in_B.num_rows == sparsity_in_A.num_rows);
   static constexpr auto dim = std::size_t{sparsity_in_A.num_rows};
 
@@ -89,9 +90,9 @@ class FactorizationRepeatingBlockTridiagonal {
  private:
   static constexpr auto sparsity_A = makeSparsity(sparsity_in_A);
   static constexpr auto sparsity_B = makeSparsity(sparsity_in_B);
-  static_assert(sparsity_A.num_rows == sparsity_A.num_cols);
+  static_assert(isSquare(sparsity_A));
+  static_assert(isSquare(sparsity_B));
   static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
-  static_assert(sparsity_B.num_cols == sparsity_A.num_cols);
   static constexpr auto dim = std::size_t{sparsity_A.num_rows};
   static constexpr Permutation<dim> permutation{permutation_in};
 

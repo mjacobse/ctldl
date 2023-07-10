@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/symbolic/compute_elimination_tree.hpp>
 #include <ctldl/symbolic/foreach_ancestor_in_subtree.hpp>
 
@@ -12,7 +13,7 @@ namespace ctldl {
 template <class Sparsity, class UnaryFunction>
 constexpr void foreachNonZeroWithFill(const Sparsity& sparsity,
                                       UnaryFunction f) {
-  static_assert(Sparsity::num_rows == Sparsity::num_cols);
+  static_assert(isSquare<Sparsity>());
   constexpr auto dim = Sparsity::num_rows;
 
   const auto tree = computeEliminationTree(sparsity);

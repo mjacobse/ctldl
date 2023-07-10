@@ -3,6 +3,7 @@
 #include <ctldl/fileio/mtx_check.hpp>
 #include <ctldl/fileio/mtx_foreach_entry.hpp>
 #include <ctldl/fileio/mtx_read_header.hpp>
+#include <ctldl/sparsity/is_square.hpp>
 
 #include <algorithm>
 #include <array>
@@ -15,8 +16,8 @@ namespace ctldl {
 template <class MatrixA, class MatrixB>
 std::pair<std::vector<MatrixA>, std::vector<MatrixB>>
 mtxFileReadRepeatingBlockTridiagonal(const char* filepath) {
-  static_assert(MatrixA::sparsity.num_rows == MatrixA::sparsity.num_cols);
-  static_assert(MatrixB::sparsity.num_rows == MatrixB::sparsity.num_cols);
+  static_assert(isSquare(MatrixA::sparsity));
+  static_assert(isSquare(MatrixB::sparsity));
   static_assert(MatrixA::sparsity.num_rows == MatrixB::sparsity.num_rows);
   constexpr auto dim = std::size_t{MatrixA::sparsity.num_rows};
 

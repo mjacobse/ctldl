@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/symbolic/compute_elimination_tree_repeating.hpp>
 #include <ctldl/symbolic/foreach_ancestor_in_subtree.hpp>
 
@@ -13,9 +14,9 @@ template <class SparsityA, class SparsityB, class UnaryFunction>
 constexpr void foreachNonZeroWithFillRepeated(const SparsityA& sparsity_A,
                                               const SparsityB& sparsity_B,
                                               UnaryFunction f) {
-  static_assert(SparsityA::num_rows == SparsityA::num_cols);
+  static_assert(isSquare<SparsityA>());
+  static_assert(isSquare<SparsityB>());
   static_assert(SparsityB::num_rows == SparsityA::num_rows);
-  static_assert(SparsityB::num_cols == SparsityA::num_cols);
   constexpr auto dim = std::size_t{SparsityA::num_rows};
 
   const auto tree = computeEliminationTreeRepeating(sparsity_A, sparsity_B);

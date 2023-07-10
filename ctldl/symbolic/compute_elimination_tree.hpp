@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
 
 #include <array>
@@ -10,7 +11,7 @@ namespace ctldl {
 
 template <class Sparsity>
 constexpr auto computeEliminationTree(const Sparsity& sparsity) {
-  static_assert(Sparsity::num_rows == Sparsity::num_cols);
+  static_assert(isSquare<Sparsity>());
   constexpr auto dim = Sparsity::num_rows;
 
   EliminationTree<dim> tree;
