@@ -24,6 +24,7 @@ struct MatrixA {
     static constexpr std::array<Entry, 3> entries = {
         {{0, 0, 640000.0}, {1, 1, 25600000.0}, {2, 2, 78643200000.0}}};
   };
+  static constexpr auto sparsity = Sparsity{};
 
   static constexpr double valueAt(const std::size_t i) {
     return Sparsity::entries[i].value;
@@ -40,15 +41,14 @@ struct MatrixB {
                                                       {2, 1, 614400000.0},
                                                       {2, 2, 6400000.0}}};
   };
+  static constexpr auto sparsity = Sparsity{};
 
   static constexpr double valueAt(const std::size_t i) {
     return Sparsity::entries[i].value;
   }
 };
 
-struct Permutation {
-  static constexpr std::array<std::size_t, dim> permutation = {0, 1, 2};
-};
+constexpr std::array<std::size_t, dim> permutation = {0, 1, 2};
 
 }  // anonymous namespace
 
@@ -57,7 +57,7 @@ int main() {
   const int num_repetitions = 318;
 
   ctldl::FactorizationRepeatingBlockTridiagonal<
-      MatrixA::Sparsity, MatrixB::Sparsity, double, Permutation>
+      MatrixA::sparsity, MatrixB::sparsity, double, permutation>
       factorization(num_repetitions);
 
   const std::vector<MatrixA> matrix_values_A(num_repetitions + 1);

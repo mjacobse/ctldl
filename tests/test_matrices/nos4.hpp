@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/sparsity/sparsity.hpp>
 
 #include <array>
 #include <cstddef>
@@ -14,24 +15,19 @@ struct TestMatrixNos4 {
 
   class MatrixA {
    public:
-    struct Sparsity {
-      static constexpr int num_rows = block_dim;
-      static constexpr int num_cols = block_dim;
-      static constexpr int nnz = 16;
-      static constexpr std::array<Entry, nnz> entries = {{
-          {0, 0},
-          {1, 0}, {1, 1},
-          {2, 0}, {2, 2},
-          {3, 3},
-          {4, 2}, {4, 4},
-          {5, 5},
-          {6, 4}, {6, 6},
-          {7, 7},
-          {8, 6}, {8, 8},
-          {9, 8}, {9, 9}}};
-    };
+    static constexpr auto sparsity = makeSparsity<block_dim, block_dim>({
+        {0, 0},
+        {1, 0}, {1, 1},
+        {2, 0}, {2, 2},
+        {3, 3},
+        {4, 2}, {4, 4},
+        {5, 5},
+        {6, 4}, {6, 6},
+        {7, 7},
+        {8, 6}, {8, 8},
+        {9, 8}, {9, 9}});
 
-    static constexpr std::array<double, Sparsity::nnz> values = {{
+    static constexpr std::array<double, sparsity.nnz> values = {{
         0.17155418,
         0.035777088, 0.41788854,
         -0.1, 0.34310835,
@@ -42,7 +38,7 @@ struct TestMatrixNos4 {
         0.43577709,
         -0.1, 0.17155418,
         -0.035777088, 0.41788854}};
-    static constexpr std::array<double, Sparsity::nnz> values_last_block = {{
+    static constexpr std::array<double, sparsity.nnz> values_last_block = {{
         0.1,
         0.0, 0.2,
         -0.1, 0.34310835,
@@ -69,24 +65,19 @@ struct TestMatrixNos4 {
   };
 
   struct MatrixB {
-    struct Sparsity {
-      static constexpr int num_rows = block_dim;
-      static constexpr int num_cols = block_dim;
-      static constexpr int nnz = 21;
-      static constexpr std::array<ctldl::Entry, nnz> entries = {{
-          // empty row
-          {1, 1},
-          {2, 0}, {2, 1}, {2, 4}, {2, 5},
-          {3, 0}, {3, 1}, {3, 3}, {3, 4}, {3, 5},
-          // empty row
-          {5, 5},
-          {6, 4}, {6, 5}, {6, 8}, {6, 9},
-          {7, 4}, {7, 5}, {7, 7}, {7, 8}, {7, 9},
-          // empty row
-          {9, 9}}};
-    };
+    static constexpr auto sparsity = makeSparsity<block_dim, block_dim>({
+        // empty row
+        {1, 1},
+        {2, 0}, {2, 1}, {2, 4}, {2, 5},
+        {3, 0}, {3, 1}, {3, 3}, {3, 4}, {3, 5},
+        // empty row
+        {5, 5},
+        {6, 4}, {6, 5}, {6, 8}, {6, 9},
+        {7, 4}, {7, 5}, {7, 7}, {7, 8}, {7, 9},
+        // empty row
+        {9, 9}});
 
-    static constexpr std::array<double, Sparsity::nnz> values = {{
+    static constexpr std::array<double, sparsity.nnz> values = {{
         // empty row
         -0.2,
         -0.071554176, -0.035777088, -0.071554176, 0.035777088,

@@ -9,12 +9,10 @@ namespace ctldl {
 
 template <MultiplyKind kind, class Matrix, class Solution, class Rhs>
 void multiply(const Matrix& matrix, const Solution& solution, Rhs& rhs) {
-  using Sparsity = typename Matrix::Sparsity;
-
-  constexpr auto nnz = std::size_t{Sparsity::entries.size()};
+  constexpr auto nnz = std::size_t{Matrix::sparsity.entries.size()};
   for (std::size_t entry_index = 0; entry_index < nnz; ++entry_index) {
-    const auto row_index = Sparsity::entries[entry_index].row_index;
-    const auto col_index = Sparsity::entries[entry_index].col_index;
+    const auto row_index = Matrix::sparsity.entries[entry_index].row_index;
+    const auto col_index = Matrix::sparsity.entries[entry_index].col_index;
     const auto value = matrix.valueAt(entry_index);
     if constexpr (kind & MultiplyKind::Normal) {
       rhs[row_index] += value * solution[col_index];

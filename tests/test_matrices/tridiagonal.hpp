@@ -38,6 +38,7 @@ struct TestMatrixTridiagonal {
         return ret;
       }();
     };
+    static constexpr auto sparsity = Sparsity{};
 
     constexpr Value valueAt(const std::size_t i) const {
       return Sparsity::entries[i].value;
@@ -45,13 +46,8 @@ struct TestMatrixTridiagonal {
   };
 
   struct MatrixB {
-    struct Sparsity {
-      static constexpr int num_rows = block_dim;
-      static constexpr int num_cols = block_dim;
-      static constexpr int nnz = 1;
-      static constexpr std::array<ctldl::Entry, nnz> entries = {
-          {{0, block_dim - 1}}};
-    };
+    static constexpr auto sparsity =
+        makeSparsity<block_dim, block_dim>({Entry{0, block_dim - 1}});
 
     constexpr auto valueAt(const std::size_t /*i*/) const {
       return Value{-1.0};

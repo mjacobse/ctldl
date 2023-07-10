@@ -7,8 +7,11 @@
 
 namespace ctldl {
 
-template <std::size_t dim>
-constexpr auto invertPermutation(const Permutation<dim>& permutation) {
+template <class PermutationIn>
+constexpr auto invertPermutation(const PermutationIn& permutation) {
+  using std::size;
+  constexpr auto dim = std::size_t{size(PermutationIn{})};
+
   std::array<std::size_t, dim> inverse_permutation;
   for (std::size_t i = 0; i < dim; ++i) {
     inverse_permutation[permutation[i]] = i;

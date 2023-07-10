@@ -14,27 +14,16 @@
 namespace {
 
 constexpr int dim = getRepeatingMtxDim();
+constexpr auto sparsity_A =
+    ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesA());
+constexpr auto sparsity_B =
+    ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesB());
+constexpr auto permutation = getRepeatingMtxPermutation();
 
-struct SparsityA {
-  static constexpr int num_rows = dim;
-  static constexpr int num_cols = dim;
-  static constexpr auto entries = getRepeatingMtxEntriesA();
-};
-
-struct SparsityB {
-  static constexpr int num_rows = dim;
-  static constexpr int num_cols = dim;
-  static constexpr auto entries = getRepeatingMtxEntriesB();
-};
-
-struct Permutation {
-  static constexpr auto permutation = getRepeatingMtxPermutation();
-};
-
-template <class Sparsity_>
+template <auto sparsity_in>
 struct MatrixInput {
-  using Sparsity = ctldl::SparsityCSR<Sparsity_>;
-  static constexpr auto nnz = std::size_t{Sparsity::nnz};
+  static constexpr auto sparsity = ctldl::SparsityCSR{sparsity_in};
+  static constexpr auto nnz = std::size_t{sparsity.nnz};
   std::array<double, nnz> values;
 
   constexpr double valueAt(const std::size_t i) const {
@@ -42,8 +31,8 @@ struct MatrixInput {
   }
 };
 
-using MatrixA = MatrixInput<SparsityA>;
-using MatrixB = MatrixInput<SparsityB>;
+using MatrixA = MatrixInput<sparsity_A>;
+using MatrixB = MatrixInput<sparsity_B>;
 
 }  // anonymous namespace
 
@@ -61,8 +50,8 @@ int main(const int argc, const char** argv) {
       ctldl::mtxFileReadRepeatingBlockTridiagonal<MatrixA, MatrixB>(path_mtx);
   const auto num_repetitions = matrix_values_B.size();
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<SparsityA, SparsityB, double,
-                                                Permutation>
+  ctldl::FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B, double,
+                                                permutation>
       factorization(num_repetitions);
   const auto rhs_single = [] {
     std::array<double, dim> rhs;

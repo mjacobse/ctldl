@@ -10,15 +10,16 @@
 namespace ctldl {
 
 template <class Sparsity, class UnaryFunction>
-constexpr void foreachNonZeroWithFill(UnaryFunction f) {
+constexpr void foreachNonZeroWithFill(const Sparsity& sparsity,
+                                      UnaryFunction f) {
   static_assert(Sparsity::num_rows == Sparsity::num_cols);
   constexpr auto dim = Sparsity::num_rows;
 
-  constexpr auto tree = computeEliminationTree<Sparsity>();
+  const auto tree = computeEliminationTree(sparsity);
   std::array<std::size_t, dim> visitor;
   std::iota(visitor.begin(), visitor.end(), 0);
   for (std::size_t i = 0; i < dim; ++i) {
-    foreachAncestorInSubtree<Sparsity>(tree, i, visitor, f);
+    foreachAncestorInSubtree(sparsity, tree, i, visitor, f);
   }
 }
 

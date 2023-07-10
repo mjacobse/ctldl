@@ -27,14 +27,14 @@ template <class TestMatrix, class PermutationIn, class Value,
 struct TesterMultiplyFactorizeSolveCorrectImpl {
   void operator()(const SolutionGenerator& solution_generator,
                   const std::size_t num_repetitions) const {
-    using SparsityA = typename TestMatrix::MatrixA::Sparsity;
-    using SparsityB = typename TestMatrix::MatrixB::Sparsity;
+    constexpr auto& sparsity_A = TestMatrix::MatrixA::sparsity;
+    constexpr auto& sparsity_B = TestMatrix::MatrixB::sparsity;
 
     constexpr auto block_dim = std::size_t{TestMatrix::block_dim};
 
     TestMatrix test_matrix(num_repetitions);
-    FactorizationRepeatingBlockTridiagonal<SparsityA, SparsityB, Value,
-                                           PermutationIn>
+    FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B, Value,
+                                           PermutationIn::permutation>
         factorization(num_repetitions);
     factorization.factorize(test_matrix.matrices_A, test_matrix.matrices_B,
                             FactorizeMethod{});

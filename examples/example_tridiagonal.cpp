@@ -1,5 +1,6 @@
 #include <ctldl/factorization_repeating_block_tridiagonal.hpp>
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/sparsity/sparsity.hpp>
 
 #include <array>
 #include <cstdio>
@@ -35,6 +36,7 @@ struct MatrixA {
       return ret;
     }();
   };
+  static constexpr auto sparsity = Sparsity{};
 
   constexpr double valueAt(const std::size_t i) const {
     return Sparsity::entries[i].value;
@@ -42,12 +44,8 @@ struct MatrixA {
 };
 
 struct MatrixB {
-  struct Sparsity {
-    static constexpr int num_rows = dim;
-    static constexpr int num_cols = dim;
-    static constexpr int nnz = 1;
-    static constexpr std::array<ctldl::Entry, nnz> entries = {{{0, dim - 1}}};
-  };
+  static constexpr auto sparsity =
+      ctldl::makeSparsity<dim, dim>({ctldl::Entry{0, dim - 1}});
 
   constexpr double valueAt(const std::size_t /*i*/) const { return -1.0; }
 };
@@ -58,8 +56,8 @@ struct MatrixB {
 int main() {
   const int num_repetitions = 20 - 1;
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<MatrixA::Sparsity,
-                                                MatrixB::Sparsity, double>
+  ctldl::FactorizationRepeatingBlockTridiagonal<MatrixA::sparsity,
+                                                MatrixB::sparsity, double>
       factorization(num_repetitions);
 
   const std::vector<MatrixA> matrix_values_A(num_repetitions + 1);

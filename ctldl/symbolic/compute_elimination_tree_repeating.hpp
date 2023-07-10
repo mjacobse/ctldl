@@ -13,7 +13,8 @@
 namespace ctldl {
 
 template <class SparsityA, class SparsityB>
-constexpr auto computeEliminationTreeRepeating() {
+constexpr auto computeEliminationTreeRepeating(const SparsityA& sparsity_A,
+                                               const SparsityB& sparsity_B) {
   static_assert(SparsityA::num_rows == SparsityA::num_cols);
   static_assert(SparsityB::num_rows == SparsityB::num_cols);
   static_assert(SparsityA::num_rows == SparsityB::num_rows);
@@ -30,8 +31,9 @@ constexpr auto computeEliminationTreeRepeating() {
     for (std::size_t i = 0; i < dim; ++i) {
       constexpr auto row_offset = dim;
       constexpr auto col_offset = dim;
-      addRowElimintationTree<SparsityB>(i, tree, ancestors, row_offset);
-      addRowElimintationTree<SparsityA>(i, tree, ancestors, row_offset, col_offset);
+      addRowElimintationTree(sparsity_B, i, tree, ancestors, row_offset);
+      addRowElimintationTree(sparsity_A, i, tree, ancestors, row_offset,
+                             col_offset);
     }
 
     tree_init = subtreeBack<dim>(tree);

@@ -25,6 +25,7 @@ struct TestMatrixNos2 {
       static constexpr std::array<Entry, 3> entries = {
           {{0, 0, 640000.0}, {1, 1, 25600000.0}, {2, 2, 78643200000.0}}};
     };
+    static constexpr auto sparsity = Sparsity{};
 
     static constexpr double valueAt(const std::size_t i) {
       return Sparsity::entries[i].value;
@@ -41,6 +42,7 @@ struct TestMatrixNos2 {
                                                         {2, 1, 614400000.0},
                                                         {2, 2, 6400000.0}}};
     };
+    static constexpr auto sparsity = Sparsity{};
 
     static constexpr Value valueAt(const std::size_t i) {
       return Sparsity::entries[i].value;

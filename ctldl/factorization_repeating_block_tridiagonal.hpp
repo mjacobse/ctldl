@@ -22,18 +22,17 @@
 
 namespace ctldl {
 
-template <class SparsityInA, class SparsityInB, class PermutationIn>
+template <auto sparsity_in_A, auto sparsity_in_B, auto permutation>
 struct RepeatedSparsity {
-  static_assert(SparsityInA::num_rows == SparsityInA::num_cols);
-  static_assert(SparsityInB::num_cols == SparsityInA::num_cols);
-  static_assert(SparsityInB::num_rows == SparsityInA::num_rows);
-  static constexpr auto dim = std::size_t{SparsityInA::num_rows};
-  static constexpr Permutation<dim> permutation{PermutationIn::permutation};
+  static_assert(sparsity_in_A.num_rows == sparsity_in_A.num_cols);
+  static_assert(sparsity_in_B.num_cols == sparsity_in_A.num_cols);
+  static_assert(sparsity_in_B.num_rows == sparsity_in_A.num_rows);
+  static constexpr auto dim = std::size_t{sparsity_in_A.num_rows};
 
-  using SparsityA =
-      SparsityCSR<SparsityLowerTriangle<SparsityInA, PermutationIn>>;
-  using SparsityB =
-      SparsityCSR<SparsityPermuted<SparsityInB, PermutationIn, PermutationIn>>;
+  static constexpr auto sparsity_A =
+      SparsityCSR(getSparsityLowerTriangle<sparsity_in_A>(permutation));
+  static constexpr auto sparsity_B =
+      SparsityCSR(getSparsityPermuted(sparsity_in_B, permutation, permutation));
 
   static constexpr auto nnz_pair = [] {
     std::size_t nnz_A = 0;
@@ -46,7 +45,7 @@ struct RepeatedSparsity {
         nnz_B += 1;
       }
     };
-    foreachNonZeroWithFillRepeated<SparsityA, SparsityB>(count_nonzero);
+    foreachNonZeroWithFillRepeated(sparsity_A, sparsity_B, count_nonzero);
     return std::pair{nnz_A, nnz_B};
   }();
 
@@ -64,23 +63,17 @@ struct RepeatedSparsity {
         entry_index_B += 1;
       }
     };
-    foreachNonZeroWithFillRepeated<SparsityA, SparsityB>(add_nonzero);
+    foreachNonZeroWithFillRepeated(sparsity_A, sparsity_B, add_nonzero);
     // sorting is not needed for correctness, but helps performance
     sortEntriesRowMajorSorted(entries_A);
     sortEntriesRowMajorSorted(entries_B);
     return std::pair{entries_A, entries_B};
   }();
 
-  struct A {
-    static constexpr auto num_rows = dim;
-    static constexpr auto num_cols = dim;
-    static constexpr auto entries = entries_pair.first;
-  };
-  struct B {
-    static constexpr auto num_rows = dim;
-    static constexpr auto num_cols = dim;
-    static constexpr auto entries = entries_pair.second;
-  };
+  static constexpr auto sparsity_factor_A =
+      Sparsity<nnz_pair.first, dim, dim>(entries_pair.first);
+  static constexpr auto sparsity_factor_B =
+      Sparsity<nnz_pair.second, dim, dim>(entries_pair.second);
 };
 
 // Factorization of a matrix of the form
@@ -90,16 +83,24 @@ struct RepeatedSparsity {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <class SparsityA, class SparsityB, class Value,
-          class PermutationIn = PermutationIdentity>
+template <auto sparsity_in_A, auto sparsity_in_B, class Value,
+          auto permutation_in = PermutationIdentity{}>
 class FactorizationRepeatingBlockTridiagonal {
  private:
-  using SparsityFactor = RepeatedSparsity<SparsityA, SparsityB, PermutationIn>;
-  using SparsityFactorA = typename SparsityFactor::A;
-  using SparsityFactorB = typename SparsityFactor::B;
-  using FactorA = Factorization<SparsityFactorA, Value, PermutationIn>;
-  using FactorB = FactorizationSubdiagonalBlock<SparsityFactorB, Value,
-                                                PermutationIn, PermutationIn>;
+  static constexpr auto sparsity_A = makeSparsity(sparsity_in_A);
+  static constexpr auto sparsity_B = makeSparsity(sparsity_in_B);
+  static_assert(sparsity_A.num_rows == sparsity_A.num_cols);
+  static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
+  static_assert(sparsity_B.num_cols == sparsity_A.num_cols);
+  static constexpr auto dim = std::size_t{sparsity_A.num_rows};
+  static constexpr Permutation<dim> permutation{permutation_in};
+
+  using SparsityFactor = RepeatedSparsity<sparsity_A, sparsity_B, permutation>;
+  static constexpr auto sparsity_factor_A = SparsityFactor::sparsity_factor_A;
+  static constexpr auto sparsity_factor_B = SparsityFactor::sparsity_factor_B;
+  using FactorA = Factorization<sparsity_factor_A, Value, permutation>;
+  using FactorB = FactorizationSubdiagonalBlock<sparsity_factor_B, Value,
+                                                permutation, permutation>;
   std::size_t m_num_repetitions;
   std::unique_ptr<FactorA[]> m_diag;
   std::unique_ptr<FactorB[]> m_subdiag;

@@ -12,16 +12,19 @@
 
 namespace ctldl {
 
-template <class OriginalSparsity, class Value_,
-          class PermutationIn = PermutationIdentity>
+template <auto sparsity_orig_in, class Value_,
+          auto permutation_in = PermutationIdentity{}>
 class Factorization {
  public:
-  static_assert(OriginalSparsity::num_rows == OriginalSparsity::num_cols);
-  static constexpr auto dim = std::size_t{OriginalSparsity::num_rows};
-  using Sparsity = SparsityCSR<FilledInSparsity<OriginalSparsity>>;
-  static constexpr auto nnz = std::size_t{Sparsity::nnz};
+  static constexpr auto sparsity_orig = makeSparsity(sparsity_orig_in);
+  static_assert(sparsity_orig.num_rows == sparsity_orig.num_cols);
+  static constexpr auto dim = std::size_t{sparsity_orig.num_rows};
   using Value = Value_;
-  static constexpr Permutation<dim> permutation{PermutationIn::permutation};
+  static constexpr Permutation<dim> permutation{permutation_in};
+
+  static constexpr auto sparsity =
+      SparsityCSR(getFilledInSparsity<sparsity_orig>());
+  static constexpr auto nnz = std::size_t{sparsity.nnz};
   static constexpr auto permutation_row = permutation;
   static constexpr auto permutation_col = permutation;
 

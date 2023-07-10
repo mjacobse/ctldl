@@ -2,9 +2,6 @@
 
 namespace ctldl {
 
-struct PermutationIdentity {
-  struct ContructTag {};
-  static constexpr ContructTag permutation{};
-};
+struct PermutationIdentity {};
 
 }  // namespace ctldl

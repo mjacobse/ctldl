@@ -17,15 +17,13 @@ namespace ctldl {
 template <std::size_t entry_index, class FactorData>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerSelf(
     FactorData& fact) {
-  using Sparsity = typename FactorData::Sparsity;
-
-  constexpr auto i = Sparsity::entries[entry_index].row_index;
-  constexpr auto j = Sparsity::entries[entry_index].col_index;
+  constexpr auto i = FactorData::sparsity.entries[entry_index].row_index;
+  constexpr auto j = FactorData::sparsity.entries[entry_index].col_index;
 
   const auto Lij_scaled = fact.L[entry_index];
 
   static constexpr auto influenced_list =
-      getInfluencedList<i, j, Sparsity, Sparsity>(
+      getInfluencedList<i, j, FactorData::sparsity, FactorData::sparsity>(
           [](const std::size_t i, const std::size_t /*j*/) { return i; });
   for (const auto influenced : influenced_list) {
     fact.L[influenced.entry_index_target] -=
@@ -47,25 +45,22 @@ template <std::size_t... EntryIndices, class FactorData>
 template <std::size_t entry_index, class FactorData, class FactorDataLeft>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
     const FactorData& above, FactorDataLeft& left, FactorData& self) {
-  using Sparsity = typename FactorData::Sparsity;
-  using SparsityLeft = typename FactorDataLeft::Sparsity;
-
-  constexpr auto i = SparsityLeft::entries[entry_index].row_index;
-  constexpr auto j = SparsityLeft::entries[entry_index].col_index;
+  constexpr auto i = FactorDataLeft::sparsity.entries[entry_index].row_index;
+  constexpr auto j = FactorDataLeft::sparsity.entries[entry_index].col_index;
 
   const auto Lij_scaled = left.L[entry_index];
 
   static constexpr auto influenced_list_left =
-      getInfluencedList<i, j, Sparsity, SparsityLeft>(
+      getInfluencedList<i, j, FactorData::sparsity, FactorDataLeft::sparsity>(
           [](const std::size_t /*i*/, const std::size_t /*j*/) {
-            return Sparsity::num_rows;
+            return FactorData::sparsity.num_rows;
           });
   for (const auto influenced : influenced_list_left) {
     left.L[influenced.entry_index_target] -=
         above.L[influenced.entry_index_source] * Lij_scaled;
   }
   static constexpr auto influenced_list_self =
-      getInfluencedList<i, j, SparsityLeft, Sparsity>(
+      getInfluencedList<i, j, FactorDataLeft::sparsity, FactorData::sparsity>(
           [](const std::size_t i, const std::size_t /*j*/) { return i; });
   for (const auto influenced : influenced_list_self) {
     self.L[influenced.entry_index_target] -=
@@ -89,11 +84,10 @@ template <std::size_t... EntryIndices, class FactorDataAbove,
 template <std::size_t entry_index, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValueSubdiagonal(
     const Matrix& input, FactorData& fact) {
-  using Sparsity = typename FactorData::Sparsity;
   using Value = typename FactorData::Value;
   constexpr auto entry_orig =
-      permutedEntry(Sparsity::entries[entry_index], FactorData::permutation_row,
-                    FactorData::permutation_col);
+      permutedEntry(FactorData::sparsity.entries[entry_index],
+                    FactorData::permutation_row, FactorData::permutation_col);
   fact.L[entry_index] = static_cast<Value>(
       getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
 }
@@ -108,9 +102,8 @@ template <std::size_t... EntryIndices, class Matrix, class FactorData>
 template <std::size_t i, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValuesSubdiagonal(
     const Matrix& input, FactorData& fact) {
-  using Sparsity = typename FactorData::Sparsity;
-  constexpr auto row_begin = Sparsity::row_begin_indices[i];
-  constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
+  constexpr auto row_begin = FactorData::sparsity.row_begin_indices[i];
+  constexpr auto row_end = FactorData::sparsity.row_begin_indices[i + 1];
   fillRowWithOriginalMatrixValuesSubdiagonal(
       input, fact, makeIndexSequence<row_begin, row_end>());
 }
@@ -118,10 +111,9 @@ template <std::size_t i, class Matrix, class FactorData>
 template <std::size_t entry_index, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValueDiagonal(
     const Matrix& input, FactorData& fact) {
-  using Sparsity = typename FactorData::Sparsity;
   using Value = typename FactorData::Value;
   constexpr auto entry_orig = permutedEntryLowerTriangle(
-      Sparsity::entries[entry_index], FactorData::permutation);
+      FactorData::sparsity.entries[entry_index], FactorData::permutation);
   fact.L[entry_index] = static_cast<Value>(
       getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
 }
@@ -136,9 +128,8 @@ template <std::size_t... EntryIndices, class Matrix, class FactorData>
 template <std::size_t i, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValuesDiagonal(
     const Matrix& input, FactorData& fact) {
-  using Sparsity = typename FactorData::Sparsity;
-  constexpr auto row_begin = Sparsity::row_begin_indices[i];
-  constexpr auto row_end = Sparsity::row_begin_indices[i + 1];
+  constexpr auto row_begin = FactorData::sparsity.row_begin_indices[i];
+  constexpr auto row_end = FactorData::sparsity.row_begin_indices[i + 1];
   fillRowWithOriginalMatrixValuesDiagonal(
       input, fact, makeIndexSequence<row_begin, row_end>());
 }
@@ -148,9 +139,9 @@ template <std::size_t i, class FactorDataAbove, class MatrixLeft,
 [[gnu::always_inline]] inline void factorizeUpLookingImpl(
     const FactorDataAbove& above, const MatrixLeft& input_left,
     const MatrixSelf& input_self, FactorDataLeft& left, FactorData& self) {
-  using Sparsity = typename FactorData::Sparsity;
-  using SparsityLeft = typename FactorDataLeft::Sparsity;
-  static_assert(Sparsity::num_rows == SparsityLeft::num_rows);
+  constexpr auto& sparsity = FactorData::sparsity;
+  constexpr auto& sparsity_left = FactorDataLeft::sparsity;
+  static_assert(sparsity.num_rows == sparsity_left.num_rows);
   using Value = typename FactorData::Value;
 
   constexpr auto i_orig = FactorData::permutation[i];
@@ -159,12 +150,12 @@ template <std::size_t i, class FactorDataAbove, class MatrixLeft,
   fillRowWithOriginalMatrixValuesSubdiagonal<i>(input_left, left);
   fillRowWithOriginalMatrixValuesDiagonal<i>(input_self, self);
 
-  constexpr auto row_begin_left = SparsityLeft::row_begin_indices[i];
-  constexpr auto row_end_left = SparsityLeft::row_begin_indices[i + 1];
+  constexpr auto row_begin_left = sparsity_left.row_begin_indices[i];
+  constexpr auto row_end_left = sparsity_left.row_begin_indices[i + 1];
   Di = factorizeUpLookingInnerLeft(
       above, left, self, Di, makeIndexSequence<row_begin_left, row_end_left>());
-  constexpr auto row_begin_self = Sparsity::row_begin_indices[i];
-  constexpr auto row_end_self = Sparsity::row_begin_indices[i + 1];
+  constexpr auto row_begin_self = sparsity.row_begin_indices[i];
+  constexpr auto row_end_self = sparsity.row_begin_indices[i + 1];
   Di = factorizeUpLookingInnerSelf(
       self, Di, makeIndexSequence<row_begin_self, row_end_self>());
   self.D[i] = Di;
@@ -188,7 +179,7 @@ void factorizeUpLooking(const FactorDataAbove& above,
                         const MatrixLeft& input_left,
                         const MatrixSelf& input_self, FactorDataLeft& left,
                         FactorData& self) {
-  constexpr auto num_rows = std::size_t{FactorData::Sparsity::num_rows};
+  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
   factorizeUpLookingImpl(above, input_left, input_self, left, self,
                          std::make_index_sequence<num_rows>());
 }

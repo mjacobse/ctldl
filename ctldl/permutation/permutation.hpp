@@ -10,10 +10,11 @@
 namespace ctldl {
 
 template <std::size_t dim>
-class Permutation {
- public:
-  constexpr Permutation()
-      : m_permutation([] {
+struct Permutation {
+  static constexpr std::size_t size() { return dim; }
+
+  constexpr explicit Permutation()
+      : indices([] {
           std::array<std::size_t, dim> permutation;
           std::iota(permutation.begin(), permutation.end(), std::size_t{0});
           return permutation;
@@ -21,20 +22,16 @@ class Permutation {
 
   constexpr explicit Permutation(
       const std::array<std::size_t, dim>& permutation)
-      : m_permutation(permutation) {}
+      : indices(permutation) {}
 
-  constexpr Permutation(const PermutationIdentity::ContructTag)
-      : Permutation() {}
+  constexpr Permutation(const PermutationIdentity) : Permutation() {}
 
-  constexpr auto operator[](const std::size_t i) const {
-    return m_permutation[i];
-  }
+  constexpr auto operator[](const std::size_t i) const { return indices[i]; }
 
-  constexpr auto begin() const { return m_permutation.begin(); }
-  constexpr auto end() const { return m_permutation.end(); }
+  constexpr auto begin() const { return indices.begin(); }
+  constexpr auto end() const { return indices.end(); }
 
- private:
-  std::array<std::size_t, dim> m_permutation;
+  std::array<std::size_t, dim> indices;
 };
 
 template <std::size_t dim>

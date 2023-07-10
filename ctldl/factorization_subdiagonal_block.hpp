@@ -14,20 +14,18 @@
 
 namespace ctldl {
 
-template <class OriginalSparsity, class Value_,
-          class PermutationRow = PermutationIdentity,
-          class PermutationCol = PermutationIdentity>
+template <auto sparsity_in, class Value_,
+          auto permutation_row_in = PermutationIdentity{},
+          auto permutation_col_in = PermutationIdentity{}>
 class FactorizationSubdiagonalBlock {
  public:
-  using Sparsity = SparsityCSR<OriginalSparsity>;
-  static constexpr auto nnz = std::size_t{Sparsity::nnz};
-  static constexpr auto num_rows = std::size_t{Sparsity::num_rows};
-  static constexpr auto num_cols = std::size_t{Sparsity::num_cols};
+  static constexpr auto sparsity = makeSparsityCSR(sparsity_in);
+  static constexpr auto nnz = std::size_t{sparsity.nnz};
+  static constexpr auto num_rows = std::size_t{sparsity.num_rows};
+  static constexpr auto num_cols = std::size_t{sparsity.num_cols};
   using Value = Value_;
-  static constexpr Permutation<num_rows> permutation_row{
-      PermutationRow::permutation};
-  static constexpr Permutation<num_cols> permutation_col{
-      PermutationCol::permutation};
+  static constexpr Permutation<num_rows> permutation_row{permutation_row_in};
+  static constexpr Permutation<num_cols> permutation_col{permutation_col_in};
 
   std::array<Value, nnz> L;
 };

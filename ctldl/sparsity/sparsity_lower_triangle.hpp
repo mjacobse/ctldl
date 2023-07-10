@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ctldl/permutation/invert_permutation.hpp>
-#include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 
@@ -10,36 +9,40 @@
 
 namespace ctldl {
 
-template <class Sparsity, class PermutationIn>
-struct SparsityLowerTriangle {
-  static_assert(Sparsity::num_rows == Sparsity::num_cols);
-  static constexpr auto dim = std::size_t{Sparsity::num_rows};
-  static constexpr auto num_rows = dim;
-  static constexpr auto num_cols = dim;
-  static constexpr auto nnz = [] {
-    std::size_t nnz = 0;
-    for (const auto entry : Sparsity::entries) {
-      nnz += (entry.row_index > entry.col_index);
-    }
-    return nnz;
-  }();
+template <class Sparsity>
+constexpr auto getNnzLowerTriangle(const Sparsity& sparsity) {
+  std::size_t nnz = 0;
+  for (const auto entry : sparsity.entries) {
+    nnz += (entry.row_index > entry.col_index);
+  }
+  return nnz;
+}
 
-  static constexpr Permutation<dim> permutation{PermutationIn::permutation};
-  static constexpr auto inverse_permutation = invertPermutation(permutation);
+template <std::size_t nnz, class Sparsity, class PermutationIn>
+constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
+                                       const PermutationIn& permutation) {
+  const auto inverse_permutation = invertPermutation(permutation);
 
-  static constexpr auto entries = [] {
-    std::array<Entry, nnz> entries;
-    std::size_t entry_index = 0;
-    for (const auto entry : Sparsity::entries) {
-      if (entry.row_index <= entry.col_index) {
-        continue;
-      }
-      entries[entry_index] =
-          permutedEntryLowerTriangle(entry, inverse_permutation);
-      entry_index += 1;
+  std::array<Entry, nnz> entries;
+  std::size_t entry_index = 0;
+  for (const auto entry : sparsity.entries) {
+    if (entry.row_index <= entry.col_index) {
+      continue;
     }
-    return entries;
-  }();
-};
+    entries[entry_index] =
+        permutedEntryLowerTriangle(entry, inverse_permutation);
+    entry_index += 1;
+  }
+  return entries;
+}
+
+template <auto sparsity, class PermutationIn>
+constexpr auto getSparsityLowerTriangle(const PermutationIn& permutation) {
+  static_assert(sparsity.num_rows == sparsity.num_cols);
+  constexpr auto dim = std::size_t{sparsity.num_rows};
+  constexpr auto nnz = getNnzLowerTriangle(sparsity);
+  const auto entries = getEntriesLowerTriangle<nnz>(sparsity, permutation);
+  return Sparsity<nnz, dim, dim>(entries);
+}
 
 }  // namespace ctldl

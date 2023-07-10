@@ -15,10 +15,10 @@ namespace ctldl {
 template <class MatrixA, class MatrixB>
 std::pair<std::vector<MatrixA>, std::vector<MatrixB>>
 mtxFileReadRepeatingBlockTridiagonal(const char* filepath) {
-  static_assert(MatrixA::Sparsity::num_rows == MatrixA::Sparsity::num_cols);
-  static_assert(MatrixB::Sparsity::num_rows == MatrixB::Sparsity::num_cols);
-  static_assert(MatrixA::Sparsity::num_rows == MatrixB::Sparsity::num_rows);
-  constexpr auto dim = std::size_t{MatrixA::Sparsity::num_rows};
+  static_assert(MatrixA::sparsity.num_rows == MatrixA::sparsity.num_cols);
+  static_assert(MatrixB::sparsity.num_rows == MatrixB::sparsity.num_cols);
+  static_assert(MatrixA::sparsity.num_rows == MatrixB::sparsity.num_rows);
+  constexpr auto dim = std::size_t{MatrixA::sparsity.num_rows};
 
   const std::size_t num_repetitions = [filepath] {
     const auto header = mtxReadHeader(filepath);
@@ -44,16 +44,16 @@ mtxFileReadRepeatingBlockTridiagonal(const char* filepath) {
     const auto block_row_index = entry.row_index % dim;
     const auto block_col_index = entry.col_index % dim;
     if (is_diagonal_block) {
-      mtxCheck(MatrixA::Sparsity::isNonZero(block_row_index, block_col_index),
+      mtxCheck(MatrixA::sparsity.isNonZero(block_row_index, block_col_index),
                "Entry is not covered by compiled diagonal block sparsity");
       const auto entry_index =
-          MatrixA::Sparsity::entryIndex(block_row_index, block_col_index);
+          MatrixA::sparsity.entryIndex(block_row_index, block_col_index);
       values_A[repetition_index][entry_index] = entry.value;
     } else {
-      mtxCheck(MatrixB::Sparsity::isNonZero(block_row_index, block_col_index),
+      mtxCheck(MatrixB::sparsity.isNonZero(block_row_index, block_col_index),
                "Entry is not covered by compiled subdiagonal block sparsity");
       const auto entry_index =
-          MatrixB::Sparsity::entryIndex(block_row_index, block_col_index);
+          MatrixB::sparsity.entryIndex(block_row_index, block_col_index);
       values_B[repetition_index][entry_index] = entry.value;
     }
   });
