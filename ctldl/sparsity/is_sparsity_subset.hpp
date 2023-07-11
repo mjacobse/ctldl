@@ -26,28 +26,19 @@ constexpr bool isSparsitySubset(
   std::array<bool, num_cols> is_nonzero_rhs;
   is_nonzero_rhs.fill(false);
   for (std::size_t row_index = 0; row_index < num_rows; ++row_index) {
-    const auto row_begin_rhs = sparsity_rhs.row_begin_indices[row_index];
-    const auto row_end_rhs = sparsity_rhs.row_begin_indices[row_index + 1];
-    for (auto entry_index = row_begin_rhs; entry_index != row_end_rhs;
-         ++entry_index) {
-      const auto col_index = sparsity_rhs.entries[entry_index].col_index;
-      is_nonzero_rhs[col_index] = true;
+    for (const auto entry : sparsity_rhs.rowView(row_index)) {
+      is_nonzero_rhs[entry.col_index] = true;
     }
 
-    const auto row_begin_lhs = sparsity_lhs.row_begin_indices[row_index];
-    const auto row_end_lhs = sparsity_lhs.row_begin_indices[row_index + 1];
-    for (auto entry_index = row_begin_lhs; entry_index != row_end_lhs;
-         ++entry_index) {
-      const auto col_index = sparsity_lhs.entries[entry_index].col_index;
-      if (!is_nonzero_rhs[col_index]) {
+    for (const auto entry : sparsity_lhs.rowView(row_index)) {
+      if (!is_nonzero_rhs[entry.col_index]) {
         return false;
       }
     }
 
-    for (auto entry_index = row_begin_rhs; entry_index != row_end_rhs;
-         ++entry_index) {
-      const auto col_index = sparsity_rhs.entries[entry_index].col_index;
-      is_nonzero_rhs[col_index] = false;
+    // undo marked entries to start off clean in next row
+    for (const auto entry : sparsity_rhs.rowView(row_index)) {
+      is_nonzero_rhs[entry.col_index] = false;
     }
   }
 

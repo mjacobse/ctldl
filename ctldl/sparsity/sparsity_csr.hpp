@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <span>
 
 namespace ctldl {
 
@@ -26,21 +27,24 @@ struct SparsityCSR : public Sparsity<nnz, num_rows, num_cols> {
   constexpr explicit SparsityCSR(const SparsityIn& sparsity)
       : SparsityCSR(getEntriesCSR(sparsity)) {}
 
+  constexpr auto rowView(const std::size_t i) const {
+    return std::span{Base::entries.data() + row_begin_indices[i],
+                     Base::entries.data() + row_begin_indices[i + 1]};
+  }
+
   constexpr auto find(const std::size_t i, const std::size_t j) const {
-    const auto it_row_begin = Base::entries.cbegin() + row_begin_indices[i];
-    const auto it_row_end = Base::entries.cbegin() + row_begin_indices[i + 1];
-    return std::find_if(it_row_begin, it_row_end,
+    const auto row = rowView(i);
+    return std::find_if(std::cbegin(row), std::cend(row),
                         [j](const auto entry) { return entry.col_index == j; });
   }
 
   constexpr bool isNonZero(const std::size_t i, const std::size_t j) const {
-    const auto it_row_end = Base::entries.cbegin() + row_begin_indices[i + 1];
-    return find(i, j) != it_row_end;
+    return find(i, j) != std::cend(rowView(i));
   }
 
   constexpr auto entryIndex(const std::size_t i, const std::size_t j) const {
     assert(isNonZero(i, j));
-    return static_cast<std::size_t>(find(i, j) - Base::entries.cbegin());
+    return static_cast<std::size_t>(find(i, j) - std::cbegin(rowView(0)));
   }
 };
 
