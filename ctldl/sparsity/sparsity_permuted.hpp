@@ -14,7 +14,8 @@ template <class SparsityIn, class PermutationRow, class PermutationCol>
 constexpr auto getSparsityPermuted(const SparsityIn& sparsity,
                                    const PermutationRow& permutation_row,
                                    const PermutationCol& permutation_col) {
-  constexpr auto nnz = std::size_t{SparsityIn::nnz};
+  using std::size;
+  constexpr auto nnz = std::size_t{size(decltype(sparsity.entries){})};
 
   const auto inverse_permutation_row = invertPermutation(permutation_row);
   const auto inverse_permutation_col = invertPermutation(permutation_col);
