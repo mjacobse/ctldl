@@ -7,6 +7,7 @@
 #include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/get_influenced.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
+#include <ctldl/sparsity/is_sparsity_subset.hpp>
 #include <ctldl/utility/make_index_sequence.hpp>
 
 #include <cstddef>
@@ -179,6 +180,11 @@ void factorizeUpLooking(const FactorDataAbove& above,
                         const MatrixLeft& input_left,
                         const MatrixSelf& input_self, FactorDataLeft& left,
                         FactorData& self) {
+  static_assert(isSparsitySubsetLowerTriangle<MatrixSelf::sparsity>(
+      FactorData::sparsity, FactorData::permutation));
+  static_assert(isSparsitySubset(MatrixLeft::sparsity, FactorDataLeft::sparsity,
+                                 FactorDataLeft::permutation_row,
+                                 FactorDataLeft::permutation_col));
   constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
   factorizeUpLookingImpl(above, input_left, input_self, left, self,
                          std::make_index_sequence<num_rows>());
@@ -188,7 +194,7 @@ template <class FactorData, class Matrix>
 void factorizeUpLooking(FactorData& self, const Matrix& matrix) {
   constexpr EmptyFactorDataLeft<FactorData> empty_left;
   constexpr EmptyFactorDataDiagonal<decltype(empty_left)> empty_above;
-  constexpr EmptyMatrixInput empty_input_left;
+  constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_input_left;
   factorizeUpLooking(empty_above, empty_input_left, matrix, empty_left, self);
 }
 

@@ -13,7 +13,7 @@ template <std::size_t dim>
 struct Permutation {
   static constexpr std::size_t size() { return dim; }
 
-  constexpr explicit Permutation()
+  constexpr Permutation()
       : indices([] {
           std::array<std::size_t, dim> permutation;
           std::iota(permutation.begin(), permutation.end(), std::size_t{0});
