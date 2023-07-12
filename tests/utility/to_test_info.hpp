@@ -19,7 +19,7 @@ std::string toTestInfo(const Permutation<dim>& permutation) {
   return sstream.str();
 }
 
-const char* toTestInfo(double) { return "double"; }
-const char* toTestInfo(float) { return "float"; }
+inline const char* toTestInfo(double) { return "double"; }
+inline const char* toTestInfo(float) { return "float"; }
 
 }  // namespace ctldl
