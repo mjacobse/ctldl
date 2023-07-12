@@ -4,6 +4,8 @@
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
+#include <ctldl/solve_backward_substitution.hpp>
+#include <ctldl/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/filled_in_sparsity.hpp>
@@ -33,6 +35,13 @@ class Factorization {
   void factorize(const Matrix& matrix,
                  const FactorizeMethodTag method_tag = {}) {
     ::ctldl::factorize(*this, matrix, method_tag);
+  }
+
+  template <class Rhs>
+  void solveInPlace(Rhs& rhs) const {
+    solveForwardSubstitution(*this, rhs);
+    diagonalSolve(rhs);
+    solveBackwardSubstitution(*this, rhs);
   }
 
   template <class Rhs>
