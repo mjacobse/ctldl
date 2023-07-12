@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/factorization.hpp>
+#include <ctldl/factorization_already_permuted.hpp>
 #include <ctldl/factorization_subdiagonal_block.hpp>
 #include <ctldl/factorize/factorize_entry_wise.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
@@ -99,7 +99,8 @@ class FactorizationRepeatingBlockTridiagonal {
   using SparsityFactor = RepeatedSparsity<sparsity_A, sparsity_B, permutation>;
   static constexpr auto sparsity_factor_A = SparsityFactor::sparsity_factor_A;
   static constexpr auto sparsity_factor_B = SparsityFactor::sparsity_factor_B;
-  using FactorA = Factorization<sparsity_factor_A, Value, permutation>;
+  using FactorA = FactorizationAlreadyPermuted<sparsity_factor_A, Value,
+                                               permutation>;
   using FactorB = FactorizationSubdiagonalBlock<sparsity_factor_B, Value,
                                                 permutation, permutation>;
   std::size_t m_num_repetitions;
