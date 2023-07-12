@@ -4,6 +4,8 @@ project(ctldl)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 add_library(ctldl_warnings INTERFACE)
 if(MSVC)
 	target_compile_options(ctldl_warnings INTERFACE /W4)
