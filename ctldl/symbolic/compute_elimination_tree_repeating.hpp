@@ -32,9 +32,9 @@ constexpr auto computeEliminationTreeRepeating(const SparsityA& sparsity_A,
     for (std::size_t i = 0; i < dim; ++i) {
       constexpr auto row_offset = dim;
       constexpr auto col_offset = dim;
-      addRowElimintationTree(sparsity_B, i, tree, ancestors, row_offset);
-      addRowElimintationTree(sparsity_A, i, tree, ancestors, row_offset,
-                             col_offset);
+      addRowEliminationTree(sparsity_B, i, tree, ancestors, row_offset);
+      addRowEliminationTree(sparsity_A, i, tree, ancestors, row_offset,
+                            col_offset);
     }
 
     tree_init = subtreeBack<dim>(tree);

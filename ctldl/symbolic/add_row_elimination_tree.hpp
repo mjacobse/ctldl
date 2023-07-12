@@ -8,12 +8,12 @@
 namespace ctldl {
 
 template <class Sparsity, std::size_t dim>
-constexpr void addRowElimintationTree(const Sparsity& sparsity,
-                                      const std::size_t row_index,
-                                      EliminationTree<dim>& tree,
-                                      std::array<std::size_t, dim>& ancestors,
-                                      const std::size_t row_offset = 0,
-                                      const std::size_t col_offset = 0) {
+constexpr void addRowEliminationTree(const Sparsity& sparsity,
+                                     const std::size_t row_index,
+                                     EliminationTree<dim>& tree,
+                                     std::array<std::size_t, dim>& ancestors,
+                                     const std::size_t row_offset = 0,
+                                     const std::size_t col_offset = 0) {
   static_assert(dim >= Sparsity::num_rows);
 
   const auto i = row_index + row_offset;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/sparsity/is_square.hpp>
+#include <ctldl/symbolic/add_row_elimination_tree.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
 
 #include <array>
@@ -18,7 +19,7 @@ constexpr auto computeEliminationTree(const Sparsity& sparsity) {
   std::array<std::size_t, dim> ancestors;
   std::iota(ancestors.begin(), ancestors.end(), 0);
   for (std::size_t i = 0; i < dim; ++i) {
-    addRowElimintationTree(sparsity, i, tree, ancestors);
+    addRowEliminationTree(sparsity, i, tree, ancestors);
   }
   return tree;
 }
