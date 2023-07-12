@@ -43,6 +43,9 @@ struct TestMatrixTridiagonal {
     constexpr Value valueAt(const std::size_t i) const {
       return Sparsity::entries[i].value;
     }
+
+    static constexpr double expected_error_amplifier = 16.0;
+    static constexpr const char* description() { return "Tridiagonal"; }
   };
 
   struct MatrixB {

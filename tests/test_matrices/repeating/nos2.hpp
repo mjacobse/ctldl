@@ -30,6 +30,9 @@ struct TestMatrixNos2 {
     static constexpr double valueAt(const std::size_t i) {
       return Sparsity::entries[i].value;
     }
+
+    static constexpr double expected_error_amplifier = 1.0;
+    static constexpr const char* description() { return "Nos2"; }
   };
 
   struct MatrixB {
