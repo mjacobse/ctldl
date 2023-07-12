@@ -5,7 +5,7 @@ endif()
 
 add_executable(tests_integration
     runner_tests_integration.cpp
-    test_multiply_factorize_solve_correct.cpp
+    test_multiply_factorize_solve_correct_repeating.cpp
     utility/solution_generator.cpp
 )
 target_link_libraries(tests_integration PRIVATE

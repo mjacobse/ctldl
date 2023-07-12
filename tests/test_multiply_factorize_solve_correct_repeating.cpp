@@ -1,6 +1,6 @@
-#include "test_matrices/nos2.hpp"
-#include "test_matrices/nos4.hpp"
-#include "test_matrices/tridiagonal.hpp"
+#include "test_matrices/repeating/nos2.hpp"
+#include "test_matrices/repeating/nos4.hpp"
+#include "test_matrices/repeating/tridiagonal.hpp"
 #include "utility/multi_invoke.hpp"
 #include "utility/solution_generator.hpp"
 #include "utility/to_test_info.hpp"
@@ -86,7 +86,7 @@ auto getTestCasesFactorizeAllPermutations() {
   return getTestCasesFactorize<TestMatrix>(Permutations{});
 }
 
-BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrect)
+BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectRepeating)
 
 BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
   using TestCasesFactorize = decltype(std::tuple_cat(
