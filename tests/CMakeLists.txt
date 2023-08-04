@@ -1,7 +1,4 @@
-find_package(Boost COMPONENTS unit_test_framework)
-if(Boost_FOUND)  # only enable tests if Boost.Test is available
-    include(CTest)
-endif()
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
 add_executable(tests_integration
     runner_tests_integration.cpp
@@ -14,3 +11,5 @@ target_link_libraries(tests_integration PRIVATE
     ctldl_warnings
     Boost::unit_test_framework
 )
+
+add_test(NAME integration COMMAND tests_integration)
