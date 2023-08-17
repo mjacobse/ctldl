@@ -43,9 +43,10 @@ template <std::size_t... EntryIndices, class FactorData>
   return (Di_init - ... - factorizeUpLookingInnerSelf<EntryIndices>(fact));
 }
 
-template <std::size_t entry_index, class FactorData, class FactorDataLeft>
+template <std::size_t entry_index, class FactorDataAbove, class FactorData,
+          class FactorDataLeft>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
-    const FactorData& above, FactorDataLeft& left, FactorData& self) {
+    const FactorDataAbove& above, FactorDataLeft& left, FactorData& self) {
   constexpr auto i = FactorDataLeft::sparsity.entries[entry_index].row_index;
   constexpr auto j = FactorDataLeft::sparsity.entries[entry_index].col_index;
 
