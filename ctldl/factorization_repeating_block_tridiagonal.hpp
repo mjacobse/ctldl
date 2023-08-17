@@ -57,10 +57,10 @@ struct RepeatedSparsity {
     std::size_t entry_index_B = 0;
     const auto add_nonzero = [&](const std::size_t i, const std::size_t j) {
       if (j >= dim) {
-        entries_A[entry_index_A] = Entry{i, j - dim};
+        entries_A[entry_index_A] = Entry{i - dim, j - dim};
         entry_index_A += 1;
       } else {
-        entries_B[entry_index_B] = Entry{i, j};
+        entries_B[entry_index_B] = Entry{i - dim, j};
         entry_index_B += 1;
       }
     };
