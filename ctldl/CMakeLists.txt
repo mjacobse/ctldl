@@ -9,3 +9,4 @@ target_link_libraries(ctldl INTERFACE
 )
 
 add_subdirectory(fileio)
+add_subdirectory(symbolic)

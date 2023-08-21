@@ -19,11 +19,12 @@ endif()
 add_library(ctldl_includes INTERFACE)
 target_include_directories(ctldl_includes INTERFACE .)
 
+include(CTest)
+if(BUILD_TESTING)
+	find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+	add_subdirectory(tests)
+endif()
+
 add_subdirectory(ctldl)
 add_subdirectory(examples)
 add_subdirectory(external)
-
-include(CTest)
-if(BUILD_TESTING)
-	add_subdirectory(tests)
-endif()

@@ -1,5 +1,3 @@
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-
 add_executable(tests_integration
     runner_tests_integration.cpp
     test_multiply_factorize_solve_correct_repeating.cpp

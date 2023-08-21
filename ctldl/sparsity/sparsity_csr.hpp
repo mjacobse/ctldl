@@ -62,6 +62,17 @@ constexpr auto makeSparsityCSR(const Entries& entries) {
   return SparsityCSR{makeSparsity<num_rows, num_cols>(entries)};
 }
 
+template <std::size_t num_rows, std::size_t num_cols, class Entry,
+          std::size_t nnz>
+constexpr auto makeSparsityCSR(const Entry (&entries)[nnz]) {
+  return SparsityCSR{makeSparsity<num_rows, num_cols>(entries)};
+}
+
+template <std::size_t num_rows, std::size_t num_cols, std::size_t nnz>
+constexpr auto makeSparsityCSR(const Entry (&entries)[nnz]) {
+  return SparsityCSR{makeSparsity<num_rows, num_cols>(entries)};
+}
+
 template <std::size_t num_rows, std::size_t num_cols>
 constexpr auto makeEmptySparsityCSR() {
   return SparsityCSR{makeEmptySparsity<num_rows, num_cols>()};
