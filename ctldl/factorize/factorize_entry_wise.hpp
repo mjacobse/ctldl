@@ -9,6 +9,7 @@
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/is_sparsity_subset.hpp>
+#include <ctldl/symbolic/is_chordal_blocked.hpp>
 #include <ctldl/utility/make_index_sequence.hpp>
 #include <ctldl/utility/square.hpp>
 
@@ -174,6 +175,9 @@ void factorizeEntryWise(const FactorDataAbove& above,
                         const MatrixLeft& input_left,
                         const MatrixSelf& input_self, FactorDataLeft& left,
                         FactorData& self) {
+  static_assert(isChordalBlocked(FactorDataAbove::sparsity,
+                                 FactorDataLeft::sparsity,
+                                 FactorData::sparsity));
   static_assert(isSparsitySubsetLowerTriangle<MatrixSelf::sparsity>(
       FactorData::sparsity, FactorData::permutation));
   static_assert(isSparsitySubset(MatrixLeft::sparsity, FactorDataLeft::sparsity,
