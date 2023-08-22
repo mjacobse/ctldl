@@ -13,7 +13,7 @@
 #include <ctldl/sparsity/sort_entries_row_major_sorted.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
-#include <ctldl/symbolic/foreach_nonzero_with_fill_repeated.hpp>
+#include <ctldl/symbolic/filled_in_sparsity_repeating.hpp>
 
 #include <array>
 #include <cstddef>
@@ -22,60 +22,6 @@
 
 
 namespace ctldl {
-
-template <auto sparsity_in_A, auto sparsity_in_B, auto permutation>
-struct RepeatedSparsity {
-  static_assert(isSquare(sparsity_in_A));
-  static_assert(isSquare(sparsity_in_B));
-  static_assert(sparsity_in_B.num_rows == sparsity_in_A.num_rows);
-  static constexpr auto dim = std::size_t{sparsity_in_A.num_rows};
-
-  static constexpr auto sparsity_A =
-      SparsityCSR(getSparsityLowerTriangle<sparsity_in_A>(permutation));
-  static constexpr auto sparsity_B =
-      SparsityCSR(getSparsityPermuted(sparsity_in_B, permutation, permutation));
-
-  static constexpr auto nnz_pair = [] {
-    std::size_t nnz_A = 0;
-    std::size_t nnz_B = 0;
-    const auto count_nonzero = [&](const std::size_t /*i*/,
-                                   const std::size_t j) {
-      if (j >= dim) {
-        nnz_A += 1;
-      } else {
-        nnz_B += 1;
-      }
-    };
-    foreachNonZeroWithFillRepeated(sparsity_A, sparsity_B, count_nonzero);
-    return std::pair{nnz_A, nnz_B};
-  }();
-
-  static constexpr auto entries_pair = [] {
-    std::array<Entry, nnz_pair.first> entries_A;
-    std::array<Entry, nnz_pair.second> entries_B;
-    std::size_t entry_index_A = 0;
-    std::size_t entry_index_B = 0;
-    const auto add_nonzero = [&](const std::size_t i, const std::size_t j) {
-      if (j >= dim) {
-        entries_A[entry_index_A] = Entry{i - dim, j - dim};
-        entry_index_A += 1;
-      } else {
-        entries_B[entry_index_B] = Entry{i - dim, j};
-        entry_index_B += 1;
-      }
-    };
-    foreachNonZeroWithFillRepeated(sparsity_A, sparsity_B, add_nonzero);
-    // sorting is not needed for correctness, but helps performance
-    sortEntriesRowMajorSorted(entries_A);
-    sortEntriesRowMajorSorted(entries_B);
-    return std::pair{entries_A, entries_B};
-  }();
-
-  static constexpr auto sparsity_factor_A =
-      Sparsity<nnz_pair.first, dim, dim>(entries_pair.first);
-  static constexpr auto sparsity_factor_B =
-      Sparsity<nnz_pair.second, dim, dim>(entries_pair.second);
-};
 
 // Factorization of a matrix of the form
 //
@@ -96,13 +42,13 @@ class FactorizationRepeatingBlockTridiagonal {
   static constexpr auto dim = std::size_t{sparsity_A.num_rows};
   static constexpr Permutation<dim> permutation{permutation_in};
 
-  using SparsityFactor = RepeatedSparsity<sparsity_A, sparsity_B, permutation>;
-  static constexpr auto sparsity_factor_A = SparsityFactor::sparsity_factor_A;
-  static constexpr auto sparsity_factor_B = SparsityFactor::sparsity_factor_B;
-  using FactorA = FactorizationAlreadyPermuted<sparsity_factor_A, Value,
+  static constexpr auto sparsity_factor =
+      getFilledInSparsityRepeating<sparsity_A, sparsity_B, permutation>();
+  using FactorA = FactorizationAlreadyPermuted<sparsity_factor.diagonal, Value,
                                                permutation>;
-  using FactorB = FactorizationSubdiagonalBlock<sparsity_factor_B, Value,
-                                                permutation, permutation>;
+  using FactorB =
+      FactorizationSubdiagonalBlock<sparsity_factor.subdiagonal, Value,
+                                    permutation, permutation>;
   std::size_t m_num_repetitions;
   std::unique_ptr<FactorA[]> m_diag;
   std::unique_ptr<FactorB[]> m_subdiag;
