@@ -1,6 +1,6 @@
 #include "ctldl_repeating_mtx_include.hpp"
 
-#include <ctldl/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
 #include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 

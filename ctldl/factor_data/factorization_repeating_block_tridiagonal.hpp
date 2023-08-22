@@ -1,14 +1,14 @@
 #pragma once
 
-#include <ctldl/factorization_already_permuted.hpp>
-#include <ctldl/factorization_subdiagonal_block.hpp>
+#include <ctldl/factor_data/factorization_already_permuted.hpp>
+#include <ctldl/factor_data/factorization_subdiagonal_block.hpp>
 #include <ctldl/factorize/factorize_entry_wise.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/factorize/factorize_up_looking.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
-#include <ctldl/solve_backward_substitution.hpp>
-#include <ctldl/solve_forward_substitution.hpp>
+#include <ctldl/solve/solve_backward_substitution.hpp>
+#include <ctldl/solve/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/sparsity/sort_entries_row_major_sorted.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>

@@ -1,6 +1,6 @@
 // Example Overwolfach/LFAT5 from the SuiteSparse Matrix Collection
 
-#include <ctldl/factorization.hpp>
+#include <ctldl/factor_data/factorization.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
 
 #include <algorithm>

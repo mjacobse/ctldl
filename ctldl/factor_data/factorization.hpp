@@ -4,8 +4,8 @@
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
-#include <ctldl/solve_backward_substitution.hpp>
-#include <ctldl/solve_forward_substitution.hpp>
+#include <ctldl/solve/solve_backward_substitution.hpp>
+#include <ctldl/solve/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/filled_in_sparsity.hpp>

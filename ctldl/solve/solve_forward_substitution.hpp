@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/empty_factor_data_left.hpp>
+#include <ctldl/factor_data/empty_factor_data_left.hpp>
 
 #include <cstddef>
 #include <utility>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/factorization.hpp>
+#include <ctldl/factor_data/factorization.hpp>
 #include <ctldl/permutation/invert_permutation.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 

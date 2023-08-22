@@ -1,4 +1,4 @@
-#include <ctldl/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
 
 #include <algorithm>
 #include <array>

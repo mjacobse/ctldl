@@ -5,7 +5,7 @@
 #include "utility/solution_generator.hpp"
 #include "utility/to_test_info.hpp"
 
-#include <ctldl/factorization.hpp>
+#include <ctldl/factor_data/factorization.hpp>
 #include <ctldl/matrix/multiply.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_enumeration.hpp>

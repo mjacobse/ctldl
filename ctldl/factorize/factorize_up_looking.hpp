@@ -1,9 +1,9 @@
 #pragma once
 
-#include <ctldl/empty_factor_data_diagonal.hpp>
-#include <ctldl/empty_factor_data_left.hpp>
-#include <ctldl/empty_matrix_input.hpp>
+#include <ctldl/factor_data/empty_factor_data_diagonal.hpp>
+#include <ctldl/factor_data/empty_factor_data_left.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
+#include <ctldl/matrix/empty_matrix_input.hpp>
 #include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/get_influenced.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>

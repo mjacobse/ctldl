@@ -5,7 +5,7 @@
 #include "utility/solution_generator.hpp"
 #include "utility/to_test_info.hpp"
 
-#include <ctldl/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
 #include <ctldl/matrix/multiply_repeating_block_tridiagonal.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/vector/block.hpp>
