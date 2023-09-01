@@ -54,9 +54,10 @@ template <std::size_t entry_index, class FactorDataAbove, class FactorData,
   const auto Lij_scaled = left.L[entry_index];
 
   static constexpr auto influenced_list_left =
-      getInfluencedList<i, j, FactorData::sparsity, FactorDataLeft::sparsity>(
+      getInfluencedList<i, j, FactorDataAbove::sparsity,
+                        FactorDataLeft::sparsity>(
           [](const std::size_t /*i*/, const std::size_t /*j*/) {
-            return FactorData::sparsity.num_rows;
+            return FactorDataAbove::sparsity.num_rows;
           });
   for (const auto influenced : influenced_list_left) {
     left.L[influenced.entry_index_target] -=
