@@ -1,8 +1,9 @@
 #include "test_matrices/repeating/nos2.hpp"
 #include "test_matrices/repeating/tridiagonal.hpp"
 #include "test_matrices/single/lfat5.hpp"
-#include "utility/multi_invoke.hpp"
 #include "utility/solution_generator.hpp"
+#include "utility/test_set.hpp"
+#include "utility/test_set_foreach.hpp"
 #include "utility/to_test_info.hpp"
 
 #include <ctldl/factor_data/factorization.hpp>
@@ -22,7 +23,7 @@ namespace {
 
 template <class TestMatrix, class PermutationIn, class Value,
           class FactorizeMethod>
-struct TesterMultiplyFactorizeSolveCorrectImpl {
+struct TesterMultiplyFactorizeSolveCorrect {
   void operator()(const SolutionGenerator& solution_generator) const {
     constexpr auto& sparsity = TestMatrix::sparsity;
     constexpr auto dim = sparsity.num_rows;
@@ -50,67 +51,46 @@ struct TesterMultiplyFactorizeSolveCorrectImpl {
   }
 };
 
-template <class TestCaseFactorize, class Value, class FactorizeMethod>
-using TesterMultiplyFactorizeSolveCorrect =
-    TesterMultiplyFactorizeSolveCorrectImpl<
-        typename TestCaseFactorize::Matrix,
-        typename TestCaseFactorize::Permutation, Value, FactorizeMethod>;
-
-template <class TestMatrix, class TestPermutation>
-struct TestCaseFactorize {
-  using Matrix = TestMatrix;
-  using Permutation = TestPermutation;
-};
-
-template <class TestMatrix, class... TestPermutations>
-auto getTestCasesFactorize(std::tuple<TestPermutations...>) {
-  return std::tuple<TestCaseFactorize<TestMatrix, TestPermutations>...>{};
-}
-
-template <class TestMatrix>
-auto getTestCasesFactorizeAllPermutations() {
-  using Permutations = PermutationEnumeration<TestMatrix::sparsity.num_rows>;
-  return getTestCasesFactorize<TestMatrix>(Permutations{});
-}
-
 BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectSingle)
 
-BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
-  using TestCasesFactorize = decltype(std::tuple_cat(
-      getTestCasesFactorizeAllPermutations<TestMatrixNos2<double>::MatrixA>(),
-      getTestCasesFactorizeAllPermutations<TestMatrixNos2<float>::MatrixA>(),
-      getTestCasesFactorizeAllPermutations<TestMatrixTridiagonal<1, double>::MatrixA>(),
-      getTestCasesFactorizeAllPermutations<TestMatrixTridiagonal<2, double>::MatrixA>(),
-      getTestCasesFactorizeAllPermutations<TestMatrixTridiagonal<3, double>::MatrixA>(),
-      getTestCasesFactorizeAllPermutations<TestMatrixTridiagonal<3, float>::MatrixA>()));
-  using FactorizeValueTypes = std::tuple<double, float>;
-  using FactorizeMethods =
-      std::tuple<FactorizeMethodUpLooking, FactorizeMethodEntryWise>;
-  const std::vector<SolutionGenerator> solution_generators = {
-      getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
-      getSolutionGeneratorNormallyDistributed(1000.0)};
+const auto solution_generators = makeValueArgument(
+    {getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
+     getSolutionGeneratorNormallyDistributed(1000.0)});
 
-  using TestTypes =
-      std::tuple<TestCasesFactorize, FactorizeValueTypes, FactorizeMethods>;
-  const auto test_values = std::make_tuple(solution_generators);
-  multiInvoke<TesterMultiplyFactorizeSolveCorrect, TestTypes>(test_values);
+const auto factorize_value_types = makeTypeArgument<double, float>();
+const auto factorize_method =
+    makeTypeArgument<FactorizeMethodUpLooking, FactorizeMethodEntryWise>();
+const auto common_test_set =
+    factorize_value_types * factorize_method * solution_generators;
+
+BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
+  const auto matrices_1x1 =
+      makeTypeArgument<TestMatrixTridiagonal<1, double>::MatrixA>();
+  const auto matrices_2x2 =
+      makeTypeArgument<TestMatrixTridiagonal<2, double>::MatrixA>();
+  const auto matrices_3x3 =
+      makeTypeArgument<TestMatrixTridiagonal<3, double>::MatrixA,
+                       TestMatrixTridiagonal<3, float>::MatrixA,
+                       TestMatrixNos2<double>::MatrixA,
+                       TestMatrixNos2<float>::MatrixA>();
+  const auto permutations_1x1 = TypeArgument<PermutationEnumeration<1>>{};
+  const auto permutations_2x2 = TypeArgument<PermutationEnumeration<2>>{};
+  const auto permutations_3x3 = TypeArgument<PermutationEnumeration<3>>{};
+  const auto matrix_permutation_pairs = (matrices_1x1 * permutations_1x1) +
+                                        (matrices_2x2 * permutations_2x2) +
+                                        (matrices_3x3 * permutations_3x3);
+
+  const auto test_set = matrix_permutation_pairs * common_test_set;
+  foreach<TesterMultiplyFactorizeSolveCorrect>(test_set);
 }
 
 BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
-  using TestCasesFactorize = std::tuple<
-      TestCaseFactorize<TestMatrixLFAT5<double>, TestPermutationLFAT5>,
-      TestCaseFactorize<TestMatrixLFAT5<float>, TestPermutationLFAT5>>;
-  using FactorizeValueTypes = std::tuple<double, float>;
-  using FactorizeMethods =
-      std::tuple<FactorizeMethodUpLooking, FactorizeMethodEntryWise>;
-  const std::vector<SolutionGenerator> solution_generators = {
-      getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
-      getSolutionGeneratorNormallyDistributed(1000.0)};
+  const auto matrix_permutation_pairs =
+      makeTypeArgument<TestMatrixLFAT5<double>, TestMatrixLFAT5<float>>() *
+      makeTypeArgument<TestPermutationLFAT5>();
 
-  using TestTypes =
-      std::tuple<TestCasesFactorize, FactorizeValueTypes, FactorizeMethods>;
-  const auto test_values = std::make_tuple(solution_generators);
-  multiInvoke<TesterMultiplyFactorizeSolveCorrect, TestTypes>(test_values);
+  const auto test_set = matrix_permutation_pairs * common_test_set;
+  foreach<TesterMultiplyFactorizeSolveCorrect>(test_set);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
