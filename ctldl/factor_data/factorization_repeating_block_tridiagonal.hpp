@@ -30,7 +30,7 @@ namespace ctldl {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <auto sparsity_in_A, auto sparsity_in_B, class Value,
+template <auto sparsity_in_A, auto sparsity_in_B, class Value_,
           auto permutation_in = PermutationIdentity{}>
 class FactorizationRepeatingBlockTridiagonal {
  private:
@@ -39,6 +39,9 @@ class FactorizationRepeatingBlockTridiagonal {
   static_assert(isSquare(sparsity_A));
   static_assert(isSquare(sparsity_B));
   static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
+
+ public:
+  using Value = Value_;
   static constexpr auto dim = std::size_t{sparsity_A.num_rows};
   static constexpr Permutation<dim> permutation{permutation_in};
 
@@ -49,11 +52,7 @@ class FactorizationRepeatingBlockTridiagonal {
   using FactorB =
       FactorizationSubdiagonalBlock<sparsity_factor.subdiagonal, Value,
                                     permutation, permutation>;
-  std::size_t m_num_repetitions;
-  std::unique_ptr<FactorA[]> m_diag;
-  std::unique_ptr<FactorB[]> m_subdiag;
 
- public:
   explicit FactorizationRepeatingBlockTridiagonal(
       const std::size_t num_repetitions)
       : m_num_repetitions(num_repetitions),
@@ -103,6 +102,11 @@ class FactorizationRepeatingBlockTridiagonal {
       solveBackwardSubstitution(m_diag[i - 1], rhs[i - 1], m_subdiag[i - 1], rhs[i]);
     }
   }
+
+ private:
+  std::size_t m_num_repetitions;
+  std::unique_ptr<FactorA[]> m_diag;
+  std::unique_ptr<FactorB[]> m_subdiag;
 };
 
 }  // namespace ctldl
