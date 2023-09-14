@@ -18,6 +18,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <span>
 #include <utility>
 
 
@@ -59,8 +60,12 @@ class FactorizationRepeatingBlockTridiagonal {
         m_diag(new FactorA[num_repetitions + 1]),
         m_subdiag(new FactorB[num_repetitions]) {}
 
-  const FactorA* dataA() const noexcept { return m_diag.get(); }
-  const FactorB* dataB() const noexcept { return m_subdiag.get(); }
+  std::span<const FactorA> blocksA() const noexcept {
+    return {m_diag.get(), m_num_repetitions + 1};
+  }
+  std::span<const FactorB> blocksB() const noexcept {
+    return {m_subdiag.get(), m_num_repetitions};
+  }
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixValuesA, class MatrixValuesB>

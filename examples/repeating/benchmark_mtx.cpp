@@ -57,8 +57,8 @@ void benchmarkFactorize(benchmark::State& state,
 
   auto matrix_values_A_data = matrix_values_A.data();
   auto matrix_values_B_data = matrix_values_B.data();
-  auto factorization_A_data = factorization.dataA();
-  auto factorization_B_data = factorization.dataB();
+  auto factorization_A_data = factorization.blocksA().data();
+  auto factorization_B_data = factorization.blocksB().data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(matrix_values_A_data);
     benchmark::DoNotOptimize(matrix_values_B_data);
@@ -91,8 +91,8 @@ void benchmarkSolve(benchmark::State& state,
   const RightHandSide rhs(num_repetitions + 1, rhs_single);
   auto rhs_in_solution_out = rhs;
 
-  auto factorization_A_data = factorization.dataA();
-  auto factorization_B_data = factorization.dataB();
+  auto factorization_A_data = factorization.blocksA().data();
+  auto factorization_B_data = factorization.blocksB().data();
   auto solution_data = rhs_in_solution_out.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(factorization_A_data);
@@ -129,8 +129,8 @@ void benchmarkCombined(benchmark::State& state,
 
   auto matrix_values_A_data = matrix_values_A.data();
   auto matrix_values_B_data = matrix_values_B.data();
-  auto factorization_A_data = factorization.dataA();
-  auto factorization_B_data = factorization.dataB();
+  auto factorization_A_data = factorization.blocksA().data();
+  auto factorization_B_data = factorization.blocksB().data();
   auto solution_data = rhs_in_solution_out.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(matrix_values_A_data);
