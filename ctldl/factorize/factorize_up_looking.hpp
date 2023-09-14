@@ -204,6 +204,14 @@ void factorizeUpLooking(FactorData& self, const Matrix& matrix) {
   factorizeUpLooking(empty_above, empty_input_left, matrix, empty_left, self);
 }
 
+template <class FactorDataAbove, class MatrixLeft, class MatrixSelf,
+          class FactorDataLeft, class FactorData>
+void factorize(const FactorDataAbove& above, const MatrixLeft& input_left,
+               const MatrixSelf& input_self, FactorDataLeft& left,
+               FactorData& self, FactorizeMethodUpLooking) {
+  factorizeUpLooking(above, input_left, input_self, left, self);
+}
+
 template <class FactorData, class Matrix>
 void factorize(FactorData& self, const Matrix& matrix,
                FactorizeMethodUpLooking) {

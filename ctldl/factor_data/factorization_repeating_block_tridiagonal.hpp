@@ -53,22 +53,6 @@ class FactorizationRepeatingBlockTridiagonal {
   std::unique_ptr<FactorA[]> m_diag;
   std::unique_ptr<FactorB[]> m_subdiag;
 
-  template <class MatrixValuesA, class MatrixValuesB>
-  void factorizeBlockRow(const FactorA& diag_previous,
-                         const MatrixValuesB& values_B,
-                         const MatrixValuesA& values_A, FactorB& subdiag,
-                         FactorA& diag, FactorizeMethodEntryWise) {
-    factorizeEntryWise(diag_previous, values_B, values_A, subdiag, diag);
-  }
-
-  template <class MatrixValuesA, class MatrixValuesB>
-  void factorizeBlockRow(const FactorA& diag_previous,
-                         const MatrixValuesB& values_B,
-                         const MatrixValuesA& values_A, FactorB& subdiag,
-                         FactorA& diag, FactorizeMethodUpLooking) {
-    factorizeUpLooking(diag_previous, values_B, values_A, subdiag, diag);
-  }
-
  public:
   explicit FactorizationRepeatingBlockTridiagonal(
       const std::size_t num_repetitions)
@@ -85,8 +69,8 @@ class FactorizationRepeatingBlockTridiagonal {
                  const FactorizeMethodTag method_tag = {}) {
     m_diag[0].factorize(values_A[0], method_tag);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
-      factorizeBlockRow(m_diag[i], values_B[i], values_A[i + 1], m_subdiag[i],
-                        m_diag[i + 1], method_tag);
+      ::ctldl::factorize(m_diag[i], values_B[i], values_A[i + 1], m_subdiag[i],
+                         m_diag[i + 1], method_tag);
     }
   }
 
