@@ -68,9 +68,10 @@ void solveBackwardSubstitution(const FactorData& diag,
                                Vector& rhs_in_solution_out,
                                const FactorDataLeft& left,
                                const VectorLeft& solution_left) {
+  constexpr auto num_rows_left = std::size_t{FactorDataLeft::sparsity.num_rows};
   constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
   solveBackwardSubstitutionImpl(rhs_in_solution_out, left, solution_left,
-                                makeIndexSequenceReversed<0, num_rows>());
+                                makeIndexSequenceReversed<0, num_rows_left>());
   solveBackwardSubstitutionImpl(diag, rhs_in_solution_out,
                                 makeIndexSequenceReversed<0, num_rows>());
 }
