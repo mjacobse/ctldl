@@ -1,14 +1,25 @@
 #pragma once
 
-#include <ctldl/sparsity/sparsity.hpp>
+#include <ctldl/sparsity/sparsity_csr.hpp>
 
+#include <cassert>
 #include <cstddef>
 
 namespace ctldl {
 
 template <std::size_t num_rows, std::size_t num_cols>
 struct EmptyMatrixInput {
-  static constexpr auto sparsity = makeEmptySparsity<num_rows, num_cols>();
+  static constexpr auto sparsity = makeEmptySparsityCSR<num_rows, num_cols>();
+
+  constexpr EmptyMatrixInput() = default;
+
+  template <class Value>
+  constexpr explicit EmptyMatrixInput(const std::array<Value, 0> /*values*/) {}
+
+  constexpr double valueAt(const std::size_t /*i*/) const {
+    assert(false);
+    return 0.0;
+  }
 };
 
 }  // namespace ctldl
