@@ -177,29 +177,32 @@ template <class T>
 class ValueArgument {
  public:
   ValueArgument(const std::initializer_list<T> init_list)
-      : m_values(new T[init_list.size()]), num_values(init_list.size()) {
-    std::copy(init_list.begin(), init_list.end(), m_values.get());
-  }
+      : m_values([init_list] {
+          auto values = std::make_unique<T[]>(init_list.size());
+          std::copy(std::cbegin(init_list), std::cend(init_list), values.get());
+          return values;
+        }()),
+        m_num_values(init_list.size()) {}
 
   static constexpr auto sizeTypes() { return 1; }
 
   template <std::size_t i_types>
   constexpr auto sizeValues() const {
     static_assert(i_types == 0);
-    return num_values;
+    return m_num_values;
   }
 
   template <std::size_t i_types>
   constexpr auto get(const std::size_t i_values) const {
     static_assert(i_types == 0);
-    assert(i_values < num_values);
+    assert(i_values < m_num_values);
     return TestArguments<std::tuple<>, std::tuple<T>>{
         std::make_tuple(m_values[static_cast<std::ptrdiff_t>(i_values)])};
   }
 
  private:
-  std::shared_ptr<T[]> m_values;
-  std::size_t num_values;
+  std::shared_ptr<const T[]> m_values;
+  std::size_t m_num_values;
 };
 
 template <class T>
