@@ -25,8 +25,8 @@ template <std::size_t entry_index, class FactorData>
   const auto Lij_scaled = fact.L[entry_index];
 
   static constexpr auto influenced_list =
-      getInfluencedList<i, j, FactorData::sparsity, FactorData::sparsity>(
-          [](const std::size_t i, const std::size_t /*j*/) { return i; });
+      getInfluencedListLowerTriangle<i, j, FactorData::sparsity,
+                                     FactorData::sparsity>();
   for (const auto influenced : influenced_list) {
     fact.L[influenced.entry_index_target] -=
         fact.L[influenced.entry_index_source] * Lij_scaled;
@@ -55,17 +55,14 @@ template <std::size_t entry_index, class FactorDataAbove, class FactorData,
 
   static constexpr auto influenced_list_left =
       getInfluencedList<i, j, FactorDataAbove::sparsity,
-                        FactorDataLeft::sparsity>(
-          [](const std::size_t /*i*/, const std::size_t /*j*/) {
-            return FactorDataAbove::sparsity.num_rows;
-          });
+                        FactorDataLeft::sparsity>();
   for (const auto influenced : influenced_list_left) {
     left.L[influenced.entry_index_target] -=
         above.L[influenced.entry_index_source] * Lij_scaled;
   }
   static constexpr auto influenced_list_self =
-      getInfluencedList<i, j, FactorDataLeft::sparsity, FactorData::sparsity>(
-          [](const std::size_t i, const std::size_t /*j*/) { return i; });
+      getInfluencedListLowerTriangle<i, j, FactorDataLeft::sparsity,
+                                     FactorData::sparsity>();
   for (const auto influenced : influenced_list_self) {
     self.L[influenced.entry_index_target] -=
         left.L[influenced.entry_index_source] * Lij_scaled;
