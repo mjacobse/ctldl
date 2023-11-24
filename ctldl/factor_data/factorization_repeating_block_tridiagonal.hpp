@@ -104,7 +104,8 @@ class FactorizationRepeatingBlockTridiagonal {
   [[gnu::flatten]] void backwardSolve(Rhs& rhs) const {
     solveBackwardSubstitution(m_diag[m_num_repetitions], rhs[m_num_repetitions]);
     for (std::size_t i = m_num_repetitions; i > 0; --i) {
-      solveBackwardSubstitution(m_diag[i - 1], rhs[i - 1], m_subdiag[i - 1], rhs[i]);
+      solveBackwardSubstitution(m_subdiag[i - 1], rhs[i], rhs[i - 1]);
+      solveBackwardSubstitution(m_diag[i - 1], rhs[i - 1]);
     }
   }
 

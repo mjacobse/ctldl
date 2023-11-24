@@ -10,7 +10,7 @@ namespace ctldl {
 template <std::size_t i, class FactorData, class Vector>
 [[gnu::always_inline]] inline void solveBackwardSubstitutionRow(
     const FactorData& fact, const typename FactorData::Value solution_i,
-    Vector& rhs_in_solution_out) {
+    Vector& partial_solution) {
   constexpr auto& sparsity = FactorData::sparsity;
 
   constexpr auto row_begin = std::size_t{sparsity.row_begin_indices[i]};
@@ -19,69 +19,82 @@ template <std::size_t i, class FactorData, class Vector>
        ++entry_index_ij) {
     const std::size_t j = sparsity.entries[entry_index_ij].col_index;
     const auto j_orig = FactorData::permutation_col[j];
-    rhs_in_solution_out[j_orig] -= fact.L[entry_index_ij] * solution_i;
+    partial_solution[j_orig] -= fact.L[entry_index_ij] * solution_i;
   }
 }
 
-template <std::size_t i, class Vector, class FactorDataLeft, class VectorLeft>
+template <std::size_t i, class FactorData, class VectorSolution,
+          class VectorPartialSolution>
 [[gnu::always_inline]] inline void solveBackwardSubstitutionImpl(
-    Vector& rhs_in_solution_out, const FactorDataLeft& left,
-    const VectorLeft& solution_left) {
-  using Value = typename FactorDataLeft::Value;
-
-  constexpr auto i_orig_left = FactorDataLeft::permutation_row[i];
-  const auto solution_i_left = static_cast<Value>(solution_left[i_orig_left]);
-  solveBackwardSubstitutionRow<i>(left, solution_i_left, rhs_in_solution_out);
-}
-
-template <std::size_t i, class FactorData, class Vector>
-[[gnu::always_inline]] inline void solveBackwardSubstitutionImpl(
-    const FactorData& diag, Vector& rhs_in_solution_out) {
+    const FactorData& factor_block, const VectorSolution& solution,
+    VectorPartialSolution& partial_solution) {
   using Value = typename FactorData::Value;
 
-  constexpr auto i_orig = FactorData::permutation[i];
-  const auto solution_i = static_cast<Value>(rhs_in_solution_out[i_orig]);
-  solveBackwardSubstitutionRow<i>(diag, solution_i, rhs_in_solution_out);
+  constexpr auto i_orig = FactorData::permutation_row[i];
+  const auto solution_i = static_cast<Value>(solution[i_orig]);
+  solveBackwardSubstitutionRow<i>(factor_block, solution_i, partial_solution);
 }
 
-template <std::size_t... RowIndices, class Vector, class FactorDataLeft,
-          class VectorLeft>
-void solveBackwardSubstitutionImpl(Vector& rhs_in_solution_out,
-                                   const FactorDataLeft& left,
-                                   const VectorLeft& solution_left,
+template <std::size_t... RowIndices, class FactorData, class VectorSolution,
+          class VectorPartialSolution>
+void solveBackwardSubstitutionImpl(const FactorData& factor_block,
+                                   const VectorSolution& solution,
+                                   VectorPartialSolution& partial_solution,
                                    std::index_sequence<RowIndices...>) {
-  (solveBackwardSubstitutionImpl<RowIndices>(rhs_in_solution_out, left,
-                                             solution_left),
+  (solveBackwardSubstitutionImpl<RowIndices>(factor_block, solution,
+                                             partial_solution),
    ...);
 }
 
-template <std::size_t... RowIndices, class FactorData, class Vector>
-void solveBackwardSubstitutionImpl(const FactorData& diag,
-                                   Vector& rhs_in_solution_out,
-                                   std::index_sequence<RowIndices...>) {
-  (solveBackwardSubstitutionImpl<RowIndices>(diag, rhs_in_solution_out), ...);
-}
-
-template <class FactorData, class Vector, class FactorDataLeft,
-          class VectorLeft>
-void solveBackwardSubstitution(const FactorData& diag,
-                               Vector& rhs_in_solution_out,
-                               const FactorDataLeft& left,
-                               const VectorLeft& solution_left) {
-  constexpr auto num_rows_left = std::size_t{FactorDataLeft::sparsity.num_rows};
+/**
+ * Performs a single block-operation of the backward substitution with the
+ * factor of a block-matrix.
+ *
+ * For the example
+ * \code
+ * [*  *  *  *  *]  [*]   [*]
+ * [   *  * F^T *]  [*]   [r]
+ * [      *  *  *]  [*] = [*]
+ * [         *  *]  [s]   [*]
+ * [            *]  [*]   [*]
+ * \endcode
+ *
+ * one of these block operations would be subtracting the product of F^T
+ * and s from r. That is exactly what this function does with
+ * F: \p factor_block, s: \p solution and r: \p partial_solution. So it
+ * basically performs the matrix-vector operation
+ * partial_solution -= transposed(factor_block) * solution.
+ *
+ * The underlying permutation of the original matrix that was factorized is
+ * applied internally, so \p partial_solution and \p solution should be given
+ * unpermuted, corresponding to the original matrix order.
+ */
+template <class FactorData, class VectorSolution, class VectorPartialSolution>
+void solveBackwardSubstitution(const FactorData& factor_block,
+                               const VectorSolution& solution,
+                               VectorPartialSolution& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
-  solveBackwardSubstitutionImpl(rhs_in_solution_out, left, solution_left,
-                                makeIndexSequenceReversed<0, num_rows_left>());
-  solveBackwardSubstitutionImpl(diag, rhs_in_solution_out,
+  solveBackwardSubstitutionImpl(factor_block, solution, partial_solution,
                                 makeIndexSequenceReversed<0, num_rows>());
 }
 
+/**
+ * Performs backward substitution for a single diagonal-block of the factor of
+ * a block-matrix.
+ *
+ * This is just a special overload for the block being on the diagonal of the
+ * factor. For this case, the values that are computed in \p partial_solution
+ * in one entry become the final solution and are then needed soon after for
+ * computing an earlier entry. Therefore it makes sense to do the operation
+ * in-place. So \p partial_solution should contain the partial solution of the
+ * backward substitution done with all non-diagonal blocks, such that it returns
+ * the complete solution on return.
+ */
 template <class FactorData, class Vector>
-void solveBackwardSubstitution(const FactorData& diag,
-                               Vector& rhs_in_solution_out) {
-  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
-  solveBackwardSubstitutionImpl(diag, rhs_in_solution_out,
-                                makeIndexSequenceReversed<0, num_rows>());
+void solveBackwardSubstitution(const FactorData& factor_block_diagonal,
+                               Vector& partial_solution) {
+  solveBackwardSubstitution(factor_block_diagonal, partial_solution,
+                            partial_solution);
 }
 
 }  // namespace ctldl
