@@ -92,11 +92,11 @@ template <std::size_t i, class FactorDataAbove, class MatrixLeft,
   static_assert(sparsity.num_rows == sparsity_left.num_rows);
   using Value = typename FactorData::Value;
 
-  constexpr auto i_orig = FactorData::permutation[i];
+  constexpr auto i_orig = FactorData::origRowIndex(i);
   auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input_self));
 
-  fillRowWithOriginalMatrixValuesSubdiagonal<i>(input_left, left);
-  fillRowWithOriginalMatrixValuesDiagonal<i>(input_self, self);
+  fillRowWithOriginalMatrixValues<i>(input_left, left);
+  fillRowWithOriginalMatrixValues<i>(input_self, self);
 
   constexpr auto row_begin_left = sparsity_left.row_begin_indices[i];
   constexpr auto row_end_left = sparsity_left.row_begin_indices[i + 1];

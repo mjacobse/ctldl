@@ -15,6 +15,13 @@ struct EmptyFactorDataLeft {
   static constexpr std::array<Value, 0> L{};
   static constexpr auto permutation_row = FactorData::permutation_row;
   static constexpr Permutation<0> permutation_col{};
+
+  static constexpr auto origRowIndex(const std::size_t factor_row_index) {
+    return std::size_t{permutation_row[factor_row_index]};
+  }
+  static constexpr auto origColIndex(const std::size_t factor_col_index) {
+    return std::size_t{permutation_col[factor_col_index]};
+  }
 };
 
 }  // namespace ctldl

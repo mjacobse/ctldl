@@ -4,8 +4,10 @@
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
+#include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/solve/solve_backward_substitution.hpp>
 #include <ctldl/solve/solve_forward_substitution.hpp>
+#include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/filled_in_sparsity.hpp>
@@ -24,6 +26,34 @@ class Factorization {
   static constexpr auto dim = std::size_t{sparsity_orig.num_rows};
   using Value = Value_;
   static constexpr Permutation<dim> permutation{permutation_in};
+
+  /**
+   * Given an entry location in the factor, returns the location of the
+   * corresponding entry in the original matrix, i.e. the location before the
+   * permutation for the factorization was applied.
+   *
+   * With this special case of a symmetric factorization, the returned entry for
+   * the original matrix will always be in the lower triangle.
+   */
+  static constexpr Entry origEntry(const Entry factor_entry) {
+    return permutedEntryLowerTriangle(factor_entry, permutation);
+  };
+  /**
+   * For a given row index in the factor, returns the corresponding row index in
+   * the original matrix, i.e. the row index before the permutation for the
+   * factorization was applied.
+   */
+  static constexpr auto origRowIndex(const std::size_t factor_row_index) {
+    return std::size_t{permutation[factor_row_index]};
+  }
+  /**
+   * For a given column index in the factor, returns the corresponding column
+   * index in the original matrix, i.e. the column index before the permutation
+   * for the factorization was applied.
+   */
+  static constexpr auto origColIndex(const std::size_t factor_col_index) {
+    return std::size_t{permutation[factor_col_index]};
+  }
 
   static constexpr auto sparsity =
       SparsityCSR(getFilledInSparsity<sparsity_orig, permutation>());
@@ -56,7 +86,7 @@ class Factorization {
   template <class ValueRhs>
   void diagonalSolveImpl(ValueRhs* __restrict rhs_in_solution_out) const {
     for (std::size_t i = 0; i < dim; ++i) {
-      const auto i_orig = permutation[i];
+      const auto i_orig = origRowIndex(i);
       rhs_in_solution_out[i_orig] /= D[i];
     }
   }

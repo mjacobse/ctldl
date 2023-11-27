@@ -20,7 +20,7 @@ template <std::size_t i, class FactorData, class Vector>
   for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
        ++entry_index_ij) {
     const std::size_t j = sparsity.entries[entry_index_ij].col_index;
-    const auto j_orig = FactorData::permutation_col[j];
+    const auto j_orig = FactorData::origColIndex(j);
     value -= fact.L[entry_index_ij] * static_cast<Value>(solution[j_orig]);
   }
   return value;
@@ -36,7 +36,7 @@ template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
   static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
   using Value = typename FactorData::Value;
 
-  constexpr auto i_orig = FactorData::permutation[i];
+  constexpr auto i_orig = FactorData::origRowIndex(i);
   auto solution_i = static_cast<Value>(rhs_in_solution_out[i_orig]);
   solution_i = solveForwardSubstitutionRow<i>(left, solution_left, solution_i);
   solution_i = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, solution_i);
@@ -50,7 +50,7 @@ void solveForwardSubstitutionImpl(const FactorData& diag,
                                   const FactorDataLeft& left,
                                   const VectorLeft& solution_left,
                                   std::index_sequence<RowIndices...>) {
-  ((rhs_in_solution_out[FactorData::permutation[RowIndices]] =
+  ((rhs_in_solution_out[FactorData::origRowIndex(RowIndices)] =
         solveForwardSubstitutionImpl<RowIndices>(diag, rhs_in_solution_out,
                                                  left, solution_left)),
    ...);

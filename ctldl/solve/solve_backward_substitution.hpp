@@ -18,7 +18,7 @@ template <std::size_t i, class FactorData, class Vector>
   for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
        ++entry_index_ij) {
     const std::size_t j = sparsity.entries[entry_index_ij].col_index;
-    const auto j_orig = FactorData::permutation_col[j];
+    const auto j_orig = FactorData::origColIndex(j);
     partial_solution[j_orig] -= fact.L[entry_index_ij] * solution_i;
   }
 }
@@ -30,7 +30,7 @@ template <std::size_t i, class FactorData, class VectorSolution,
     VectorPartialSolution& partial_solution) {
   using Value = typename FactorData::Value;
 
-  constexpr auto i_orig = FactorData::permutation_row[i];
+  constexpr auto i_orig = FactorData::origRowIndex(i);
   const auto solution_i = static_cast<Value>(solution[i_orig]);
   solveBackwardSubstitutionRow<i>(factor_block, solution_i, partial_solution);
 }
