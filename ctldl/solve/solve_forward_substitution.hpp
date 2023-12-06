@@ -73,7 +73,7 @@ void solveForwardSubstitution(const FactorData& diag,
   using Value = typename FactorData::Value;
 
   constexpr EmptyFactorDataLeft<FactorData> empty_left;
-  constexpr std::array<Value, 0> empty_solution_left;
+  constexpr std::array<Value, 0> empty_solution_left{};
   solveForwardSubstitution(diag, rhs_in_solution_out, empty_left,
                            empty_solution_left);
 }

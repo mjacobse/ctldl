@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
 #include <cstddef>
@@ -11,6 +12,7 @@ namespace ctldl {
 template <class Sparsity>
 constexpr auto getRowCounts(const Sparsity& sparsity) {
   std::array<std::size_t, Sparsity::num_rows> row_counts;
+  fixInitIfZeroLengthArray(row_counts);
   row_counts.fill(0);
   for (const auto entry : sparsity.entries) {
     row_counts[entry.row_index] += 1;
@@ -34,6 +36,7 @@ constexpr auto getEntriesCSR(const Sparsity& sparsity) {
   const auto row_begin_indices = getRowBeginIndices(row_counts);
 
   std::array<Entry, Sparsity::nnz> entries;
+  fixInitIfZeroLengthArray(entries);
   auto row_insert_indices = row_begin_indices;
   for (const auto entry : sparsity.entries) {
     entries[row_insert_indices[entry.row_index]] =

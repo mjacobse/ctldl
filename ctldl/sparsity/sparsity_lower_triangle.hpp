@@ -4,6 +4,7 @@
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/is_square.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
 #include <cstddef>
@@ -27,6 +28,7 @@ constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
   const auto inverse_permutation = invertPermutation(permutation);
 
   std::array<Entry, nnz> entries;
+  fixInitIfZeroLengthArray(entries);
   std::size_t entry_index = 0;
   for (const auto entry : sparsity.entries) {
     if (entry.row_index <= entry.col_index) {

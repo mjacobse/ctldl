@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
+
 #include <array>
 #include <cstddef>
 
@@ -62,7 +64,8 @@ template <auto sparsity, auto sparsity_below, std::size_t i, std::size_t j,
 constexpr auto getContributionsMixed() {
   constexpr auto num_contrib =
       getNumContributionsMixed(sparsity, sparsity_below, i, j, column_limit);
-  std::array<Contribution, num_contrib> contributions{};
+  std::array<Contribution, num_contrib> contributions;
+  fixInitIfZeroLengthArray(contributions);
   std::size_t contrib_index = 0;
   const auto add_contribution = [&contributions, &contrib_index](
                                     const std::size_t entry_index_ik,

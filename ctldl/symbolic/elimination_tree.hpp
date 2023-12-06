@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -13,6 +15,7 @@ struct EliminationTree {
   static constexpr auto no_parent = std::numeric_limits<std::size_t>::max();
 
   constexpr EliminationTree() {
+    fixInitIfZeroLengthArray(parent);
     std::fill(parent.begin(), parent.end(), no_parent);
   };
 

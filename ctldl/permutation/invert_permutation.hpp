@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/permutation/permutation.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
 #include <cstddef>
@@ -13,6 +14,7 @@ constexpr auto invertPermutation(const PermutationIn& permutation) {
   constexpr auto dim = std::size_t{size(PermutationIn{})};
 
   std::array<std::size_t, dim> inverse_permutation;
+  fixInitIfZeroLengthArray(inverse_permutation);
   for (std::size_t i = 0; i < dim; ++i) {
     inverse_permutation[permutation[i]] = i;
   }

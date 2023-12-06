@@ -3,6 +3,7 @@
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
 #include <cstddef>
@@ -24,6 +25,7 @@ constexpr bool isSparsitySubset(
   constexpr auto num_cols = std::size_t{sparsity_lhs.num_cols};
 
   std::array<bool, num_cols> is_nonzero_rhs;
+  fixInitIfZeroLengthArray(is_nonzero_rhs);
   is_nonzero_rhs.fill(false);
   for (std::size_t row_index = 0; row_index < num_rows; ++row_index) {
     for (const auto entry : sparsity_rhs.rowView(row_index)) {

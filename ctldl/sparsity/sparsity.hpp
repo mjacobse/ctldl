@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <algorithm>
 #include <array>
@@ -18,6 +19,7 @@ struct Sparsity {
 
   template <class Entries>
   constexpr explicit Sparsity(const Entries& entries_init) {
+    fixInitIfZeroLengthArray(entries);
     std::transform(std::cbegin(entries_init), std::cend(entries_init),
                    std::begin(entries), [](const auto& entry) {
                      return Entry{entry.row_index, entry.col_index};

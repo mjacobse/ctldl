@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/permutation/permutation_identity.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <algorithm>
 #include <array>
@@ -16,6 +17,7 @@ struct Permutation {
   constexpr Permutation()
       : indices([] {
           std::array<std::size_t, dim> permutation;
+          fixInitIfZeroLengthArray(permutation);
           std::iota(permutation.begin(), permutation.end(), std::size_t{0});
           return permutation;
         }()) {}

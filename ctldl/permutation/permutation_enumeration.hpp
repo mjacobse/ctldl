@@ -2,6 +2,7 @@
 
 #include <ctldl/permutation/factorial.hpp>
 #include <ctldl/permutation/permutation.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <algorithm>
 #include <array>
@@ -16,6 +17,7 @@ template <std::size_t dim, std::size_t i>
 struct EnumeratePermutationsHelper {
   static constexpr std::array<std::size_t, dim> permutation = [] {
     std::array<std::size_t, dim> ret;
+    fixInitIfZeroLengthArray(ret);
     if constexpr (i == 0) {
       std::iota(ret.begin(), ret.end(), 0);
     } else {

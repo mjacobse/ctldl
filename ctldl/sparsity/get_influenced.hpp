@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
+
 #include <array>
 #include <cstddef>
 
@@ -54,6 +56,7 @@ constexpr auto getInfluencedList() {
   constexpr auto num_influenced =
       getNumInfluenced(sparsity_source, j, target_column_limit);
   std::array<Influenced, num_influenced> influenced_list;
+  fixInitIfZeroLengthArray(influenced_list);
   std::size_t influenced_index = 0;
   for (std::size_t k = 0; k < target_column_limit; ++k) {
     if (sparsity_source.isNonZero(k, j)) {

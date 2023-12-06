@@ -2,6 +2,7 @@
 
 #include <ctldl/permutation/permutation_enumeration.hpp>
 #include <ctldl/sparsity/entry.hpp>
+#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
 #include <cstddef>
@@ -25,7 +26,8 @@ struct TestMatrixTridiagonal {
       static constexpr int num_cols = block_dim;
       static constexpr int nnz = block_dim + (block_dim - 1);
       static constexpr auto entries = [] {
-        std::array<Entry, std::size_t{nnz}> ret{};
+        std::array<Entry, std::size_t{nnz}> ret;
+        fixInitIfZeroLengthArray(ret);
         std::size_t entry_index = 0;
         for (std::size_t i = 0; i < num_rows; ++i) {
           ret[entry_index] = {i, i, 2.0};
