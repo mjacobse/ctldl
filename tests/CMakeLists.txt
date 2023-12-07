@@ -1,7 +1,9 @@
 add_executable(tests_integration
+    multiply_factorize_solve_correct/repeating/larger_examples_good_permutation.cpp
+    multiply_factorize_solve_correct/repeating/small_examples_all_permutations.cpp
+    multiply_factorize_solve_correct/single/larger_examples_good_permutation.cpp
+    multiply_factorize_solve_correct/single/small_examples_all_permutations.cpp
     runner_tests_integration.cpp
-    test_multiply_factorize_solve_correct_repeating.cpp
-    test_multiply_factorize_solve_correct_single.cpp
     utility/solution_generator.cpp
 )
 target_link_libraries(tests_integration PRIVATE
