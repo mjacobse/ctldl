@@ -10,10 +10,10 @@
 namespace ctldl {
 
 template <class Value>
-struct TestMatrixNos4 {
+struct TestMatrixNos4A {
   static constexpr int block_dim = 10;
 
-  class MatrixA {
+  class Matrix {
    public:
     static constexpr auto sparsity = makeSparsity<block_dim, block_dim>({
         {0, 0},
@@ -50,7 +50,7 @@ struct TestMatrixNos4 {
         -0.1, 0.1,
         0.0, 0.2}};
 
-    explicit MatrixA(const bool is_last_block)
+    explicit Matrix(const bool is_last_block)
         : m_is_last_block(is_last_block) {}
 
     constexpr auto valueAt(const std::size_t i) const {
@@ -64,7 +64,20 @@ struct TestMatrixNos4 {
     bool m_is_last_block;
   };
 
-  struct MatrixB {
+  static constexpr double expected_error_amplifier = 128.0;
+  static constexpr const char* description() { return "Nos4 A"; }
+
+  static auto generate(const std::size_t num_matrices) {
+    std::vector<Matrix> matrices(num_matrices, Matrix(false));
+    matrices.back() = Matrix(true);
+    return matrices;
+  }
+};
+
+template <class Value>
+struct TestMatrixNos4B {
+  static constexpr int block_dim = 10;
+  struct Matrix {
     static constexpr auto sparsity = makeSparsity<block_dim, block_dim>({
         // empty row
         {1, 1},
@@ -93,21 +106,16 @@ struct TestMatrixNos4 {
     }
   };
 
-  static constexpr double expected_error_amplifier = 8192.0;
-  static constexpr const char* description() { return "Nos4"; }
+  static constexpr double expected_error_amplifier = 128.0;
+  static constexpr const char* description() { return "Nos4 B"; }
 
-  explicit TestMatrixNos4(const std::size_t num_repetitions)
-      : matrices_A(num_repetitions + 1, MatrixA(false)),
-        matrices_B(num_repetitions) {
-    matrices_A.back() = MatrixA(true);
+  static auto generate(const std::size_t num_matrices) {
+    return std::vector<Matrix>(num_matrices);
   }
-
-  std::vector<MatrixA> matrices_A;
-  std::vector<MatrixB> matrices_B;
 };
 
 struct TestPermutationNos4 {
-  static constexpr std::array<std::size_t, TestMatrixNos4<double>::block_dim>
+  static constexpr std::array<std::size_t, TestMatrixNos4A<double>::block_dim>
       permutation = {7, 8, 0, 4, 3, 2, 6, 5, 9, 1};
 };
 

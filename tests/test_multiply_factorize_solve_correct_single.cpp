@@ -1,6 +1,7 @@
 #include "test_matrices/repeating/nos2.hpp"
 #include "test_matrices/repeating/tridiagonal.hpp"
 #include "test_matrices/single/lfat5.hpp"
+#include "utility/generate_matrices.hpp"
 #include "utility/solution_generator.hpp"
 #include "utility/test_set.hpp"
 #include "utility/test_set_foreach.hpp"
@@ -25,11 +26,11 @@ template <class TestMatrix, class PermutationIn, class Value,
           class FactorizeMethod>
 struct TesterMultiplyFactorizeSolveCorrect {
   void operator()(const SolutionGenerator& solution_generator) const {
-    constexpr auto& sparsity = TestMatrix::sparsity;
+    constexpr auto& sparsity = TestMatrix::Matrix::sparsity;
     constexpr auto dim = sparsity.num_rows;
     constexpr Permutation<dim> permutation(PermutationIn::permutation);
 
-    TestMatrix test_matrix;
+    auto test_matrix = generateMatrix(TestMatrix{});
     Factorization<sparsity, Value, permutation> factorization;
     factorization.factorize(test_matrix, FactorizeMethod{});
 
@@ -38,7 +39,7 @@ struct TesterMultiplyFactorizeSolveCorrect {
     multiply<MultiplyKind::Symmetric>(test_matrix, solution, rhs);
     factorization.solveInPlace(rhs);
 
-    BOOST_TEST_INFO("Test matrix:       " << test_matrix.description());
+    BOOST_TEST_INFO("Test matrix:       " << TestMatrix::description());
     BOOST_TEST_INFO("Permutation:       " << toTestInfo(permutation));
     BOOST_TEST_INFO("Factor type:       " << toTestInfo(Value{}));
     BOOST_TEST_INFO("Solution:          " << solution_generator.description);
@@ -65,14 +66,14 @@ const auto common_test_set =
 
 BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
   const auto matrices_1x1 =
-      makeTypeArgument<TestMatrixTridiagonal<1, double>::MatrixA>();
+      makeTypeArgument<TestMatrixTridiagonal<1, double>>();
   const auto matrices_2x2 =
-      makeTypeArgument<TestMatrixTridiagonal<2, double>::MatrixA>();
+      makeTypeArgument<TestMatrixTridiagonal<2, double>>();
   const auto matrices_3x3 =
-      makeTypeArgument<TestMatrixTridiagonal<3, double>::MatrixA,
-                       TestMatrixTridiagonal<3, float>::MatrixA,
-                       TestMatrixNos2<double>::MatrixA,
-                       TestMatrixNos2<float>::MatrixA>();
+      makeTypeArgument<TestMatrixTridiagonal<3, double>,
+                       TestMatrixTridiagonal<3, float>,
+                       TestMatrixNos2A<double>,
+                       TestMatrixNos2A<float>>();
   const auto permutations_1x1 = TypeArgument<PermutationEnumeration<1>>{};
   const auto permutations_2x2 = TypeArgument<PermutationEnumeration<2>>{};
   const auto permutations_3x3 = TypeArgument<PermutationEnumeration<3>>{};

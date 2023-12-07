@@ -13,7 +13,7 @@ template <int block_dim_, class Value>
 struct TestMatrixTridiagonal {
   static constexpr int block_dim = block_dim_;
 
-  struct MatrixA {
+  struct Matrix {
     struct Entry {
       std::size_t row_index;
       std::size_t col_index;
@@ -43,12 +43,19 @@ struct TestMatrixTridiagonal {
     constexpr Value valueAt(const std::size_t i) const {
       return Sparsity::entries[i].value;
     }
-
-    static constexpr double expected_error_amplifier = 16.0;
-    static constexpr const char* description() { return "Tridiagonal"; }
   };
 
-  struct MatrixB {
+  static constexpr double expected_error_amplifier = 16.0;
+  static constexpr const char* description() { return "Tridiagonal"; }
+
+  static auto generate(const std::size_t num_matrices) {
+    return std::vector<Matrix>(num_matrices);
+  }
+};
+
+template <int block_dim, class Value>
+struct TestMatrixSingleEntryTopRight {
+  struct Matrix {
     static constexpr auto sparsity =
         makeSparsity<block_dim, block_dim>({Entry{0, block_dim - 1}});
 
@@ -58,13 +65,13 @@ struct TestMatrixTridiagonal {
   };
 
   static constexpr double expected_error_amplifier = 4096.0;
-  static constexpr const char* description() { return "Tridiagonal"; }
+  static constexpr const char* description() {
+    return "Single entry top right";
+  }
 
-  explicit TestMatrixTridiagonal(const std::size_t num_repetitions)
-      : matrices_A(num_repetitions + 1), matrices_B(num_repetitions) {}
-
-  std::vector<MatrixA> matrices_A;
-  std::vector<MatrixB> matrices_B;
+  static auto generate(const std::size_t num_matrices) {
+    return std::vector<Matrix>(num_matrices);
+  }
 };
 
 }  // namespace ctldl
