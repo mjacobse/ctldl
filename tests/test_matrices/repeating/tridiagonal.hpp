@@ -50,7 +50,9 @@ struct TestMatrixTridiagonal {
   static constexpr double expected_error_amplifier = 16.0;
   static constexpr const char* description() { return "Tridiagonal"; }
 
-  static auto generate(const std::size_t num_matrices) {
+  template <class ValueGenerator>
+  static auto generate(ValueGenerator& /*value_generator*/,
+                       const std::size_t num_matrices) {
     return std::vector<Matrix>(num_matrices);
   }
 };
@@ -71,7 +73,9 @@ struct TestMatrixSingleEntryTopRight {
     return "Single entry top right";
   }
 
-  static auto generate(const std::size_t num_matrices) {
+  template <class ValueGenerator>
+  static auto generate(ValueGenerator& /*value_generator*/,
+                       const std::size_t num_matrices) {
     return std::vector<Matrix>(num_matrices);
   }
 };

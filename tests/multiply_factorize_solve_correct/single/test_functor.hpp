@@ -10,18 +10,20 @@
 
 #include <array>
 #include <limits>
+#include <random>
 
 namespace ctldl {
 
 template <class TestMatrix, class PermutationIn, class Value,
           class FactorizeMethod>
 struct TesterMultiplyFactorizeSolveCorrectSingle {
-  void operator()(const SolutionGenerator& solution_generator) const {
+  void operator()(const SolutionGenerator& solution_generator,
+                  std::mt19937& value_generator) const {
     constexpr auto& sparsity = TestMatrix::Matrix::sparsity;
     constexpr auto dim = sparsity.num_rows;
     constexpr Permutation<dim> permutation(PermutationIn::permutation);
 
-    auto test_matrix = generateMatrix(TestMatrix{});
+    auto test_matrix = generateMatrix(TestMatrix{}, value_generator);
     Factorization<sparsity, Value, permutation> factorization;
     factorization.factorize(test_matrix, FactorizeMethod{});
 

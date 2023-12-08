@@ -43,7 +43,9 @@ struct TestMatrixLFAT5 {
   static constexpr double expected_error_amplifier = 8192.0;
   static constexpr const char* description() { return "LFAT5"; }
 
-  static auto generate(const std::size_t num_matrices) {
+  template <class ValueGenerator>
+  static auto generate(ValueGenerator& /*value_generator*/,
+                       const std::size_t num_matrices) {
     return std::vector<Matrix>(num_matrices);
   }
 };

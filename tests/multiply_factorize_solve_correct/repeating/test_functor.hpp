@@ -14,6 +14,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <random>
 #include <vector>
 
 namespace ctldl {
@@ -22,7 +23,8 @@ template <class TestMatrixA, class TestMatrixB,
           class PermutationIn, class Value, class FactorizeMethod>
 struct TesterMultiplyFactorizeSolveCorrectRepeating {
   void operator()(const SolutionGenerator& solution_generator,
-                  const std::size_t num_repetitions) const {
+                  const std::size_t num_repetitions,
+                  std::mt19937& value_generator) const {
     constexpr auto& sparsity_A = TestMatrixA::Matrix::sparsity;
     constexpr auto& sparsity_B = TestMatrixB::Matrix::sparsity;
 
@@ -31,8 +33,10 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
     constexpr auto block_dim = std::size_t{sparsity_A.num_rows};
 
-    const auto matrices_A = generateMatrices(TestMatrixA{}, num_repetitions + 1);
-    const auto matrices_B = generateMatrices(TestMatrixB{}, num_repetitions);
+    const auto matrices_A =
+        generateMatrices(TestMatrixA{}, value_generator, num_repetitions + 1);
+    const auto matrices_B =
+        generateMatrices(TestMatrixB{}, value_generator, num_repetitions);
     FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B, Value,
                                            PermutationIn::permutation>
         factorization(num_repetitions);

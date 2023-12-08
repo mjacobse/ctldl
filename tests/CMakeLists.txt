@@ -1,5 +1,6 @@
 add_executable(tests_integration
     multiply_factorize_solve_correct/repeating/larger_examples_good_permutation.cpp
+    multiply_factorize_solve_correct/repeating/random_examples.cpp
     multiply_factorize_solve_correct/repeating/small_examples_all_permutations.cpp
     multiply_factorize_solve_correct/single/larger_examples_good_permutation.cpp
     multiply_factorize_solve_correct/single/small_examples_all_permutations.cpp

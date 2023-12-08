@@ -32,7 +32,9 @@ struct TestMatrixNos2A {
   static constexpr double expected_error_amplifier = 1.0;
   static constexpr const char* description() { return "Nos2 A"; }
 
-  static auto generate(const std::size_t num_matrices) {
+  template <class ValueGenerator>
+  static auto generate(ValueGenerator& /*value_generator*/,
+                       const std::size_t num_matrices) {
     return std::vector<Matrix>(num_matrices);
   }
 };
@@ -64,7 +66,9 @@ struct TestMatrixNos2B {
   static constexpr double expected_error_amplifier = 32768.0;
   static constexpr const char* description() { return "Nos2 B"; }
 
-  static auto generate(const std::size_t num_matrices) {
+  template <class ValueGenerator>
+  static auto generate(ValueGenerator& /*value_generator*/,
+                       const std::size_t num_matrices) {
     return std::vector<Matrix>(num_matrices);
   }
 };

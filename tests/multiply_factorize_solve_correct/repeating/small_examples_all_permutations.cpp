@@ -10,6 +10,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <functional>
+#include <random>
+
 namespace ctldl {
 namespace {
 
@@ -44,9 +47,11 @@ BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
        getSolutionGeneratorNormallyDistributed(1000.0)});
   const auto repetition_counts = makeValueArgument<std::size_t>({0, 1, 2, 9});
 
+  std::mt19937 value_generator{0};
   const auto test_set = matrix_permutation_pairs * factorize_value_types *
                         factorize_method * solution_generators *
-                        repetition_counts;
+                        repetition_counts *
+                        makeValueArgument({std::ref(value_generator)});
   foreach<TesterMultiplyFactorizeSolveCorrectRepeating>(test_set);
 }
 
