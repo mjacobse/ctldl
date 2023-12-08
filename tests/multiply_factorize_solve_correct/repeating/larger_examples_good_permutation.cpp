@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
   const auto solution_generators = makeValueArgument(
       {getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
        getSolutionGeneratorNormallyDistributed(1000.0)});
-  const auto repetition_counts = makeValueArgument({0, 1, 2, 9});
+  const auto repetition_counts = makeValueArgument<std::size_t>({0, 1, 2, 9});
 
   const auto test_set = matrix_permutation_pairs * factorize_value_types *
                         factorize_method * solution_generators *
