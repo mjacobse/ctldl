@@ -2,6 +2,7 @@
 
 #include "tests/utility/is_specialization_of.hpp"
 #include "tests/utility/test_arguments.hpp"
+#include "tests/utility/tuple.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -162,8 +163,8 @@ struct TypeArgument {
   static constexpr auto get(const std::size_t i_values) {
     assert(i_values == 0);
     static_cast<void>(i_values);
-    using TestTypes = std::tuple<std::tuple_element_t<i_types, Types>>;
-    using TestValues = std::tuple<>;
+    using TestTypes = Tuple<std::tuple_element_t<i_types, Types>>;
+    using TestValues = Tuple<>;
     return TestArguments<TestTypes, TestValues>{};
   }
 };
@@ -196,8 +197,8 @@ class ValueArgument {
   constexpr auto get(const std::size_t i_values) const {
     static_assert(i_types == 0);
     assert(i_values < m_num_values);
-    return TestArguments<std::tuple<>, std::tuple<T>>{
-        std::make_tuple(m_values[static_cast<std::ptrdiff_t>(i_values)])};
+    return TestArguments<Tuple<>, Tuple<T>>{
+        m_values[static_cast<std::ptrdiff_t>(i_values)]};
   }
 
  private:

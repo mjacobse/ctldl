@@ -1,6 +1,7 @@
 #pragma once
 
-#include <tuple>
+#include "tests/utility/tuple.hpp"
+
 #include <utility>
 
 namespace ctldl {
@@ -16,12 +17,12 @@ template <class TypeTupleLhs, class ValueTupleLhs, class TypeTupleRhs,
 constexpr auto catTestArgs(
     const TestArguments<TypeTupleLhs, ValueTupleLhs>& lhs,
     const TestArguments<TypeTupleRhs, ValueTupleRhs>& rhs) {
-  using TypeTupleCat = decltype(std::tuple_cat(std::declval<TypeTupleLhs>(),
-                                               std::declval<TypeTupleRhs>()));
-  using ValueTupleCat = decltype(std::tuple_cat(std::declval<ValueTupleLhs>(),
-                                                std::declval<ValueTupleRhs>()));
+  using TypeTupleCat = decltype(tupleCat(std::declval<TypeTupleLhs>(),
+                                         std::declval<TypeTupleRhs>()));
+  using ValueTupleCat = decltype(tupleCat(std::declval<ValueTupleLhs>(),
+                                          std::declval<ValueTupleRhs>()));
   return TestArguments<TypeTupleCat, ValueTupleCat>{
-      std::tuple_cat(lhs.test_values, rhs.test_values)};
+      tupleCat(lhs.test_values, rhs.test_values)};
 }
 
 }  // namespace ctldl

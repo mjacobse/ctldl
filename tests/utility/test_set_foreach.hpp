@@ -1,9 +1,9 @@
 #pragma once
 
 #include "tests/utility/test_set.hpp"
+#include "tests/utility/tuple.hpp"
 
 #include <numeric>
-#include <tuple>
 
 namespace ctldl {
 
@@ -11,10 +11,10 @@ template <template <class...> class Callable, class Types>
 struct Apply {};
 
 template <template <class...> class Callable, class... Types>
-struct Apply<Callable, std::tuple<Types...>> {
+struct Apply<Callable, Tuple<Types...>> {
   template <class Values>
   void operator()(const Values& values) {
-    std::apply(Callable<Types...>{}, values);
+    apply(Callable<Types...>{}, values);
   }
 };
 
