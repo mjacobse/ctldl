@@ -32,13 +32,14 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     static_assert(isSquare(sparsity_B));
     static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
     constexpr auto block_dim = std::size_t{sparsity_A.num_rows};
+    constexpr Permutation<block_dim> permutation(PermutationIn::permutation);
 
     const auto matrices_A =
         generateMatrices(TestMatrixA{}, value_generator, num_repetitions + 1);
     const auto matrices_B =
         generateMatrices(TestMatrixB{}, value_generator, num_repetitions);
     FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B, Value,
-                                           PermutationIn::permutation>
+                                           permutation>
         factorization(num_repetitions);
     factorization.factorize(matrices_A, matrices_B, FactorizeMethod{});
 
@@ -48,7 +49,6 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     multiplyRepeatingBlockTridiagonal(matrices_A, matrices_B, solution, rhs);
     factorization.solveInPlace(rhs);
 
-    const Permutation<block_dim> permutation(PermutationIn::permutation);
     BOOST_TEST_INFO("Test matrix A:     " << TestMatrixA::description());
     BOOST_TEST_INFO("Test matrix B:     " << TestMatrixB::description());
     BOOST_TEST_INFO("Permutation:       " << toTestInfo(permutation));

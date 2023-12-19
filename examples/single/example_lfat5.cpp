@@ -1,6 +1,7 @@
 // Example Overwolfach/LFAT5 from the SuiteSparse Matrix Collection
 
 #include <ctldl/factor_data/factorization.hpp>
+#include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
 
 #include <algorithm>
@@ -12,8 +13,8 @@
 namespace {
 
 constexpr int dim = 14;
-constexpr std::array<std::size_t, dim> permutation = {13, 11, 12, 8, 7,  0, 4,
-                                                      3,  9,  1,  5, 10, 2, 6};
+constexpr ctldl::Permutation<dim> permutation{
+    {13, 11, 12, 8, 7, 0, 4, 3, 9, 1, 5, 10, 2, 6}};
 
 struct Matrix {
   static constexpr auto sparsity = ctldl::makeSparsity<dim, dim>(

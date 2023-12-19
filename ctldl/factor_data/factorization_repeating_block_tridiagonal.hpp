@@ -31,12 +31,11 @@ namespace ctldl {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <auto sparsity_in_A, auto sparsity_in_B, class Value_,
-          auto permutation_in = PermutationIdentity{}>
+template <Sparsity sparsity_A, Sparsity sparsity_B, class Value_,
+          Permutation<sparsity_A.num_rows> permutation_in =
+              PermutationIdentity{}>
 class FactorizationRepeatingBlockTridiagonal {
  private:
-  static constexpr auto sparsity_A = makeSparsity(sparsity_in_A);
-  static constexpr auto sparsity_B = makeSparsity(sparsity_in_B);
   static_assert(isSquare(sparsity_A));
   static_assert(isSquare(sparsity_B));
   static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
@@ -44,7 +43,7 @@ class FactorizationRepeatingBlockTridiagonal {
  public:
   using Value = Value_;
   static constexpr auto dim = std::size_t{sparsity_A.num_rows};
-  static constexpr Permutation<dim> permutation{permutation_in};
+  static constexpr auto permutation = permutation_in;
 
   static constexpr auto sparsity_factor =
       getFilledInSparsityRepeating<sparsity_A, sparsity_B, permutation>();

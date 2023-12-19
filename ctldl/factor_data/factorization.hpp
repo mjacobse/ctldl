@@ -9,6 +9,7 @@
 #include <ctldl/solve/solve_forward_substitution.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/is_square.hpp>
+#include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/filled_in_sparsity.hpp>
 
@@ -17,15 +18,15 @@
 
 namespace ctldl {
 
-template <auto sparsity_orig_in, class Value_,
-          auto permutation_in = PermutationIdentity{}>
+template <Sparsity sparsity_orig, class Value_,
+          Permutation<sparsity_orig.num_rows> permutation_in =
+              PermutationIdentity{}>
 class Factorization {
  public:
-  static constexpr auto sparsity_orig = makeSparsity(sparsity_orig_in);
   static_assert(isSquare(sparsity_orig));
   static constexpr auto dim = std::size_t{sparsity_orig.num_rows};
   using Value = Value_;
-  static constexpr Permutation<dim> permutation{permutation_in};
+  static constexpr auto permutation = permutation_in;
 
   /**
    * Given an entry location in the factor, returns the location of the

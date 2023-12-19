@@ -2,6 +2,8 @@
 
 #include <ctldl/factor_data/factorization.hpp>
 #include <ctldl/permutation/invert_permutation.hpp>
+#include <ctldl/permutation/permutation.hpp>
+#include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 
 namespace ctldl {
@@ -11,7 +13,7 @@ namespace ctldl {
 // We implement that by unpermuting the sparsity and letting the Factorization
 // permute it back again. That way we factorize the correct sparsity and also
 // remember the correct permutation within Factorization.
-template <auto sparsity, class Value, auto permutation>
+template <Sparsity sparsity, class Value, Permutation permutation>
 using FactorizationAlreadyPermuted =
     Factorization<getSparsityLowerTriangle<sparsity>(
                       invertPermutation(permutation)),

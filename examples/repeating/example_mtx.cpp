@@ -2,6 +2,7 @@
 
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
 #include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal.hpp>
+#include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 
 #include <algorithm>
@@ -19,7 +20,7 @@ constexpr auto sparsity_A =
     ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesA());
 constexpr auto sparsity_B =
     ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesB());
-constexpr auto permutation = getRepeatingMtxPermutation();
+constexpr auto permutation = ctldl::Permutation{getRepeatingMtxPermutation()};
 
 template <auto sparsity_in>
 struct MatrixInput {

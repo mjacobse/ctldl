@@ -1,4 +1,5 @@
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/permutation/permutation.hpp>
 
 #include <algorithm>
 #include <array>
@@ -48,7 +49,7 @@ struct MatrixB {
   }
 };
 
-constexpr std::array<std::size_t, dim> permutation = {0, 1, 2};
+constexpr ctldl::Permutation<dim> permutation{{0, 1, 2}};
 
 }  // anonymous namespace
 

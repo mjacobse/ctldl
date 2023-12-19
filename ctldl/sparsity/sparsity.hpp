@@ -5,7 +5,9 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <cstddef>
+#include <ranges>
 
 namespace ctldl {
 
@@ -17,15 +19,26 @@ struct Sparsity {
 
   std::array<Entry, nnz> entries;
 
-  template <class Entries>
-  constexpr explicit Sparsity(const Entries& entries_init) {
+  constexpr explicit Sparsity(std::ranges::input_range auto&& entries_init) {
     fixInitIfZeroLengthArray(entries);
     std::transform(std::cbegin(entries_init), std::cend(entries_init),
                    std::begin(entries), [](const auto& entry) {
                      return Entry{entry.row_index, entry.col_index};
                    });
   }
+
+  template <class SparsityIn>
+    requires(std::ranges::input_range<decltype(SparsityIn::entries)> &&
+             std::convertible_to<decltype(SparsityIn::num_rows), std::size_t> &&
+             std::convertible_to<decltype(SparsityIn::num_cols), std::size_t>)
+  constexpr Sparsity(const SparsityIn& sparsity_in)
+      : Sparsity(sparsity_in.entries) {}
 };
+
+template <class SparsityIn>
+Sparsity(const SparsityIn& sparsity_in)
+    -> Sparsity<std::tuple_size_v<decltype(SparsityIn::entries)>,
+                SparsityIn::num_rows, SparsityIn::num_cols>;
 
 template <std::size_t num_rows, std::size_t num_cols, class Entries>
 constexpr auto makeSparsity(const Entries& entries) {
