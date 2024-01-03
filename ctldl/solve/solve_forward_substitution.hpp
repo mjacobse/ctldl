@@ -26,6 +26,63 @@ template <std::size_t i, class FactorData, class Vector>
   return value;
 }
 
+template <std::size_t i, class FactorData, class VectorSolution,
+          class VectorPartialSolution>
+[[gnu::always_inline]] inline auto solveForwardSubstitutionImpl(
+    const FactorData& factor_block, const VectorSolution& solution,
+    const VectorPartialSolution& partial_solution) {
+  using Value = typename FactorData::Value;
+
+  constexpr auto i_orig = FactorData::origRowIndex(i);
+  auto partial_solution_i = static_cast<Value>(partial_solution[i_orig]);
+  partial_solution_i = solveForwardSubstitutionRow<i>(factor_block, solution,
+                                                      partial_solution_i);
+  return partial_solution_i;
+}
+
+template <std::size_t... RowIndices, class FactorData, class VectorSolution,
+          class VectorPartialSolution>
+void solveForwardSubstitutionImpl(const FactorData& factor_block,
+                                  const VectorSolution& solution,
+                                  VectorPartialSolution& partial_solution,
+                                  std::index_sequence<RowIndices...>) {
+  ((partial_solution[FactorData::origRowIndex(RowIndices)] =
+        solveForwardSubstitutionImpl<RowIndices>(factor_block, solution,
+                                                 partial_solution)),
+   ...);
+}
+
+/**
+ * Performs a single block-operation of the forward substitution with the
+ * factor of a block-matrix.
+ *
+ * For the example
+ * \code
+ * [*            ]  [*]   [*]
+ * [*  *         ]  [s]   [*]
+ * [*  *  *      ]  [*] = [*]
+ * [*  F  *  *   ]  [*]   [r]
+ * [*  *  *  *  *]  [*]   [*]
+ * \endcode
+ *
+ * one of these block operations would be subtracting the product of F and s
+ * from r. That is exactly what this function does with F: \p factor_block,
+ * s: \p solution and r: \p partial_solution. So itbasically performs the
+ * matrix-vector operation partial_solution -= factor_block * solution.
+ *
+ * The underlying permutation of the original matrix that was factorized is
+ * applied internally, so \p partial_solution and \p solution should be given
+ * unpermuted, corresponding to the original matrix order.
+ */
+template <class FactorData, class VectorSolution, class VectorPartialSolution>
+void solveForwardSubstitution(const FactorData& factor_block,
+                              const VectorSolution& solution,
+                              VectorPartialSolution& partial_solution) {
+  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
+  solveForwardSubstitutionImpl(factor_block, solution, partial_solution,
+                               std::make_index_sequence<num_rows>());
+}
+
 template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
           class VectorLeft>
 [[gnu::always_inline]] inline auto solveForwardSubstitutionImpl(
@@ -56,6 +113,29 @@ void solveForwardSubstitutionImpl(const FactorData& diag,
    ...);
 }
 
+/**
+ * Optimized overload for forward substitution of a block-row with exactly one
+ * off-diagonal and one diagonal block in one go.
+ *
+ * For the example
+ * \code
+ * [*            ]  [*]   [*]
+ * [*  *         ]  [s]   [*]
+ * [*  *  *      ]  [*] = [*]
+ * [0  F  0  D   ]  [*]   [r]
+ * [*  *  *  *  *]  [*]   [*]
+ * \endcode
+ *
+ * this combined block operation would be subtracting the product of F and s and
+ * the product of D and s from r. That is exactly what this function does with
+ * F: \p left, D: \p diag, s: \p solution_left and r: \p rhs_in_solution_out. So
+ * it basically performs the matrix-vector operation
+ * rhs_in_solution_out -= left * solution_left + diag * rhs_in_solution_out.
+ *
+ * The underlying permutation of the original matrix that was factorized is
+ * applied internally, so \p solution_left and \p rhs_in_solution_out should be
+ * given unpermuted, corresponding to the original matrix order.
+ */
 template <class FactorData, class Vector, class FactorDataLeft,
           class VectorLeft>
 void solveForwardSubstitution(const FactorData& diag,
@@ -70,12 +150,7 @@ void solveForwardSubstitution(const FactorData& diag,
 template <class FactorData, class Vector>
 void solveForwardSubstitution(const FactorData& diag,
                               Vector& rhs_in_solution_out) {
-  using Value = typename FactorData::Value;
-
-  constexpr EmptyFactorDataLeft<FactorData> empty_left;
-  constexpr std::array<Value, 0> empty_solution_left{};
-  solveForwardSubstitution(diag, rhs_in_solution_out, empty_left,
-                           empty_solution_left);
+  solveForwardSubstitution(diag, rhs_in_solution_out, rhs_in_solution_out);
 }
 
 }  // namespace ctldl
