@@ -16,6 +16,13 @@
 
 namespace ctldl {
 
+/**
+ * Finishes factorization of the entry given by \p entry_index in the given
+ * diagonal block \p fact .
+ *
+ * \return The contribution of the finished entry to the diagonal entry in its
+ * row.
+ */
 template <std::size_t entry_index, class FactorData>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerSelf(
     FactorData& fact) {
@@ -44,122 +51,160 @@ template <std::size_t... EntryIndices, class FactorData>
   return (Di_init - ... - factorizeUpLookingInnerSelf<EntryIndices>(fact));
 }
 
-template <std::size_t entry_index, class FactorDataAbove, class FactorData,
-          class FactorDataLeft>
+/**
+ * Finishes factorization of the entry given by \p entry_index in block
+ * \p factor21 (L21) after applying its contributions to entries to the right
+ * in block \p factor22 (L22).
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 * L22  ]
+ * [*  *  *  *  *]
+ *
+ * \return The contribution of the finished entry to the diagonal entry in its
+ * row.
+ */
+template <std::size_t entry_index, class FactorData11, class FactorData21,
+          class FactorData22>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
-    const FactorDataAbove& above, FactorDataLeft& left, FactorData& self) {
-  constexpr auto i = FactorDataLeft::sparsity.entries[entry_index].row_index;
-  constexpr auto j = FactorDataLeft::sparsity.entries[entry_index].col_index;
+    const FactorData11& factor11, FactorData21& factor21,
+    FactorData22& factor22) {
+  constexpr auto i = FactorData21::sparsity.entries[entry_index].row_index;
+  constexpr auto j = FactorData21::sparsity.entries[entry_index].col_index;
 
-  const auto Lij_scaled = left.L[entry_index];
+  const auto Lij_scaled = factor21.L[entry_index];
 
-  static constexpr auto influenced_list_left =
-      getInfluencedList<i, j, FactorDataAbove::sparsity,
-                        FactorDataLeft::sparsity>();
-  for (const auto influenced : influenced_list_left) {
-    left.L[influenced.entry_index_target] -=
-        above.L[influenced.entry_index_source] * Lij_scaled;
+  static constexpr auto influenced_list21 =
+      getInfluencedList<i, j, FactorData11::sparsity, FactorData21::sparsity>();
+  for (const auto influenced : influenced_list21) {
+    factor21.L[influenced.entry_index_target] -=
+        factor11.L[influenced.entry_index_source] * Lij_scaled;
   }
-  static constexpr auto influenced_list_self =
-      getInfluencedListLowerTriangle<i, j, FactorDataLeft::sparsity,
-                                     FactorData::sparsity>();
-  for (const auto influenced : influenced_list_self) {
-    self.L[influenced.entry_index_target] -=
-        left.L[influenced.entry_index_source] * Lij_scaled;
+  static constexpr auto influenced_list22 =
+      getInfluencedListLowerTriangle<i, j, FactorData21::sparsity,
+                                     FactorData22::sparsity>();
+  for (const auto influenced : influenced_list22) {
+    factor22.L[influenced.entry_index_target] -=
+        factor21.L[influenced.entry_index_source] * Lij_scaled;
   }
 
-  const auto Lij = Lij_scaled / above.D[j];
-  left.L[entry_index] = Lij;
+  const auto Lij = Lij_scaled / factor11.D[j];
+  factor21.L[entry_index] = Lij;
   return Lij_scaled * Lij;
 }
 
-template <std::size_t... EntryIndices, class FactorDataAbove,
-          class FactorDataLeft, class FactorData>
+template <std::size_t... EntryIndices, class FactorData11, class FactorData21,
+          class FactorData22>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
-    const FactorDataAbove& above, FactorDataLeft& left, FactorData& self,
-    typename FactorData::Value Di_init, std::index_sequence<EntryIndices...>) {
-  return (Di_init - ... -
-          factorizeUpLookingInnerLeft<EntryIndices>(above, left, self));
+    const FactorData11& factor11, FactorData21& factor21,
+    FactorData22& factor22, typename FactorData22::Value Di_init,
+    std::index_sequence<EntryIndices...>) {
+  return (
+      Di_init - ... -
+      factorizeUpLookingInnerLeft<EntryIndices>(factor11, factor21, factor22));
 }
 
-template <std::size_t i, class FactorDataAbove, class MatrixLeft,
-          class MatrixSelf, class FactorDataLeft, class FactorData>
+template <std::size_t i, class FactorData11, class Matrix21, class Matrix22,
+          class FactorData21, class FactorData22>
 [[gnu::always_inline]] inline void factorizeUpLookingImpl(
-    const FactorDataAbove& above, const MatrixLeft& input_left,
-    const MatrixSelf& input_self, FactorDataLeft& left, FactorData& self) {
-  constexpr auto& sparsity = FactorData::sparsity;
-  constexpr auto& sparsity_left = FactorDataLeft::sparsity;
-  static_assert(sparsity.num_rows == sparsity_left.num_rows);
-  using Value = typename FactorData::Value;
+    const FactorData11& factor11, const Matrix21& input21,
+    const Matrix22& input22, FactorData21& factor21, FactorData22& factor22) {
+  constexpr auto& sparsity21 = FactorData21::sparsity;
+  constexpr auto& sparsity22 = FactorData22::sparsity;
+  static_assert(sparsity22.num_rows == sparsity21.num_rows);
+  using Value = typename FactorData22::Value;
 
-  constexpr auto i_orig = FactorData::origRowIndex(i);
-  auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input_self));
+  constexpr auto i_orig = FactorData22::origRowIndex(i);
+  auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input22));
 
-  fillRowWithOriginalMatrixValues<i>(input_left, left);
-  fillRowWithOriginalMatrixValues<i>(input_self, self);
+  fillRowWithOriginalMatrixValues<i>(input21, factor21);
+  fillRowWithOriginalMatrixValues<i>(input22, factor22);
 
-  constexpr auto row_begin_left = sparsity_left.row_begin_indices[i];
-  constexpr auto row_end_left = sparsity_left.row_begin_indices[i + 1];
-  Di = factorizeUpLookingInnerLeft(
-      above, left, self, Di, makeIndexSequence<row_begin_left, row_end_left>());
-  constexpr auto row_begin_self = sparsity.row_begin_indices[i];
-  constexpr auto row_end_self = sparsity.row_begin_indices[i + 1];
-  Di = factorizeUpLookingInnerSelf(
-      self, Di, makeIndexSequence<row_begin_self, row_end_self>());
-  self.D[i] = Di;
+  constexpr auto row_begin21 = sparsity21.row_begin_indices[i];
+  constexpr auto row_end21 = sparsity21.row_begin_indices[i + 1];
+  Di = factorizeUpLookingInnerLeft(factor11, factor21, factor22, Di,
+                                   makeIndexSequence<row_begin21, row_end21>());
+  constexpr auto row_begin22 = sparsity22.row_begin_indices[i];
+  constexpr auto row_end22 = sparsity22.row_begin_indices[i + 1];
+  Di = factorizeUpLookingInnerSelf(factor22, Di,
+                                   makeIndexSequence<row_begin22, row_end22>());
+  factor22.D[i] = Di;
 }
 
-template <std::size_t... RowIndices, class FactorDataAbove, class MatrixLeft,
-          class MatrixSelf, class FactorDataLeft, class FactorData>
-void factorizeUpLookingImpl(const FactorDataAbove& above,
-                            const MatrixLeft& input_left,
-                            const MatrixSelf& input_self, FactorDataLeft& left,
-                            FactorData& self,
+template <std::size_t... RowIndices, class FactorData11, class Matrix21,
+          class Matrix22, class FactorData21, class FactorData22>
+void factorizeUpLookingImpl(const FactorData11& factor11,
+                            const Matrix21& input21, const Matrix22& input22,
+                            FactorData21& factor21, FactorData22& factor22,
                             std::index_sequence<RowIndices...>) {
-  (factorizeUpLookingImpl<RowIndices>(above, input_left, input_self, left,
-                                      self),
+  (factorizeUpLookingImpl<RowIndices>(factor11, input21, input22, factor21,
+                                      factor22),
    ...);
 }
 
-template <class FactorDataAbove, class MatrixLeft, class MatrixSelf,
-          class FactorDataLeft, class FactorData>
-void factorizeUpLooking(const FactorDataAbove& above,
-                        const MatrixLeft& input_left,
-                        const MatrixSelf& input_self, FactorDataLeft& left,
-                        FactorData& self) {
-  static_assert(isChordalBlocked(FactorDataAbove::sparsity,
-                                 FactorDataLeft::sparsity,
-                                 FactorData::sparsity));
-  static_assert(isSparsitySubsetLowerTriangle<MatrixSelf::sparsity>(
-      FactorData::sparsity, FactorData::permutation));
-  static_assert(isSparsitySubset(MatrixLeft::sparsity, FactorDataLeft::sparsity,
-                                 FactorDataLeft::permutation_row,
-                                 FactorDataLeft::permutation_col));
-  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
-  factorizeUpLookingImpl(above, input_left, input_self, left, self,
+/**
+ * Factorize blocks \p factor21 (L21) and \p factor22 (L22) using input matrix
+ * values \p input21 and \p input22 for those blocks and the already finished
+ * block \p factor22 (L11) in an up-looking way.
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 * L22  ]
+ * [*  *  *  *  *]
+ *
+ * Note that this implicitly assumes that no other blocks have influence on L21
+ * and L22, since no partial result can be returned that other contributions
+ * could be added to. Instead the final result is computed in one go directly
+ * starting with the input values.
+ */
+template <class FactorData11, class Matrix21, class Matrix22,
+          class FactorData21, class FactorData22>
+void factorizeUpLooking(const FactorData11& factor11, const Matrix21& input21,
+                        const Matrix22& input22, FactorData21& factor21,
+                        FactorData22& factor22) {
+  static_assert(isChordalBlocked(FactorData11::sparsity, FactorData21::sparsity,
+                                 FactorData22::sparsity));
+  static_assert(isSparsitySubsetLowerTriangle<Matrix22::sparsity>(
+      FactorData22::sparsity, FactorData22::permutation));
+  static_assert(isSparsitySubset(Matrix21::sparsity, FactorData21::sparsity,
+                                 FactorData21::permutation_row,
+                                 FactorData21::permutation_col));
+  constexpr auto num_rows = std::size_t{FactorData22::sparsity.num_rows};
+  factorizeUpLookingImpl(factor11, input21, input22, factor21, factor22,
                          std::make_index_sequence<num_rows>());
 }
 
+/**
+ * Factorize the given diagonal block \p factor using the given input matrix
+ * values \p matrix in an up-looking way.
+ *
+ * Note that this implicitly assumes that no other blocks have influence on this
+ * diagonal block, since no partial result can be returned that other
+ * contributions could be added to. Instead the final result is computed in one
+ * go directly starting with the input values.
+ */
 template <class FactorData, class Matrix>
-void factorizeUpLooking(FactorData& self, const Matrix& matrix) {
-  constexpr EmptyFactorDataLeft<FactorData> empty_left;
-  constexpr EmptyFactorDataDiagonal<decltype(empty_left)> empty_above;
-  constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_input_left;
-  factorizeUpLooking(empty_above, empty_input_left, matrix, empty_left, self);
+void factorizeUpLooking(FactorData& factor, const Matrix& matrix) {
+  constexpr EmptyFactorDataLeft<FactorData> empty21;
+  constexpr EmptyFactorDataDiagonal<decltype(empty21)> empty11;
+  constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_input21;
+  factorizeUpLooking(empty11, empty_input21, matrix, empty21, factor);
 }
 
-template <class FactorDataAbove, class MatrixLeft, class MatrixSelf,
-          class FactorDataLeft, class FactorData>
-void factorize(const FactorDataAbove& above, const MatrixLeft& input_left,
-               const MatrixSelf& input_self, FactorDataLeft& left,
-               FactorData& self, FactorizeMethodUpLooking) {
-  factorizeUpLooking(above, input_left, input_self, left, self);
+template <class FactorData11, class Matrix21, class Matrix22,
+          class FactorData21, class FactorData22>
+void factorize(const FactorData11& factor11, const Matrix21& input21,
+               const Matrix22& input22, FactorData21& factor21,
+               FactorData22& factor22, FactorizeMethodUpLooking) {
+  factorizeUpLooking(factor11, input21, input22, factor21, factor22);
 }
 
 template <class FactorData, class Matrix>
-void factorize(FactorData& self, const Matrix& matrix,
+void factorize(FactorData& factor, const Matrix& matrix,
                FactorizeMethodUpLooking) {
-  factorizeUpLooking(self, matrix);
+  factorizeUpLooking(factor, matrix);
 }
 
 }  // namespace ctldl

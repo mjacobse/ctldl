@@ -19,54 +19,70 @@
 
 namespace ctldl {
 
-template <std::size_t entry_index_ij, class FactorData, class Matrix,
-          class FactorDataAbove>
+/**
+ * Factorize the entry given by \p entry_index in block \p factor21 (L21) using
+ * the input matrix values \p input21 for that block and the already finished
+ * block \p factor11 (L11).
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 *  *   ]
+ * [*  *  *  *  *]
+ */
+template <std::size_t entry_index_ij, class FactorData21, class Matrix21,
+          class FactorData11>
 [[gnu::always_inline]] inline void factorEntryWiseSubdiagonalImplRow(
-    FactorData& self, const Matrix& matrix, const FactorDataAbove& above) {
-  constexpr auto& sparsity = FactorData::sparsity;
-  constexpr auto& sparsity_above = FactorDataAbove::sparsity;
-  using Value = typename FactorData::Value;
+    FactorData21& factor21, const Matrix21& input21,
+    const FactorData11& factor11) {
+  constexpr auto& sparsity11 = FactorData11::sparsity;
+  constexpr auto& sparsity21 = FactorData21::sparsity;
+  using Value = typename FactorData21::Value;
 
-  constexpr auto i = std::size_t{sparsity.entries[entry_index_ij].row_index};
-  constexpr auto j = std::size_t{sparsity.entries[entry_index_ij].col_index};
+  constexpr auto i = std::size_t{sparsity21.entries[entry_index_ij].row_index};
+  constexpr auto j = std::size_t{sparsity21.entries[entry_index_ij].col_index};
 
-  constexpr auto entry_orig = FactorData::origEntry({i, j});
+  constexpr auto entry_orig = FactorData21::origEntry({i, j});
   auto Lij = static_cast<Value>(
-      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(matrix));
+      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input21));
 
   static constexpr auto contributions =
-      getContributionsMixed<sparsity_above, sparsity, i, j>();
+      getContributionsMixed<sparsity11, sparsity21, i, j>();
   for (const auto c : contributions) {
-    Lij -= self.L[c.entry_index_ik] * above.L[c.entry_index_jk] * above.D[c.k];
+    Lij -= factor21.L[c.entry_index_ik] * factor11.L[c.entry_index_jk] *
+           factor11.D[c.k];
   }
-  self.L[entry_index_ij] = Lij / above.D[j];
+  factor21.L[entry_index_ij] = Lij / factor11.D[j];
 }
 
-template <std::size_t... EntryIndices, class FactorData, class Matrix,
-          class FactorDataAbove>
+template <std::size_t... EntryIndices, class FactorData21, class Matrix21,
+          class FactorData11>
 [[gnu::always_inline]] inline void factorEntryWiseSubdiagonalImplRow(
-    FactorData& self, const Matrix& matrix, const FactorDataAbove& above,
+    FactorData21& factor21, const Matrix21& input21, const FactorData11& factor11,
     std::index_sequence<EntryIndices...>) {
-  (factorEntryWiseSubdiagonalImplRow<EntryIndices>(self, matrix, above), ...);
+  (factorEntryWiseSubdiagonalImplRow<EntryIndices>(factor21, input21, factor11),
+   ...);
 }
 
-template <std::size_t i, class FactorData, class Matrix, class FactorDataAbove>
+template <std::size_t i, class FactorData21, class Matrix21, class FactorData11>
 [[gnu::always_inline]] inline void factorizeEntryWiseSubdiagonalImpl(
-    FactorData& self, const Matrix& matrix, const FactorDataAbove& above) {
-  constexpr auto& sparsity = FactorData::sparsity;
-  constexpr auto row_begin = std::size_t{sparsity.row_begin_indices[i]};
-  constexpr auto row_end = std::size_t{sparsity.row_begin_indices[i + 1]};
-  factorEntryWiseSubdiagonalImplRow(self, matrix, above,
+    FactorData21& factor21, const Matrix21& input21,
+    const FactorData11& factor11) {
+  constexpr auto& sparsity21 = FactorData21::sparsity;
+  constexpr auto row_begin = std::size_t{sparsity21.row_begin_indices[i]};
+  constexpr auto row_end = std::size_t{sparsity21.row_begin_indices[i + 1]};
+  factorEntryWiseSubdiagonalImplRow(factor21, input21, factor11,
                                     makeIndexSequence<row_begin, row_end>());
 }
 
-template <std::size_t... RowIndices, class FactorData, class Matrix,
-          class FactorDataAbove>
-void factorizeEntryWiseSubdiagonalImpl(FactorData& self,
-                                       const Matrix& input,
-                                       const FactorDataAbove& above,
+template <std::size_t... RowIndices, class FactorData21, class Matrix21,
+          class FactorData11>
+void factorizeEntryWiseSubdiagonalImpl(FactorData21& factor21,
+                                       const Matrix21& input21,
+                                       const FactorData11& factor11,
                                        std::index_sequence<RowIndices...>) {
-  (factorizeEntryWiseSubdiagonalImpl<RowIndices>(self, input, above), ...);
+  (factorizeEntryWiseSubdiagonalImpl<RowIndices>(factor21, input21, factor11),
+   ...);
 }
 
 template <std::size_t i, class FactorData, class FactorDataDiag>
@@ -98,116 +114,156 @@ template <class FactorData, class FactorDataDiag, std::size_t num_contributions>
   return value;
 }
 
-template <std::size_t entry_index_ij, class FactorData, class Matrix,
-          class FactorDataLeft, class FactorDataAbove>
+/**
+ * Factorize the entry given by \p entry_index in block \p factor22 (L22) using
+ * the input matrix values \p input22 for that block and the already finished
+ * blocks \p factor11 (L11) and \p factor21 (L21).
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 * L22  ]
+ * [*  *  *  *  *]
+ *
+ * \return The contribution of the finished entry to the diagonal entry in its
+ * row.
+ */
+template <std::size_t entry_index_ij, class FactorData22, class Matrix22,
+          class FactorData21, class FactorData11>
 [[gnu::always_inline]] inline auto factorizeEntryWiseImplRow(
-    FactorData& self, const Matrix& input, const FactorDataLeft& left,
-    const FactorDataAbove& above) {
-  constexpr auto& sparsity = FactorData::sparsity;
-  constexpr auto& sparsity_left = FactorDataLeft::sparsity;
-  using Value = typename FactorData::Value;
+    FactorData22& factor22, const Matrix22& input22,
+    const FactorData21& factor21, const FactorData11& factor11) {
+  constexpr auto& sparsity21 = FactorData21::sparsity;
+  constexpr auto& sparsity22 = FactorData22::sparsity;
+  using Value = typename FactorData22::Value;
 
-  constexpr auto i = std::size_t{sparsity.entries[entry_index_ij].row_index};
-  constexpr auto j = std::size_t{sparsity.entries[entry_index_ij].col_index};
+  constexpr auto i = std::size_t{sparsity22.entries[entry_index_ij].row_index};
+  constexpr auto j = std::size_t{sparsity22.entries[entry_index_ij].col_index};
 
-  constexpr auto entry_orig = FactorData::origEntry({i, j});
+  constexpr auto entry_orig = FactorData22::origEntry({i, j});
   auto Lij = static_cast<Value>(
-      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
+      getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input22));
 
-  static constexpr auto contributions_left =
-      getContributionsRectangular<sparsity_left, i, j>();
-  static constexpr auto contributions_self =
-      getContributionsLowerTriangle<sparsity, i, j>();
+  static constexpr auto contributions21 =
+      getContributionsRectangular<sparsity21, i, j>();
+  static constexpr auto contributions22 =
+      getContributionsLowerTriangle<sparsity22, i, j>();
 
-  Lij = applyContributions(left, above, contributions_left, Lij);
-  Lij = applyContributions(self, self, contributions_self, Lij);
-  Lij /= self.D[j];
-  self.L[entry_index_ij] = Lij;
+  Lij = applyContributions(factor21, factor11, contributions21, Lij);
+  Lij = applyContributions(factor22, factor22, contributions22, Lij);
+  Lij /= factor22.D[j];
+  factor22.L[entry_index_ij] = Lij;
 
-  return square(Lij) * self.D[j];
+  return square(Lij) * factor22.D[j];
 }
 
-template <std::size_t... EntryIndices, class FactorData, class Matrix,
-          class FactorDataLeft, class FactorDataAbove>
+template <std::size_t... EntryIndices, class FactorData22, class Matrix22,
+          class FactorData21, class FactorData11>
 [[gnu::always_inline]] inline auto factorizeEntryWiseImplRow(
-    FactorData& self, const Matrix& input, const FactorDataLeft& left,
-    const FactorDataAbove& above, const typename FactorData::Value Di_init,
+    FactorData22& factor22, const Matrix22& input22,
+    const FactorData21& factor21, const FactorData11& factor11,
+    const typename FactorData22::Value Di_init,
     std::index_sequence<EntryIndices...>) {
   return (Di_init - ... -
-          factorizeEntryWiseImplRow<EntryIndices>(self, input, left, above));
+          factorizeEntryWiseImplRow<EntryIndices>(factor22, input22, factor21,
+                                                  factor11));
 }
 
-template <std::size_t i, class FactorData, class Matrix, class FactorDataLeft,
-          class FactorDataAbove>
+template <std::size_t i, class FactorData22, class Matrix22, class FactorData21,
+          class FactorData11>
 [[gnu::always_inline]] inline void factorizeEntryWiseImpl(
-    FactorData& self, const Matrix& input, const FactorDataLeft& left,
-    const FactorDataAbove& above) {
-  constexpr auto& sparsity = FactorData::sparsity;
-  constexpr auto& sparsity_left = FactorDataLeft::sparsity;
-  static_assert(sparsity.num_rows == sparsity_left.num_rows);
-  using Value = typename FactorData::Value;
+    FactorData22& factor22, const Matrix22& input22,
+    const FactorData21& factor21, const FactorData11& factor11) {
+  constexpr auto& sparsity21 = FactorData21::sparsity;
+  constexpr auto& sparsity22 = FactorData22::sparsity;
+  static_assert(sparsity22.num_rows == sparsity21.num_rows);
+  using Value = typename FactorData22::Value;
 
-  constexpr auto row_begin = std::size_t{sparsity.row_begin_indices[i]};
-  constexpr auto row_end = std::size_t{sparsity.row_begin_indices[i + 1]};
+  constexpr auto row_begin = std::size_t{sparsity22.row_begin_indices[i]};
+  constexpr auto row_end = std::size_t{sparsity22.row_begin_indices[i + 1]};
 
-  constexpr auto i_orig = FactorData::origRowIndex(i);
-  auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input));
-  Di = applyContributionsRowDiagonal<i>(left, above, Di);
-  Di = factorizeEntryWiseImplRow(self, input, left, above, Di,
+  constexpr auto i_orig = FactorData22::origRowIndex(i);
+  auto Di = static_cast<Value>(getMatrixValueAt<i_orig, i_orig>(input22));
+  Di = applyContributionsRowDiagonal<i>(factor21, factor11, Di);
+  Di = factorizeEntryWiseImplRow(factor22, input22, factor21, factor11, Di,
                                  makeIndexSequence<row_begin, row_end>());
-  self.D[i] = Di;
+  factor22.D[i] = Di;
 }
 
-template <std::size_t... RowIndices, class FactorData, class Matrix,
-          class FactorDataLeft, class FactorDataAbove>
-void factorizeEntryWiseImpl(FactorData& self, const Matrix& input,
-                            const FactorDataLeft& left,
-                            const FactorDataAbove& above,
+template <std::size_t... RowIndices, class FactorData22, class Matrix22,
+          class FactorData21, class FactorData11>
+void factorizeEntryWiseImpl(FactorData22& factor22, const Matrix22& input22,
+                            const FactorData21& factor21,
+                            const FactorData11& factor11,
                             std::index_sequence<RowIndices...>) {
-  (factorizeEntryWiseImpl<RowIndices>(self, input, left, above), ...);
+  (factorizeEntryWiseImpl<RowIndices>(factor22, input22, factor21, factor11),
+   ...);
 }
 
-template <class FactorDataAbove, class MatrixLeft, class MatrixSelf,
-          class FactorDataLeft, class FactorData>
-void factorizeEntryWise(const FactorDataAbove& above,
-                        const MatrixLeft& input_left,
-                        const MatrixSelf& input_self, FactorDataLeft& left,
-                        FactorData& self) {
-  static_assert(isChordalBlocked(FactorDataAbove::sparsity,
-                                 FactorDataLeft::sparsity,
-                                 FactorData::sparsity));
-  static_assert(isSparsitySubsetLowerTriangle<MatrixSelf::sparsity>(
-      FactorData::sparsity, FactorData::permutation));
-  static_assert(isSparsitySubset(MatrixLeft::sparsity, FactorDataLeft::sparsity,
-                                 FactorDataLeft::permutation_row,
-                                 FactorDataLeft::permutation_col));
-  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
-  factorizeEntryWiseSubdiagonalImpl(left, input_left, above,
+/**
+ * Factorize blocks \p factor21 (L21) and \p factor22 (L22) using input matrix
+ * values \p input21 and \p input22 for those blocks and the already finished
+ * block \p factor22 (L11) in an entry-wise way.
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 * L22  ]
+ * [*  *  *  *  *]
+ *
+ * Note that this implicitly assumes that no other blocks have influence on L21
+ * and L22, since no partial result can be returned that other contributions
+ * could be added to. Instead the final result is computed in one go directly
+ * starting with the input values.
+ */
+template <class FactorData11, class Matrix21, class Matrix22,
+          class FactorData21, class FactorData22>
+void factorizeEntryWise(const FactorData11& factor11, const Matrix21& input21,
+                        const Matrix22& input22, FactorData21& factor21,
+                        FactorData22& factor22) {
+  static_assert(isChordalBlocked(FactorData11::sparsity, FactorData21::sparsity,
+                                 FactorData22::sparsity));
+  static_assert(isSparsitySubsetLowerTriangle<Matrix22::sparsity>(
+      FactorData22::sparsity, FactorData22::permutation));
+  static_assert(isSparsitySubset(Matrix21::sparsity, FactorData21::sparsity,
+                                 FactorData21::permutation_row,
+                                 FactorData21::permutation_col));
+  constexpr auto num_rows = std::size_t{FactorData22::sparsity.num_rows};
+  factorizeEntryWiseSubdiagonalImpl(factor21, input21, factor11,
                                     std::make_index_sequence<num_rows>());
-  factorizeEntryWiseImpl(self, input_self, left, above,
+  factorizeEntryWiseImpl(factor22, input22, factor21, factor11,
                          std::make_index_sequence<num_rows>());
 }
 
+/**
+ * Factorize the given diagonal block \p factor using the given input matrix
+ * values \p matrix in an entry-wise way.
+ *
+ * Note that this implicitly assumes that no other blocks have influence on this
+ * diagonal block, since no partial result can be returned that other
+ * contributions could be added to. Instead the final result is computed in one
+ * go directly starting with the input values.
+ */
 template <class FactorData, class Matrix>
-void factorizeEntryWise(FactorData& self, const Matrix& input) {
-  constexpr EmptyFactorDataLeft<FactorData> empty_left;
-  constexpr EmptyFactorDataDiagonal<decltype(empty_left)> empty_above;
-  constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_input_left;
-  factorizeEntryWise(empty_above, empty_input_left, input, empty_left, self);
+void factorizeEntryWise(FactorData& factor, const Matrix& input) {
+  constexpr EmptyFactorDataLeft<FactorData> empty21;
+  constexpr EmptyFactorDataDiagonal<decltype(empty21)> empty11;
+  constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_input21;
+  factorizeEntryWise(empty11, empty_input21, input, empty21, factor);
 }
 
-template <class FactorDataAbove, class MatrixLeft, class MatrixSelf,
-          class FactorDataLeft, class FactorData>
-void factorize(const FactorDataAbove& above, const MatrixLeft& input_left,
-               const MatrixSelf& input_self, FactorDataLeft& left,
-               FactorData& self, FactorizeMethodEntryWise) {
-  factorizeEntryWise(above, input_left, input_self, left, self);
+template <class FactorData11, class Matrix21, class Matrix22,
+          class FactorData21, class FactorData22>
+void factorize(const FactorData11& factor11, const Matrix21& input21,
+               const Matrix22& input22, FactorData21& factor21,
+               FactorData22& factor22, FactorizeMethodEntryWise) {
+  factorizeEntryWise(factor11, input21, input22, factor21, factor22);
 }
 
 template <class FactorData, class Matrix>
-void factorize(FactorData& self, const Matrix& matrix,
+void factorize(FactorData& factor, const Matrix& matrix,
                FactorizeMethodEntryWise) {
-  factorizeEntryWise(self, matrix);
+  factorizeEntryWise(factor, matrix);
 }
 
 }  // namespace ctldl
