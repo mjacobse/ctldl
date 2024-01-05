@@ -59,32 +59,20 @@ struct TestMatrixFromGenerator {
   }
 };
 
-template <std::size_t num_rows, std::size_t num_cols,
+template <std::size_t seed, std::size_t num_rows, std::size_t num_cols,
           RandomMatrixSparsityKind kind = RandomMatrixSparsityKind::Any>
-struct ProceduralMatrixGenerator {
-  template <LinearCongruenceGenerator generator, std::size_t num_matrices>
-  struct Enumerate {
-    using Current =
-        TestMatrixFromGenerator<num_rows, num_cols, kind, generator>;
-    using TupleRemaining =
-        typename Enumerate<Current::next_generator, num_matrices - 1>::type;
-    using type =
-        decltype(std::tuple_cat(std::declval<TupleRemaining>(),
-                                std::declval<std::tuple<Current>>()));
-  };
-
-  template <LinearCongruenceGenerator generator>
-  struct Enumerate<generator, 0> {
-    using type = std::tuple<>;
-  };
-
-  template <std::size_t seed, std::size_t num_matrices>
-  using Generate =
-      typename Enumerate<LinearCongruenceGenerator{seed}, num_matrices>::type;
+struct ProceduralTestMatrix {
+  using type = TestMatrixFromGenerator<num_rows, num_cols, kind,
+                                       LinearCongruenceGenerator{seed}>;
 };
 
-template <std::size_t dim>
-using ProceduralMatrixGeneratorSymmetric =
-    ProceduralMatrixGenerator<dim, dim, RandomMatrixSparsityKind::Symmetric>;
+template <std::size_t seed, std::size_t num_rows, std::size_t num_cols>
+using ProceduralTestMatrixT =
+    typename ProceduralTestMatrix<seed, num_rows, num_cols>::type;
+
+template <std::size_t seed, std::size_t dim>
+using ProceduralTestMatrixSymmetricT =
+    typename ProceduralTestMatrix<seed, dim, dim,
+                                  RandomMatrixSparsityKind::Symmetric>::type;
 
 }  // namespace ctldl

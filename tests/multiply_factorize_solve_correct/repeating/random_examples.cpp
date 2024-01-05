@@ -1,19 +1,16 @@
-#include "tests/multiply_factorize_solve_correct/repeating/test_functor.hpp"
-#include "tests/test_matrices/repeating/nos2.hpp"
-#include "tests/test_matrices/repeating/tridiagonal.hpp"
-#include "tests/utility/random/procedural_matrix_generator.hpp"
+#include "tests/multiply_factorize_solve_correct/repeating/test_functor_random.hpp"
+#include "tests/utility/int_constant.hpp"
 #include "tests/utility/solution_generator.hpp"
 #include "tests/utility/test_set.hpp"
 #include "tests/utility/test_set_foreach.hpp"
 
 #include <ctldl/factorize/factorize_method.hpp>
-#include <ctldl/permutation/permutation_identity.hpp>
 
 #include <boost/test/unit_test.hpp>
 
+#include <cstddef>
 #include <functional>
 #include <random>
-#include <type_traits>
 
 namespace ctldl {
 namespace {
@@ -21,11 +18,8 @@ namespace {
 BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectRepeating)
 
 BOOST_AUTO_TEST_CASE(RandomExamples) {
-  const auto matrices_3x3 =
-      TypeArgument<ProceduralMatrixGeneratorSymmetric<3>::Generate<0, 10>>{} *
-      TypeArgument<ProceduralMatrixGenerator<3, 3>::Generate<1, 10>>{};
-  const auto permutation_3x3 = makeTypeArgument<
-      std::integral_constant<PermutationIdentity, PermutationIdentity{}>>();
+  const auto seeds = TypeArgument<decltype(makeIntConstantSequence<100>())>{};
+  const auto dimensions = makeTypeArgument<IntConstant<3>>();
 
   const auto factorize_value_types = makeTypeArgument<double>();
   const auto factorize_method =
@@ -35,11 +29,11 @@ BOOST_AUTO_TEST_CASE(RandomExamples) {
   const auto repetition_counts = makeValueArgument<std::size_t>({0, 1, 2, 9});
 
   std::mt19937 value_generator{0};
-  const auto test_set = matrices_3x3 * permutation_3x3 * factorize_value_types *
+  const auto test_set = seeds * dimensions * factorize_value_types *
                         factorize_method * solution_generators *
                         repetition_counts *
                         makeValueArgument({std::ref(value_generator)});
-  foreach<TesterMultiplyFactorizeSolveCorrectRepeating>(test_set);
+  foreach<TesterMultiplyFactorizeSolveCorrectRepeatingRandom>(test_set);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
