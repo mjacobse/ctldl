@@ -40,7 +40,6 @@ struct TestMatrixLFAT5 {
     }
   };
 
-  static constexpr double expected_error_amplifier = 8192.0;
   static constexpr const char* description() { return "LFAT5"; }
 
   template <class ValueGenerator>

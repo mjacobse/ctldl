@@ -12,6 +12,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <random>
@@ -58,9 +59,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     BOOST_TEST_INFO("Factorize method:  " << FactorizeMethod::description);
 
     const auto flatten = ctldl::flatten<double, block_dim>;
-    const auto tolerance = TestMatrixA::expected_error_amplifier *
-                           TestMatrixB::expected_error_amplifier *
-                           std::numeric_limits<Value>::epsilon();
+    const auto tolerance =
+        static_cast<double>(std::cbrt(std::numeric_limits<Value>::epsilon()));
     BOOST_TEST(flatten(rhs) == flatten(solution),
                boost::test_tools::tolerance(tolerance)
                    << boost::test_tools::per_element());

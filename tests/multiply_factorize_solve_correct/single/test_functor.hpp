@@ -9,6 +9,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <array>
+#include <cmath>
 #include <limits>
 #include <random>
 
@@ -38,8 +39,8 @@ struct TesterMultiplyFactorizeSolveCorrectSingle {
     BOOST_TEST_INFO("Solution:          " << solution_generator.description);
     BOOST_TEST_INFO("Factorize method:  " << FactorizeMethod::description);
 
-    const auto tolerance = TestMatrix::expected_error_amplifier *
-                           std::numeric_limits<Value>::epsilon();
+    const auto tolerance =
+        static_cast<double>(std::sqrt(std::numeric_limits<Value>::epsilon()));
     BOOST_TEST(rhs == solution, boost::test_tools::tolerance(tolerance)
                                     << boost::test_tools::per_element());
   }

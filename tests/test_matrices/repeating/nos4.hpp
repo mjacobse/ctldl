@@ -64,7 +64,6 @@ struct TestMatrixNos4A {
     bool m_is_last_block;
   };
 
-  static constexpr double expected_error_amplifier = 128.0;
   static constexpr const char* description() { return "Nos4 A"; }
 
   template <class ValueGenerator>
@@ -108,7 +107,6 @@ struct TestMatrixNos4B {
     }
   };
 
-  static constexpr double expected_error_amplifier = 128.0;
   static constexpr const char* description() { return "Nos4 B"; }
 
   template <class ValueGenerator>

@@ -29,7 +29,6 @@ struct TestMatrixNos2A {
     }
   };
 
-  static constexpr double expected_error_amplifier = 1.0;
   static constexpr const char* description() { return "Nos2 A"; }
 
   template <class ValueGenerator>
@@ -63,7 +62,6 @@ struct TestMatrixNos2B {
     }
   };
 
-  static constexpr double expected_error_amplifier = 32768.0;
   static constexpr const char* description() { return "Nos2 B"; }
 
   template <class ValueGenerator>

@@ -51,8 +51,6 @@ struct TestMatrixFromGenerator {
   using Matrix = typename Base::Matrix;
 
   static constexpr const char* description() { return Base::description(); }
-  static constexpr double expected_error_amplifier =
-      Base::expected_error_amplifier;
 
   template <class ValueGenerator>
   static auto generate(ValueGenerator& value_generator,

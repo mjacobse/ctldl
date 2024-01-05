@@ -47,7 +47,6 @@ struct TestMatrixTridiagonal {
     }
   };
 
-  static constexpr double expected_error_amplifier = 16.0;
   static constexpr const char* description() { return "Tridiagonal"; }
 
   template <class ValueGenerator>
@@ -68,7 +67,6 @@ struct TestMatrixSingleEntryTopRight {
     }
   };
 
-  static constexpr double expected_error_amplifier = 4096.0;
   static constexpr const char* description() {
     return "Single entry top right";
   }

@@ -13,7 +13,6 @@ struct TestMatrixRandom {
   static constexpr const char* description() {
     return "Random";
   }
-  static constexpr double expected_error_amplifier = 1024.0;
 
   struct Matrix {
     static constexpr auto sparsity = Sparsity(sparsity_in);
