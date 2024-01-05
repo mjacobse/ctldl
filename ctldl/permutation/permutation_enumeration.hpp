@@ -15,13 +15,13 @@ namespace ctldl {
 
 template <std::size_t dim, std::size_t i>
 struct EnumeratePermutationsHelper {
-  static constexpr std::array<std::size_t, dim> permutation = [] {
+  static constexpr std::array<std::size_t, dim> value = [] {
     std::array<std::size_t, dim> ret;
     fixInitIfZeroLengthArray(ret);
     if constexpr (i == 0) {
       std::iota(ret.begin(), ret.end(), 0);
     } else {
-      ret = EnumeratePermutationsHelper<dim, i - 1>::permutation;
+      ret = EnumeratePermutationsHelper<dim, i - 1>::value;
       std::next_permutation(ret.begin(), ret.end());
     }
     return ret;

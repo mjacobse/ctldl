@@ -13,21 +13,19 @@
 
 #include <functional>
 #include <random>
+#include <type_traits>
 
 namespace ctldl {
 namespace {
 
 BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectRepeating)
 
-struct PermutationIdentityWrapped {
-    static constexpr auto permutation = PermutationIdentity{};
-};
-
 BOOST_AUTO_TEST_CASE(RandomExamples) {
   const auto matrices_3x3 =
       TypeArgument<ProceduralMatrixGeneratorSymmetric<3>::Generate<0, 10>>{} *
       TypeArgument<ProceduralMatrixGenerator<3, 3>::Generate<1, 10>>{};
-  const auto permutation_3x3 = makeTypeArgument<PermutationIdentityWrapped>();
+  const auto permutation_3x3 = makeTypeArgument<
+      std::integral_constant<PermutationIdentity, PermutationIdentity{}>>();
 
   const auto factorize_value_types = makeTypeArgument<double>();
   const auto factorize_method =

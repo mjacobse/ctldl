@@ -118,7 +118,7 @@ struct TestMatrixNos4B {
 
 struct TestPermutationNos4 {
   static constexpr std::array<std::size_t, TestMatrixNos4A<double>::block_dim>
-      permutation = {7, 8, 0, 4, 3, 2, 6, 5, 9, 1};
+      value = {7, 8, 0, 4, 3, 2, 6, 5, 9, 1};
 };
 
 }  // namespace ctldl
