@@ -2,13 +2,11 @@
 
 #include "tests/multiply_factorize_solve_correct/repeating/test_functor.hpp"
 #include "tests/utility/random/procedural_test_matrix.hpp"
+#include "tests/utility/random/procedural_test_permutation.hpp"
 #include "tests/utility/solution_generator.hpp"
-
-#include <ctldl/permutation/permutation_identity.hpp>
 
 #include <cstddef>
 #include <random>
-#include <type_traits>
 
 namespace ctldl {
 
@@ -24,8 +22,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingRandom {
     constexpr auto seed1 = MatrixDiag::next_generator.state;
     using MatrixSubdiag = ProceduralTestMatrixT<seed1, dim, dim>;
 
-    using PermutationTridiag =
-        std::integral_constant<PermutationIdentity, PermutationIdentity{}>;
+    constexpr auto seed2 = MatrixSubdiag::next_generator.state;
+    using PermutationTridiag = ProceduralTestPermutation<seed2, dim>;
 
     TesterMultiplyFactorizeSolveCorrectRepeating<MatrixDiag, MatrixSubdiag,
                                                  PermutationTridiag, Value,

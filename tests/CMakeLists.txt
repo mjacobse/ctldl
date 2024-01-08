@@ -1,3 +1,5 @@
+add_subdirectory(utility)
+
 add_executable(tests_integration
     multiply_factorize_solve_correct/repeating/larger_examples_good_permutation.cpp
     multiply_factorize_solve_correct/repeating/random_examples.cpp

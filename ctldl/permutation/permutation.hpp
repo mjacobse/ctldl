@@ -32,6 +32,8 @@ struct Permutation {
 
   constexpr auto begin() const { return indices.begin(); }
   constexpr auto end() const { return indices.end(); }
+  constexpr auto cbegin() const { return indices.cbegin(); }
+  constexpr auto cend() const { return indices.cend(); }
 
   std::array<std::size_t, dim> indices;
 };
