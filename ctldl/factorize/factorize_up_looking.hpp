@@ -95,6 +95,73 @@ template <std::size_t entry_index, class FactorData11, class FactorData21,
   return Lij_scaled * Lij;
 }
 
+/**
+ * Finishes factorization of the entry given by \p entry_index in \p factor31
+ * (L31) after applying its contributions to entries to the right in
+ * \p factor31 (L31), \p factor32 (L32) and \p factor33 (L33).
+ *
+ * [*                  ]
+ * [* L11              ]
+ * [*  *  *            ]
+ * [* L21 *  *         ]
+ * [*  *  *  *  *      ]
+ * [* L31 * L32 * L33  ]
+ * [*  *  *  *  *  *  *]
+ */
+template <std::size_t entry_index, class FactorData11, class FactorData21,
+          class FactorData31, class FactorData32, class FactorData33>
+[[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
+    const FactorData11& factor11, const FactorData21& factor21,
+    FactorData31& factor31, FactorData32& factor32, FactorData33& factor33) {
+  constexpr auto& sparsity11 = FactorData11::sparsity;
+  constexpr auto& sparsity21 = FactorData21::sparsity;
+  constexpr auto& sparsity31 = FactorData31::sparsity;
+  constexpr auto& sparsity32 = FactorData32::sparsity;
+  constexpr auto& sparsity33 = FactorData33::sparsity;
+
+  constexpr auto i = sparsity31.entries[entry_index].row_index;
+  constexpr auto j = sparsity31.entries[entry_index].col_index;
+
+  const auto Lij_scaled = factor31.L[entry_index];
+
+  static constexpr auto influenced_list31 =
+      getInfluencedList<i, j, sparsity11, sparsity31>();
+  for (const auto influenced : influenced_list31) {
+    factor31.L[influenced.entry_index_target] -=
+        factor11.L[influenced.entry_index_source] * Lij_scaled;
+  }
+
+  static constexpr auto influenced_list32 =
+      getInfluencedList<i, j, sparsity21, sparsity32>();
+  for (const auto influenced : influenced_list32) {
+    factor32.L[influenced.entry_index_target] -=
+        factor21.L[influenced.entry_index_source] * Lij_scaled;
+  }
+
+  static constexpr auto influenced_list33 =
+      getInfluencedListLowerTriangle<i, j, sparsity31, sparsity33>();
+  for (const auto influenced : influenced_list33) {
+    factor33.L[influenced.entry_index_target] -=
+        factor31.L[influenced.entry_index_source] * Lij_scaled;
+  }
+
+  const auto Lij = Lij_scaled / factor11.D[j];
+  factor31.L[entry_index] = Lij;
+  return Lij_scaled * Lij;
+}
+
+template <std::size_t... EntryIndices, class FactorData11, class FactorData21,
+          class FactorData31, class FactorData32, class FactorData33>
+[[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
+    const FactorData11& factor11, const FactorData21& factor21,
+    FactorData31& factor31, FactorData32& factor32, FactorData33& factor33,
+    typename FactorData33::Value Di_init,
+    std::index_sequence<EntryIndices...>) {
+  return (Di_init - ... -
+          factorizeUpLookingInnerLeft<EntryIndices>(
+              factor11, factor21, factor31, factor32, factor33));
+}
+
 template <std::size_t... EntryIndices, class FactorData11, class FactorData21,
           class FactorData22>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
@@ -203,6 +270,77 @@ void factorize(const FactorData11& factor11, const Init21& init21,
 template <class FactorData, class Init>
 void factorize(FactorData& factor, const Init& init, FactorizeMethodUpLooking) {
   factorizeUpLooking(factor, init);
+}
+
+template <std::size_t i, class FactorData11, class FactorData21, class Init31,
+          class Init32, class Init33, class FactorData31, class FactorData32,
+          class FactorData33>
+void factorizePartialUpLookingImpl(const FactorData11& factor11,
+                                   const FactorData21& factor21,
+                                   const Init31& init31, const Init32& init32,
+                                   const Init33& init33, FactorData31& factor31,
+                                   FactorData32& factor32,
+                                   FactorData33& factor33) {
+  constexpr auto& sparsity31 = FactorData31::sparsity;
+
+  initializeFactorRow<i>(init31, factor31);
+  initializeFactorRow<i>(init32, factor32);
+  initializeFactorRow<i>(init33, factor33);
+  auto Di = factor33.D[i];
+  constexpr auto row_begin31 = sparsity31.row_begin_indices[i];
+  constexpr auto row_end31 = sparsity31.row_begin_indices[i + 1];
+  Di = factorizeUpLookingInnerLeft(factor11, factor21, factor31, factor32,
+                                   factor33, Di,
+                                   makeIndexSequence<row_begin31, row_end31>());
+  factor33.D[i] = Di;
+}
+
+template <std::size_t... RowIndices, class FactorData11, class FactorData21,
+          class Init31, class Init32, class Init33, class FactorData31,
+          class FactorData32, class FactorData33>
+void factorizePartialUpLookingImpl(const FactorData11& factor11,
+                                   const FactorData21& factor21,
+                                   const Init31& init31, const Init32& init32,
+                                   const Init33& init33, FactorData31& factor31,
+                                   FactorData32& factor32,
+                                   FactorData33& factor33,
+                                   std::index_sequence<RowIndices...>) {
+  (factorizePartialUpLookingImpl<RowIndices>(factor11, factor21, init31, init32,
+                                             init33, factor31, factor32,
+                                             factor33),
+   ...);
+}
+
+/**
+ * Finish factorization of \p factor31 (L31) using already finished blocks
+ * \p factor21 (L21) and \p factor11 (L11). Also apply influences from
+ * \p factor31 (L31) onto \p factor32 (L32) and \p factor33 (L33). The blocks
+ * L32 and L33 are then not factorized further though, yielding only a partial
+ * factorization for them.
+ *
+ * [*                  ]
+ * [* L11              ]
+ * [*  *  *            ]
+ * [* L21 *  *         ]
+ * [*  *  *  *  *      ]
+ * [* L31 * L32 * L33  ]
+ * [*  *  *  *  *  *  *]
+ *
+ * L31, L32 and L33 are initialized with the values given by \p init31 ,
+ * \p init32 and \p init33 .
+ */
+template <class FactorData11, class FactorData21, class Init31, class Init32,
+          class Init33, class FactorData31, class FactorData32,
+          class FactorData33>
+void factorizePartialUpLooking(const FactorData11& factor11,
+                               const FactorData21& factor21,
+                               const Init31& init31, const Init32& init32,
+                               const Init33& init33, FactorData31& factor31,
+                               FactorData32& factor32, FactorData33& factor33) {
+  constexpr auto num_rows = std::size_t{FactorData31::sparsity.num_rows};
+  factorizePartialUpLookingImpl(factor11, factor21, init31, init32, init33,
+                                factor31, factor32, factor33,
+                                std::make_index_sequence<num_rows>());
 }
 
 }  // namespace ctldl
