@@ -31,7 +31,7 @@ constexpr void foreachAncestorInSubtreeRepeatingOuter(
     // otherwise we want to treat columns of the subdiagonal block the same as
     // columns of the diagonal block, so we modulo them to the range of
     // [0, blocksize_tridiag).
-    return tree.parent[j] % dim;
+    return tree.getParent(j) % dim;
   };
   foreachAncestorInSubtreeImpl(sparsity, get_parent, row_index, visitor, f,
                                row_offset, col_offset);

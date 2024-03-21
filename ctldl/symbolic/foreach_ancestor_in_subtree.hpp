@@ -35,7 +35,7 @@ constexpr void foreachAncestorInSubtree(const Sparsity& sparsity,
                                         const std::size_t row_offset = 0,
                                         const std::size_t col_offset = 0) {
   const auto get_parent = [&tree](const std::size_t j) {
-    return tree.parent[j];
+    return tree.getParent(j);
   };
   foreachAncestorInSubtreeImpl(sparsity, get_parent, row_index, visitor, f,
                                row_offset, col_offset);

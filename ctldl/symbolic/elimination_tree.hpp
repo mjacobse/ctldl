@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <limits>
 
@@ -21,6 +22,11 @@ struct EliminationTree {
 
   constexpr bool hasParent(const std::size_t node) const {
     return parent[node] != no_parent;
+  }
+
+  constexpr auto getParent(const std::size_t node) const {
+    assert(hasParent(node));
+    return parent[node];
   }
 
   std::array<std::size_t, dim> parent;
