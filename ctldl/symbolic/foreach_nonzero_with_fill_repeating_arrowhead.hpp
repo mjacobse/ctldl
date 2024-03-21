@@ -2,6 +2,7 @@
 
 #include <ctldl/sparsity/is_square.hpp>
 #include <ctldl/symbolic/compute_elimination_tree_repeating.hpp>
+#include <ctldl/symbolic/elimination_tree.hpp>
 #include <ctldl/symbolic/foreach_ancestor_in_subtree.hpp>
 
 #include <array>
@@ -9,6 +10,32 @@
 #include <numeric>
 
 namespace ctldl {
+
+template <class Sparsity, std::size_t dim, class BinaryFunction>
+constexpr void foreachAncestorInSubtreeRepeatingOuter(
+    const Sparsity& sparsity, const EliminationTree<2 * dim>& tree,
+    const std::size_t row_index, std::array<std::size_t, dim>& visitor,
+    BinaryFunction f, const std::size_t row_offset = 0,
+    const std::size_t col_offset = 0) {
+  const auto get_parent = [&tree](const std::size_t j) {
+    if (!tree.hasParent(j)) {
+      // We use the elimination tree of the tridiagonal part (i.e. it does not
+      // know anything about the outer part). So if the parent of the full tree
+      // would be an outer node, then we will encounter no parent at all
+      // instead. Since that would only lead to entries in the non-repeating
+      // diagonal outer part which we do not care about right now, we can safely
+      // skip them. To do that we can just return the node itself, which will
+      // directly stop the iteration.
+      return j;
+    }
+    // otherwise we want to treat columns of the subdiagonal block the same as
+    // columns of the diagonal block, so we modulo them to the range of
+    // [0, blocksize_tridiag).
+    return tree.parent[j] % dim;
+  };
+  foreachAncestorInSubtreeImpl(sparsity, get_parent, row_index, visitor, f,
+                               row_offset, col_offset);
+}
 
 template <class SparsityDiag, class SparsitySubdiag, class SparsityOuter,
           class UnaryFunction>
@@ -38,8 +65,8 @@ constexpr void foreachNonZeroWithFillRepeatingArrowhead(
   std::iota(visitor_outer.begin(), visitor_outer.end(), 0);
   for (std::size_t i = 0; i < dim_outer; ++i) {
     constexpr auto row_offset = 2 * dim;
-    foreachAncestorInSubtreeRepeating(sparsity_outer, tree, i, visitor_outer, f,
-                                      row_offset);
+    foreachAncestorInSubtreeRepeatingOuter(sparsity_outer, tree, i,
+                                           visitor_outer, f, row_offset);
   }
 }
 

@@ -41,17 +41,4 @@ constexpr void foreachAncestorInSubtree(const Sparsity& sparsity,
                                row_offset, col_offset);
 }
 
-template <class Sparsity, std::size_t dim, class BinaryFunction>
-constexpr void foreachAncestorInSubtreeRepeating(
-    const Sparsity& sparsity, const EliminationTree<2 * dim>& tree,
-    const std::size_t row_index, std::array<std::size_t, dim>& visitor,
-    BinaryFunction f, const std::size_t row_offset = 0,
-    const std::size_t col_offset = 0) {
-  const auto get_parent = [&tree](const std::size_t j) {
-    return tree.parent[j] % dim;
-  };
-  foreachAncestorInSubtreeImpl(sparsity, get_parent, row_index, visitor, f,
-                               row_offset, col_offset);
-}
-
 }  // namespace ctldl
