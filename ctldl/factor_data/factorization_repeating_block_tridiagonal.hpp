@@ -3,6 +3,7 @@
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/matrix/matrix_link.hpp>
 #include <ctldl/matrix/matrix_outer.hpp>
+#include <ctldl/matrix/matrix_start.hpp>
 #include <ctldl/matrix/matrix_tridiagonal.hpp>
 #include <ctldl/matrix/matrix_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
@@ -32,6 +33,7 @@ class FactorizationRepeatingBlockTridiagonal {
 
   static constexpr auto sparsity_to_factorize =
       SparsityToFactorizeTridiagonalArrowheadLinked{
+          makeEmptySparsityToFactorizeStart<0, sparsity_A.num_rows, 0>(),
           SparsityToFactorizeTridiagonal{sparsity_A, sparsity_B,
                                          permutation_in},
           makeEmptySparsityToFactorizeLink<sparsity_A.num_cols, 0, 0>(),
@@ -57,6 +59,7 @@ class FactorizationRepeatingBlockTridiagonal {
                  const FactorizeMethodTag method_tag = {}) {
     m_base.factorize(
         MatrixTridiagonalArrowheadLinked{
+            makeEmptyMatrixStart<0, dim, 0>(),
             MatrixTridiagonal{values_A, values_B},
             makeEmptyMatrixLink<dim, 0, 0>(),
             makeEmptyMatrixRepeatingOuter<0, dim>(m_base.numRepetitions())},
@@ -65,9 +68,9 @@ class FactorizationRepeatingBlockTridiagonal {
 
   template <class Rhs>
   void solveInPlace(Rhs& rhs) const {
-    VectorTridiagonalArrowheadLinked<Rhs&, std::array<Value, 0>,
-                                     std::array<Value, 0>>
-        rhs_extended{rhs, {}, {}};
+    VectorTridiagonalArrowheadLinked<std::array<Value, 0>, Rhs&,
+                                     std::array<Value, 0>, std::array<Value, 0>>
+        rhs_extended{{}, rhs, {}, {}};
     m_base.solveInPlace(rhs_extended);
   }
 };

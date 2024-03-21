@@ -30,15 +30,31 @@ template <SparsityToFactorizeTridiagonalArrowheadLinked sparsity,
           class Value_>
 class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
  private:
+  static constexpr auto dim_start = std::size_t{sparsity.dim_start};
   static constexpr auto dim_tridiag = std::size_t{sparsity.dim_tridiag};
   static constexpr auto dim_link = std::size_t{sparsity.dim_link};
   static constexpr auto dim_outer = std::size_t{sparsity.dim_outer};
+  static constexpr auto permutation_start = sparsity.start.permutation;
   static constexpr auto permutation_tridiag = sparsity.tridiag.permutation;
   static constexpr auto permutation_link = sparsity.link.permutation;
   static constexpr auto permutation_outer = sparsity.outer.permutation;
 
+  static constexpr auto helper_start = getFilledInSparsityBlocked3x3<
+      sparsity.start.diag, sparsity.start.next, sparsity.tridiag.diag,
+      sparsity.start.outer, sparsity.outer.subdiag, sparsity.outer.diag,
+      permutation_start, Permutation<dim_tridiag>{},
+      Permutation<dim_outer>{}>();
+  static constexpr auto sparsity_factor_start_diag = helper_start.block11;
+  static constexpr auto sparsity_factor_start_tridiag = getSparsityPermuted(
+      helper_start.block21, permutation_tridiag, Permutation<dim_start>{});
+  static constexpr auto sparsity_factor_start_outer = getSparsityPermuted(
+      helper_start.block31, permutation_outer, Permutation<dim_start>{});
+  static constexpr auto sparsity_tridiag_diag = helper_start.block22;
+  static constexpr auto sparsity_outer_subdiag = helper_start.block32;
+  static constexpr auto sparsity_outer_diag = helper_start.block33;
+
   static constexpr auto sparsity_factor = getFilledInSparsityRepeatingArrowhead<
-      sparsity.tridiag.diag, sparsity.tridiag.subdiag, sparsity.outer.subdiag,
+      sparsity_tridiag_diag, sparsity.tridiag.subdiag, sparsity_outer_subdiag,
       permutation_tridiag, permutation_outer>();
 
   static constexpr auto helper = [] {
@@ -47,7 +63,7 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
     constexpr auto sparsity_link_outer_permuted_rows = getSparsityPermuted(
         sparsity.link.next, permutation_outer, Permutation<dim_link>{});
     constexpr auto sparsity_outer_diag_permuted =
-        getSparsityLowerTriangle<sparsity.outer.diag>(permutation_outer);
+        getSparsityLowerTriangle<sparsity_outer_diag>(permutation_outer);
     return getFilledInSparsityBlocked3x3<
         sparsity_factor.diag, sparsity_link_tridiag_permuted_cols,
         sparsity.link.diag, sparsity_factor.outer,
@@ -62,6 +78,15 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
  public:
   using Value = Value_;
+  using FactorStartDiag =
+      FactorizationAlreadyPermuted<sparsity_factor_start_diag, Value,
+                                   permutation_start>;
+  using FactorStartTridiag =
+      FactorizationSubdiagonalBlock<sparsity_factor_start_tridiag, Value,
+                                    permutation_tridiag, permutation_start>;
+  using FactorStartOuter =
+      FactorizationSubdiagonalBlock<sparsity_factor_start_outer, Value,
+                                    permutation_outer, permutation_start>;
   using FactorTridiagDiag =
       FactorizationAlreadyPermuted<sparsity_factor.diag, Value,
                                    permutation_tridiag>;
@@ -102,8 +127,11 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
             class MatrixBlocksInputValues>
   void factorize(const MatrixBlocksInputValues& input,
                  const FactorizeMethodTag method_tag = {}) {
+    // start
+    m_start_diag.factorize(input.start.diag, method_tag);
     // tridiagonal
-    m_tridiag_diag[0].factorize(input.tridiag.diag[0], method_tag);
+    ::ctldl::factorize(m_start_diag, input.start.next, input.tridiag.diag[0],
+                       m_start_tridiag, m_tridiag_diag[0], method_tag);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
       ::ctldl::factorize(m_tridiag_diag[i], input.tridiag.subdiag[i],
                          input.tridiag.diag[i + 1], m_tridiag_subdiag[i],
@@ -117,7 +145,10 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
     const FactorInitNone<dim_outer, dim_outer> no_init_outer_diag;
     fillWithOriginalMatrixValuesIncludingDiagonal(input.outer.diag,
                                                   m_outer_diag);
-    fillWithOriginalMatrixValues(input.outer.subdiag[0], m_outer_subdiag[0]);
+    ::ctldl::factorizePartialUpLooking(
+        m_start_diag, m_start_tridiag, input.start.outer,
+        input.outer.subdiag[0], no_init_outer_diag, m_start_outer,
+        m_outer_subdiag[0], m_outer_diag);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
       ::ctldl::factorizePartialUpLooking(
           m_tridiag_diag[i], m_tridiag_subdiag[i], no_init_outer_subdiag,
@@ -142,13 +173,16 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
   template <class Rhs>
   [[gnu::flatten]] void forwardSolve(Rhs& rhs) const {
-    solveForwardSubstitution(m_tridiag_diag[0], rhs.tridiag[0]);
+    solveForwardSubstitution(m_start_diag, rhs.start);
+    solveForwardSubstitution(m_tridiag_diag[0], rhs.tridiag[0], m_start_tridiag,
+                             rhs.start);
     for (std::size_t i = 1; i <= m_num_repetitions; ++i) {
       solveForwardSubstitution(m_tridiag_diag[i], rhs.tridiag[i],
                                m_tridiag_subdiag[i - 1], rhs.tridiag[i - 1]);
     }
     solveForwardSubstitution(m_link_diag, rhs.link, m_link_tridiag,
                              rhs.tridiag[m_num_repetitions]);
+    solveForwardSubstitution(m_start_outer, rhs.start, rhs.outer);
     for (std::size_t i = 0; i <= m_num_repetitions; ++i) {
       solveForwardSubstitution(m_outer_subdiag[i], rhs.tridiag[i], rhs.outer);
     }
@@ -158,6 +192,7 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
   template <class Rhs>
   void diagonalSolve(Rhs& rhs) const {
+    m_start_diag.diagonalSolve(rhs.start);
     for (std::size_t i = 0; i <= m_num_repetitions; ++i) {
       m_tridiag_diag[i].diagonalSolve(rhs.tridiag[i]);
     }
@@ -187,10 +222,16 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
                                 rhs.tridiag[i - 1]);
       solveBackwardSubstitution(m_tridiag_diag[i - 1], rhs.tridiag[i - 1]);
     }
+    solveBackwardSubstitution(m_start_outer, rhs.outer, rhs.start);
+    solveBackwardSubstitution(m_start_tridiag, rhs.tridiag[0], rhs.start);
+    solveBackwardSubstitution(m_start_diag, rhs.start);
   }
 
  private:
   std::size_t m_num_repetitions;
+  FactorStartDiag m_start_diag;
+  FactorStartTridiag m_start_tridiag;
+  FactorStartOuter m_start_outer;
   std::unique_ptr<FactorTridiagDiag[]> m_tridiag_diag;
   std::unique_ptr<FactorTridiagSubdiag[]> m_tridiag_subdiag;
   FactorLinkTridiag m_link_tridiag;

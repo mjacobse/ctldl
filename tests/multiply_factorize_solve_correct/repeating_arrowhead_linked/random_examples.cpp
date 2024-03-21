@@ -20,10 +20,12 @@ BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonal
 BOOST_AUTO_TEST_CASE(RandomExamples) {
   const auto seeds = TypeArgument<decltype(makeIntConstantSequence<8>())>{};
 
+  constexpr int dim_start = 4;
   constexpr int dim_tridiag = 3;
   constexpr int dim_link = 2;
   constexpr int dim_outer = 5;
-  const auto dimensions = makeTypeArgument<IntConstant<dim_tridiag>>() ^
+  const auto dimensions = makeTypeArgument<IntConstant<dim_start>>() ^
+                          makeTypeArgument<IntConstant<dim_tridiag>>() ^
                           makeTypeArgument<IntConstant<dim_link>>() ^
                           makeTypeArgument<IntConstant<dim_outer>>();
 
