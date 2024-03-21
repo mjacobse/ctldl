@@ -2,6 +2,7 @@ if(BUILD_TESTING)
     add_executable(tests_unit_symbolic
         runner_tests_unit_symbolic.cpp
         compute_elimination_tree_blocked.test.cpp
+        compute_elimination_tree_repeating.test.cpp
         filled_in_sparsity_blocked.test.cpp
         filled_in_sparsity_repeating_arrowhead.test.cpp
     )
