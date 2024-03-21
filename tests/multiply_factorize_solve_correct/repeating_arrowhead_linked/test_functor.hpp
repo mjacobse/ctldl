@@ -96,8 +96,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLink
     multiplyRepeatingBlockTridiagonalArrowheadLinked(matrix, solution, rhs);
     factorization.solveInPlace(rhs);
 
-    BOOST_TEST_INFO_SCOPE("Matrix (tridiag, subdiag) " << TestMatrixTridiagDiag::description());
-    BOOST_TEST_INFO_SCOPE("Matrix (tridiag, diag)    " << TestMatrixTridiagSubdiag::description());
+    BOOST_TEST_INFO_SCOPE("Matrix (tridiag, diag)    " << TestMatrixTridiagDiag::description());
+    BOOST_TEST_INFO_SCOPE("Matrix (tridiag, subdiag) " << TestMatrixTridiagSubdiag::description());
     BOOST_TEST_INFO_SCOPE("Matrix (link, tridiag)    " << TestMatrixLinkTridiag::description());
     BOOST_TEST_INFO_SCOPE("Matrix (link, diag)       " << TestMatrixLinkDiag::description());
     BOOST_TEST_INFO_SCOPE("Matrix (link, outer)      " << TestMatrixLinkOuter::description());
