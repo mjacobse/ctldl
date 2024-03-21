@@ -23,8 +23,9 @@ constexpr void addRowEliminationTree(const Sparsity& sparsity,
       if (!tree.hasParent(j)) {
         tree.parent[j] = i;
       }
+      const auto current_ancestor = ancestors[j];
       ancestors[j] = i;
-      j = tree.parent[j];
+      j = current_ancestor;  // use shortcut to the top
     }
   }
 }
