@@ -33,11 +33,12 @@ namespace ctldl {
  *
  * with repeating A.
  */
-template <std::size_t dim_inner, std::size_t dim_outer, std::size_t nnz_subdiag,
-          std::size_t nnz_diag>
+template <std::size_t dim_inner_, std::size_t dim_outer,
+          std::size_t nnz_subdiag, std::size_t nnz_diag>
 struct SparsityToFactorizeOuter {
   static constexpr auto dim = dim_outer;
-  Sparsity<nnz_subdiag, dim_outer, dim_inner> subdiag;
+  static constexpr auto dim_inner = dim_inner_;
+  Sparsity<nnz_subdiag, dim_outer, dim_inner_> subdiag;
   Sparsity<nnz_diag, dim_outer, dim_outer> diag;
   Permutation<dim_outer> permutation = PermutationIdentity{};
 };
