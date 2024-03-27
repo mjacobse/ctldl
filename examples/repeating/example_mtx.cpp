@@ -1,9 +1,9 @@
 #include "ctldl_repeating_mtx_include.hpp"
 
-#include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
-#include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal.hpp>
-#include <ctldl/permutation/permutation.hpp>
-#include <ctldl/sparsity/sparsity_csr.hpp>
+#include <ctldl/factor_data/factorization_repeating_block_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/factor_data/sparsity_to_factorize_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/vector/vector_tridiagonal_arrowhead_linked.hpp>
 
 #include <algorithm>
 #include <array>
@@ -15,29 +15,21 @@
 
 namespace {
 
-constexpr int dim = getRepeatingMtxDim();
-constexpr auto sparsity_A =
-    ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesA());
-constexpr auto sparsity_B =
-    ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesB());
-constexpr auto permutation = ctldl::Permutation{getRepeatingMtxPermutation()};
-
-template <auto sparsity_in>
-struct MatrixInput {
-  static constexpr auto sparsity = ctldl::SparsityCSR{sparsity_in};
-  static constexpr auto nnz = std::size_t{sparsity.nnz};
-  std::array<double, nnz> values;
-
-  constexpr double valueAt(const std::size_t i) const {
-    return values[i];
-  }
+constexpr auto sparsity = ctldl::SparsityToFactorizeTridiagonalArrowheadLinked{
+    getRepeatingMtxSparsityStart(),
+    getRepeatingMtxSparsityTridiag(),
+    getRepeatingMtxSparsityLink(),
+    getRepeatingMtxSparsityOuter(),
 };
 
-using MatrixA = MatrixInput<sparsity_A>;
-using MatrixB = MatrixInput<sparsity_B>;
+template <std::size_t dim>
+auto getArrayOfOnes() {
+  std::array<double, dim> arr;
+  std::fill(arr.begin(), arr.end(), 1.0);
+  return arr;
+}
 
 }  // anonymous namespace
-
 
 int main(const int argc, const char** argv) {
   if (argc < 2 || argc > 3) {
@@ -48,30 +40,56 @@ int main(const int argc, const char** argv) {
   const char* path_mtx = argv[1];
   const std::size_t num_iterations = (argc > 2) ? std::stoull(argv[2]) : 1;
 
-  const auto [matrix_values_A, matrix_values_B] =
-      ctldl::mtxFileReadRepeatingBlockTridiagonal<MatrixA, MatrixB>(path_mtx);
-  const auto num_repetitions = matrix_values_B.size();
+  const auto matrix =
+      ctldl::mtxFileReadRepeatingBlockTridiagonalArrowheadLinked<sparsity>(
+          path_mtx);
+  const auto num_repetitions = matrix.tridiag.subdiag.size();
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B, double,
-                                                permutation>
-      factorization(num_repetitions);
-  const auto rhs_single = [] {
-    std::array<double, dim> rhs;
-    std::fill(rhs.begin(), rhs.end(), 1.0);
-    return rhs;
-  }();
-  const std::vector<std::array<double, dim>> rhs(num_repetitions + 1,
-                                                 rhs_single);
+  using Factorization =
+      ctldl::FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity,
+                                                                   double>;
+  Factorization factorization(num_repetitions);
+
+  const ctldl::VectorTridiagonalArrowheadLinked rhs{
+      getArrayOfOnes<sparsity.dim_start>(),
+      std::vector{num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag>()},
+      getArrayOfOnes<sparsity.dim_link>(),
+      getArrayOfOnes<sparsity.dim_outer>()};
   auto rhs_in_solution_out = rhs;
 
   for (std::size_t i = 0; i < num_iterations; ++i) {
-    factorization.factorize(matrix_values_A, matrix_values_B);
-    std::copy(rhs.cbegin(), rhs.cend(), rhs_in_solution_out.begin());
+    factorization.factorize(matrix);
+
+    rhs_in_solution_out.start = rhs.start;
+    std::copy(rhs.tridiag.cbegin(), rhs.tridiag.cend(),
+              rhs_in_solution_out.tridiag.begin());
+    rhs_in_solution_out.link = rhs.link;
+    rhs_in_solution_out.outer = rhs.outer;
+
     factorization.solveInPlace(rhs_in_solution_out);
   }
 
-  for (const auto& solution_part : rhs_in_solution_out) {
+  if (sparsity.dim_start > 0) {
+    std::printf("------ start ------\n");
+    for (const auto v : rhs_in_solution_out.start) {
+      std::printf("%f\n", v);
+    }
+  }
+  std::printf("----- tridiag -----\n");
+  for (const auto& solution_part : rhs_in_solution_out.tridiag) {
     for (const auto v : solution_part) {
+      std::printf("%f\n", v);
+    }
+  }
+  if (sparsity.dim_link > 0) {
+    std::printf("------ link -------\n");
+    for (const auto v : rhs_in_solution_out.link) {
+      std::printf("%f\n", v);
+    }
+  }
+  if (sparsity.dim_outer > 0) {
+    std::printf("------ outer ------\n");
+    for (const auto v : rhs_in_solution_out.outer) {
       std::printf("%f\n", v);
     }
   }

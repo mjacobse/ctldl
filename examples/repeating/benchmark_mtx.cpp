@@ -1,9 +1,9 @@
 #include "ctldl_repeating_mtx_include.hpp"
 
-#include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
-#include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal.hpp>
-#include <ctldl/permutation/permutation.hpp>
-#include <ctldl/sparsity/sparsity_csr.hpp>
+#include <ctldl/factor_data/factorization_repeating_block_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/factor_data/sparsity_to_factorize_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/vector/vector_tridiagonal_arrowhead_linked.hpp>
 
 #include <benchmark/benchmark.h>
 
@@ -11,53 +11,58 @@
 #include <array>
 #include <cstddef>
 #include <cstdio>
-#include <span>
 #include <vector>
 
 
 namespace {
 
-constexpr int dim = getRepeatingMtxDim();
-constexpr auto sparsity_A =
-    ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesA());
-constexpr auto sparsity_B =
-    ctldl::makeSparsity<dim, dim>(getRepeatingMtxEntriesB());
-constexpr auto permutation = ctldl::Permutation{getRepeatingMtxPermutation()};
-
-template <auto sparsity_in>
-struct MatrixInput {
-  static constexpr auto sparsity = ctldl::SparsityCSR{sparsity_in};
-  static constexpr auto nnz = std::size_t{sparsity.nnz};
-  std::array<double, nnz> values;
-
-  constexpr double valueAt(const std::size_t i) const { return values[i]; }
+constexpr auto sparsity = ctldl::SparsityToFactorizeTridiagonalArrowheadLinked{
+    getRepeatingMtxSparsityStart(),
+    getRepeatingMtxSparsityTridiag(),
+    getRepeatingMtxSparsityLink(),
+    getRepeatingMtxSparsityOuter(),
 };
 
-using MatrixA = MatrixInput<sparsity_A>;
-using MatrixB = MatrixInput<sparsity_B>;
 using Factorization =
-    ctldl::FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B,
-                                                  double, permutation>;
-using RightHandSide = std::vector<std::array<double, dim>>;
+    ctldl::FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity,
+                                                                 double>;
+using RightHandSide = ctldl::VectorTridiagonalArrowheadLinked<
+    std::array<double, sparsity.dim_start>,
+    std::vector<std::array<double, sparsity.dim_tridiag>>,
+    std::array<double, sparsity.dim_link>,
+    std::array<double, sparsity.dim_outer>>;
+using Matrix =
+    decltype(ctldl::mtxFileReadRepeatingBlockTridiagonalArrowheadLinked<
+             sparsity>(""));
 
 const auto factorize_method = ctldl::FactorizeMethodUpLooking{};
 
+template <std::size_t dim>
+auto getArrayOfOnes() {
+  std::array<double, dim> arr;
+  std::fill(arr.begin(), arr.end(), 1.0);
+  return arr;
+}
 
-[[gnu::noinline]] void runFactorize(
-    const std::span<const MatrixA> matrix_values_A,
-    const std::span<const MatrixB> matrix_values_B,
-    Factorization& factorization) {
-  factorization.factorize(matrix_values_A, matrix_values_B, factorize_method);
+void copyRightHandSide(const RightHandSide& in, RightHandSide& out) {
+  out.start = in.start;
+  std::copy(in.tridiag.cbegin(), in.tridiag.cend(), out.tridiag.begin());
+  out.link = in.link;
+  out.outer = in.outer;
+}
+
+[[gnu::noinline]] void runFactorize(const Matrix& matrix,
+                                    Factorization& factorization) {
+  factorization.factorize(matrix, factorize_method);
 }
 
 void benchmarkFactorize(benchmark::State& state,
-                        const std::span<const MatrixA> matrix_values_A,
-                        const std::span<const MatrixB> matrix_values_B) {
-  const auto num_repetitions = std::size_t{matrix_values_B.size()};
+                        const Matrix& matrix) {
+  const auto num_repetitions = std::size_t{matrix.tridiag.subdiag.size()};
   Factorization factorization(num_repetitions);
 
-  auto matrix_values_A_data = matrix_values_A.data();
-  auto matrix_values_B_data = matrix_values_B.data();
+  auto matrix_values_A_data = matrix.tridiag.diag.data();
+  auto matrix_values_B_data = matrix.tridiag.subdiag.data();
   auto factorization_A_data = factorization.blocksA().data();
   auto factorization_B_data = factorization.blocksB().data();
   for (auto _ : state) {
@@ -66,7 +71,7 @@ void benchmarkFactorize(benchmark::State& state,
     benchmark::DoNotOptimize(factorization_A_data);
     benchmark::DoNotOptimize(factorization_B_data);
     benchmark::ClobberMemory();
-    runFactorize(matrix_values_A, matrix_values_B, factorization);
+    runFactorize(matrix, factorization);
     benchmark::ClobberMemory();
   }
 }
@@ -76,73 +81,65 @@ void benchmarkFactorize(benchmark::State& state,
   factorization.solveInPlace(rhs_in_solution_out);
 }
 
-void benchmarkSolve(benchmark::State& state,
-                    const std::span<const MatrixA> matrix_values_A,
-                    const std::span<const MatrixB> matrix_values_B) {
-  const auto num_repetitions = std::size_t{matrix_values_B.size()};
+void benchmarkSolve(benchmark::State& state, const Matrix& matrix) {
+  const auto num_repetitions = std::size_t{matrix.tridiag.subdiag.size()};
 
   Factorization factorization(num_repetitions);
-  factorization.factorize(matrix_values_A, matrix_values_B, factorize_method);
+  factorization.factorize(matrix, factorize_method);
 
-  const auto rhs_single = [] {
-    std::array<double, dim> rhs;
-    std::fill(rhs.begin(), rhs.end(), 1.0);
-    return rhs;
-  }();
-  const RightHandSide rhs(num_repetitions + 1, rhs_single);
+  const RightHandSide rhs{
+      getArrayOfOnes<sparsity.dim_start>(),
+      {num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag>()},
+      getArrayOfOnes<sparsity.dim_link>(),
+      getArrayOfOnes<sparsity.dim_outer>()};
   auto rhs_in_solution_out = rhs;
 
   auto factorization_A_data = factorization.blocksA().data();
   auto factorization_B_data = factorization.blocksB().data();
-  auto solution_data = rhs_in_solution_out.data();
+  auto solution_data = rhs_in_solution_out.tridiag.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(factorization_A_data);
     benchmark::DoNotOptimize(factorization_B_data);
     benchmark::DoNotOptimize(solution_data);
-    std::copy(rhs.cbegin(), rhs.cend(), rhs_in_solution_out.begin());
+    copyRightHandSide(rhs, rhs_in_solution_out);
     benchmark::ClobberMemory();
     runSolve(factorization, rhs_in_solution_out);
     benchmark::ClobberMemory();
   }
 }
 
-[[gnu::noinline]] void runCombined(
-    const std::span<const MatrixA> matrix_values_A,
-    const std::span<const MatrixB> matrix_values_B,
-    Factorization& factorization, RightHandSide& rhs_in_solution_out) {
-  factorization.factorize(matrix_values_A, matrix_values_B, factorize_method);
+[[gnu::noinline]] void runCombined(const Matrix& matrix,
+                                   Factorization& factorization,
+                                   RightHandSide& rhs_in_solution_out) {
+  factorization.factorize(matrix, factorize_method);
   factorization.solveInPlace(rhs_in_solution_out);
 }
 
-void benchmarkCombined(benchmark::State& state,
-                       const std::span<const MatrixA> matrix_values_A,
-                       const std::span<const MatrixB> matrix_values_B) {
-  const auto num_repetitions = std::size_t{matrix_values_B.size()};
+void benchmarkCombined(benchmark::State& state, const Matrix& matrix) {
+  const auto num_repetitions = std::size_t{matrix.tridiag.subdiag.size()};
   Factorization factorization(num_repetitions);
 
-  const auto rhs_single = [] {
-    std::array<double, dim> rhs;
-    std::fill(rhs.begin(), rhs.end(), 1.0);
-    return rhs;
-  }();
-  const RightHandSide rhs(num_repetitions + 1, rhs_single);
+  const RightHandSide rhs{
+      getArrayOfOnes<sparsity.dim_start>(),
+      {num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag>()},
+      getArrayOfOnes<sparsity.dim_link>(),
+      getArrayOfOnes<sparsity.dim_outer>()};
   auto rhs_in_solution_out = rhs;
 
-  auto matrix_values_A_data = matrix_values_A.data();
-  auto matrix_values_B_data = matrix_values_B.data();
+  auto matrix_values_A_data = matrix.tridiag.diag.data();
+  auto matrix_values_B_data = matrix.tridiag.subdiag.data();
   auto factorization_A_data = factorization.blocksA().data();
   auto factorization_B_data = factorization.blocksB().data();
-  auto solution_data = rhs_in_solution_out.data();
+  auto solution_data = rhs_in_solution_out.tridiag.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(matrix_values_A_data);
     benchmark::DoNotOptimize(matrix_values_B_data);
     benchmark::DoNotOptimize(factorization_A_data);
     benchmark::DoNotOptimize(factorization_B_data);
     benchmark::DoNotOptimize(solution_data);
-    std::copy(rhs.cbegin(), rhs.cend(), rhs_in_solution_out.begin());
+    copyRightHandSide(rhs, rhs_in_solution_out);
     benchmark::ClobberMemory();
-    runCombined(matrix_values_A, matrix_values_B, factorization,
-                rhs_in_solution_out);
+    runCombined(matrix, factorization, rhs_in_solution_out);
     benchmark::ClobberMemory();
   }
 }
@@ -157,18 +154,16 @@ int main(int argc, char** argv) {
   }
 
   const char* path_mtx = argv[1];
-  const auto [matrix_values_A, matrix_values_B] =
-      ctldl::mtxFileReadRepeatingBlockTridiagonal<MatrixA, MatrixB>(path_mtx);
+  const auto matrix =
+      ctldl::mtxFileReadRepeatingBlockTridiagonalArrowheadLinked<sparsity>(
+          path_mtx);
 
   const auto unit = benchmark::kMicrosecond;
-  benchmark::RegisterBenchmark("factorize", benchmarkFactorize, matrix_values_A,
-                               matrix_values_B)
+  benchmark::RegisterBenchmark("factorize", benchmarkFactorize, matrix)
       ->Unit(unit);
-  benchmark::RegisterBenchmark("solve", benchmarkSolve, matrix_values_A,
-                               matrix_values_B)
+  benchmark::RegisterBenchmark("solve", benchmarkSolve, matrix)
       ->Unit(unit);
-  benchmark::RegisterBenchmark("combined", benchmarkCombined, matrix_values_A,
-                               matrix_values_B)
+  benchmark::RegisterBenchmark("combined", benchmarkCombined, matrix)
       ->Unit(unit);
 
   benchmark::Initialize(&argc, argv);
