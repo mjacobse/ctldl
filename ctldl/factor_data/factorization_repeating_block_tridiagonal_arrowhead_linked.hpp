@@ -42,32 +42,29 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
   static constexpr auto helper_start = getFilledInSparsityBlocked3x3<
       sparsity.start.diag, sparsity.start.next, sparsity.tridiag.diag,
       sparsity.start.outer, sparsity.outer.subdiag, sparsity.outer.diag,
-      permutation_start, Permutation<dim_tridiag>{},
-      Permutation<dim_outer>{}>();
+      permutation_start, permutation_tridiag, permutation_outer>();
   static constexpr auto sparsity_factor_start_diag = helper_start.block11;
-  static constexpr auto sparsity_factor_start_tridiag = getSparsityPermuted(
-      helper_start.block21, permutation_tridiag, Permutation<dim_start>{});
-  static constexpr auto sparsity_factor_start_outer = getSparsityPermuted(
-      helper_start.block31, permutation_outer, Permutation<dim_start>{});
+  static constexpr auto sparsity_factor_start_tridiag = helper_start.block21;
+  static constexpr auto sparsity_factor_start_outer = helper_start.block31;
   static constexpr auto sparsity_tridiag_diag = helper_start.block22;
+  static constexpr auto sparsity_tridiag_subdiag = getSparsityPermuted(
+      sparsity.tridiag.subdiag, permutation_tridiag, permutation_tridiag);
   static constexpr auto sparsity_outer_subdiag = helper_start.block32;
   static constexpr auto sparsity_outer_diag = helper_start.block33;
 
   static constexpr auto sparsity_factor = getFilledInSparsityRepeatingArrowhead<
-      sparsity_tridiag_diag, sparsity.tridiag.subdiag, sparsity_outer_subdiag,
-      permutation_tridiag, permutation_outer>();
+      sparsity_tridiag_diag, sparsity_tridiag_subdiag, sparsity_outer_subdiag,
+      Permutation<dim_tridiag>{}, Permutation<dim_outer>{}>();
 
   static constexpr auto helper = [] {
     constexpr auto sparsity_link_tridiag_permuted_cols = getSparsityPermuted(
         sparsity.link.prev, Permutation<dim_link>{}, permutation_tridiag);
     constexpr auto sparsity_link_outer_permuted_rows = getSparsityPermuted(
         sparsity.link.next, permutation_outer, Permutation<dim_link>{});
-    constexpr auto sparsity_outer_diag_permuted =
-        getSparsityLowerTriangle<sparsity_outer_diag>(permutation_outer);
     return getFilledInSparsityBlocked3x3<
         sparsity_factor.diag, sparsity_link_tridiag_permuted_cols,
         sparsity.link.diag, sparsity_factor.outer,
-        sparsity_link_outer_permuted_rows, sparsity_outer_diag_permuted,
+        sparsity_link_outer_permuted_rows, sparsity_outer_diag,
         Permutation<dim_tridiag>{}, permutation_link,
         Permutation<dim_outer>{}>();
   }();
