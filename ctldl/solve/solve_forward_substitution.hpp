@@ -44,7 +44,7 @@ template <std::size_t... RowIndices, class FactorData, class VectorSolution,
           class VectorPartialSolution>
 void solveForwardSubstitutionImpl(const FactorData& factor_block,
                                   const VectorSolution& solution,
-                                  VectorPartialSolution& partial_solution,
+                                  VectorPartialSolution&& partial_solution,
                                   std::index_sequence<RowIndices...>) {
   ((partial_solution[FactorData::origRowIndex(RowIndices)] =
         solveForwardSubstitutionImpl<RowIndices>(factor_block, solution,
@@ -77,7 +77,7 @@ void solveForwardSubstitutionImpl(const FactorData& factor_block,
 template <class FactorData, class VectorSolution, class VectorPartialSolution>
 void solveForwardSubstitution(const FactorData& factor_block,
                               const VectorSolution& solution,
-                              VectorPartialSolution& partial_solution) {
+                              VectorPartialSolution&& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
   solveForwardSubstitutionImpl(factor_block, solution, partial_solution,
                                std::make_index_sequence<num_rows>());
@@ -139,7 +139,7 @@ void solveForwardSubstitutionImpl(const FactorData& diag,
 template <class FactorData, class Vector, class FactorDataLeft,
           class VectorLeft>
 void solveForwardSubstitution(const FactorData& diag,
-                              Vector& rhs_in_solution_out,
+                              Vector&& rhs_in_solution_out,
                               const FactorDataLeft& left,
                               const VectorLeft& solution_left) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
@@ -149,7 +149,7 @@ void solveForwardSubstitution(const FactorData& diag,
 
 template <class FactorData, class Vector>
 void solveForwardSubstitution(const FactorData& diag,
-                              Vector& rhs_in_solution_out) {
+                              Vector&& rhs_in_solution_out) {
   solveForwardSubstitution(diag, rhs_in_solution_out, rhs_in_solution_out);
 }
 

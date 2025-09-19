@@ -11,14 +11,14 @@ namespace ctldl {
 template <class Matrix, class Solution, class Rhs>
 void multiplyRepeatingBlockTridiagonalArrowheadLinked(const Matrix& matrix,
                                                       const Solution& solution,
-                                                      Rhs& rhs) {
+                                                      Rhs&& rhs) {
   using enum MultiplyKind;
 
   multiply<Symmetric>(matrix.start.diag, solution.start, rhs.start);
-  multiply<Transposed>(matrix.start.next, solution.tridiag.front(), rhs.start);
+  multiply<Transposed>(matrix.start.next, solution.tridiag[0], rhs.start);
   multiply<Transposed>(matrix.start.outer, solution.outer, rhs.start);
 
-  multiply<Normal>(matrix.start.next, solution.start, rhs.tridiag.front());
+  multiply<Normal>(matrix.start.next, solution.start, rhs.tridiag[0]);
   multiplyRepeatingBlockTridiagonal(matrix.tridiag.diag, matrix.tridiag.subdiag,
                                     solution.tridiag, rhs.tridiag);
 
@@ -28,9 +28,11 @@ void multiplyRepeatingBlockTridiagonalArrowheadLinked(const Matrix& matrix,
                          rhs.tridiag[i]);
     multiply<Normal>(matrix.outer.subdiag[i], solution.tridiag[i], rhs.outer);
   }
-  multiply<Transposed>(matrix.link.prev, solution.link, rhs.tridiag.back());
+  multiply<Transposed>(matrix.link.prev, solution.link,
+                       rhs.tridiag[num_repetitions]);
 
-  multiply<Normal>(matrix.link.prev, solution.tridiag.back(), rhs.link);
+  multiply<Normal>(matrix.link.prev, solution.tridiag[num_repetitions],
+                   rhs.link);
   multiply<Transposed>(matrix.link.next, solution.outer, rhs.link);
   multiply<Symmetric>(matrix.link.diag, solution.link, rhs.link);
 

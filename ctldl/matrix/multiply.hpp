@@ -8,7 +8,7 @@
 namespace ctldl {
 
 template <MultiplyKind kind, class Matrix, class Solution, class Rhs>
-void multiply(const Matrix& matrix, const Solution& solution, Rhs& rhs) {
+void multiply(const Matrix& matrix, const Solution& solution, Rhs&& rhs) {
   constexpr auto nnz = std::size_t{Matrix::sparsity.entries.size()};
   for (std::size_t entry_index = 0; entry_index < nnz; ++entry_index) {
     const auto row_index = Matrix::sparsity.entries[entry_index].row_index;

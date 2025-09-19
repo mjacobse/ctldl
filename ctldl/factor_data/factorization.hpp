@@ -76,21 +76,15 @@ class Factorization {
   }
 
   template <class Rhs>
-  void diagonalSolve(Rhs& rhs_in_solution_out) const {
-    diagonalSolveImpl(rhs_in_solution_out.data());
-  }
-
-  std::array<Value, nnz> L;
-  std::array<Value, dim> D;
-
- private:
-  template <class ValueRhs>
-  void diagonalSolveImpl(ValueRhs* __restrict rhs_in_solution_out) const {
+  void diagonalSolve(Rhs&& rhs_in_solution_out) const {
     for (std::size_t i = 0; i < dim; ++i) {
       const auto i_orig = origRowIndex(i);
       rhs_in_solution_out[i_orig] /= D[i];
     }
   }
+
+  std::array<Value, nnz> L;
+  std::array<Value, dim> D;
 };
 
 }  // namespace ctldl

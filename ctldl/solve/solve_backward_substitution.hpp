@@ -27,7 +27,7 @@ template <std::size_t i, class FactorData, class VectorSolution,
           class VectorPartialSolution>
 [[gnu::always_inline]] inline void solveBackwardSubstitutionImpl(
     const FactorData& factor_block, const VectorSolution& solution,
-    VectorPartialSolution& partial_solution) {
+    VectorPartialSolution&& partial_solution) {
   using Value = typename FactorData::Value;
 
   constexpr auto i_orig = FactorData::origRowIndex(i);
@@ -39,7 +39,7 @@ template <std::size_t... RowIndices, class FactorData, class VectorSolution,
           class VectorPartialSolution>
 void solveBackwardSubstitutionImpl(const FactorData& factor_block,
                                    const VectorSolution& solution,
-                                   VectorPartialSolution& partial_solution,
+                                   VectorPartialSolution&& partial_solution,
                                    std::index_sequence<RowIndices...>) {
   (solveBackwardSubstitutionImpl<RowIndices>(factor_block, solution,
                                              partial_solution),
@@ -72,7 +72,7 @@ void solveBackwardSubstitutionImpl(const FactorData& factor_block,
 template <class FactorData, class VectorSolution, class VectorPartialSolution>
 void solveBackwardSubstitution(const FactorData& factor_block,
                                const VectorSolution& solution,
-                               VectorPartialSolution& partial_solution) {
+                               VectorPartialSolution&& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
   solveBackwardSubstitutionImpl(factor_block, solution, partial_solution,
                                 makeIndexSequenceReversed<0, num_rows>());
@@ -92,7 +92,7 @@ void solveBackwardSubstitution(const FactorData& factor_block,
  */
 template <class FactorData, class Vector>
 void solveBackwardSubstitution(const FactorData& factor_block_diagonal,
-                               Vector& partial_solution) {
+                               Vector&& partial_solution) {
   solveBackwardSubstitution(factor_block_diagonal, partial_solution,
                             partial_solution);
 }
