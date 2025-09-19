@@ -15,8 +15,8 @@
 #include <ctldl/symbolic/filled_in_sparsity_repeating.hpp>
 
 #include <cstddef>
-#include <memory>
 #include <span>
+#include <vector>
 
 
 namespace ctldl {
@@ -108,16 +108,16 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
   explicit FactorizationRepeatingBlockTridiagonalArrowheadLinked(
       const std::size_t num_repetitions)
       : m_num_repetitions(num_repetitions),
-        m_tridiag_diag(new FactorTridiagDiag[num_repetitions + 1]),
-        m_tridiag_subdiag(new FactorTridiagSubdiag[num_repetitions]),
-        m_outer_subdiag(new FactorOuterSubdiag[num_repetitions + 1]) {}
+        m_tridiag_diag(num_repetitions + 1),
+        m_tridiag_subdiag(num_repetitions),
+        m_outer_subdiag(num_repetitions + 1) {}
 
   auto numRepetitions() const noexcept { return m_num_repetitions; }
   std::span<const FactorTridiagDiag> blocksA() const noexcept {
-    return {m_tridiag_diag.get(), m_num_repetitions + 1};
+    return m_tridiag_diag;
   }
   std::span<const FactorTridiagSubdiag> blocksB() const noexcept {
-    return {m_tridiag_subdiag.get(), m_num_repetitions};
+    return m_tridiag_subdiag;
   }
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
@@ -229,12 +229,12 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
   FactorStartDiag m_start_diag;
   FactorStartTridiag m_start_tridiag;
   FactorStartOuter m_start_outer;
-  std::unique_ptr<FactorTridiagDiag[]> m_tridiag_diag;
-  std::unique_ptr<FactorTridiagSubdiag[]> m_tridiag_subdiag;
+  std::vector<FactorTridiagDiag> m_tridiag_diag;
+  std::vector<FactorTridiagSubdiag> m_tridiag_subdiag;
   FactorLinkTridiag m_link_tridiag;
   FactorLinkDiag m_link_diag;
   FactorLinkOuter m_link_outer;
-  std::unique_ptr<FactorOuterSubdiag[]> m_outer_subdiag;
+  std::vector<FactorOuterSubdiag> m_outer_subdiag;
   FactorOuterDiag m_outer_diag;
 };
 
