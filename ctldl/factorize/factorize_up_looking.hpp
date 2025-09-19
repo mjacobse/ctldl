@@ -212,7 +212,7 @@ void factorizeUpLookingImpl(const FactorData11& factor11, const Init21& init21,
 /**
  * Factorize blocks \p factor21 (L21) and \p factor22 (L22) using the initial
  * values given by \p init21 and \p init22 for those blocks and the already
- * finished block \p factor22 (L11) in an up-looking way.
+ * finished block \p factor11 (L11) in an up-looking way.
  *
  * [*            ]
  * [* L11        ]
