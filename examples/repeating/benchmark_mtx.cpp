@@ -63,8 +63,8 @@ void benchmarkFactorize(benchmark::State& state,
 
   auto matrix_values_A_data = matrix.tridiag.diag.data();
   auto matrix_values_B_data = matrix.tridiag.subdiag.data();
-  auto factorization_A_data = factorization.blocksA().data();
-  auto factorization_B_data = factorization.blocksB().data();
+  auto factorization_A_data = factorization.data().tridiag.diag.data();
+  auto factorization_B_data = factorization.data().tridiag.subdiag.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(matrix_values_A_data);
     benchmark::DoNotOptimize(matrix_values_B_data);
@@ -94,8 +94,8 @@ void benchmarkSolve(benchmark::State& state, const Matrix& matrix) {
       getArrayOfOnes<sparsity.dim_outer>()};
   auto rhs_in_solution_out = rhs;
 
-  auto factorization_A_data = factorization.blocksA().data();
-  auto factorization_B_data = factorization.blocksB().data();
+  auto factorization_A_data = factorization.data().tridiag.diag.data();
+  auto factorization_B_data = factorization.data().tridiag.diag.data();
   auto solution_data = rhs_in_solution_out.tridiag.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(factorization_A_data);
@@ -128,8 +128,8 @@ void benchmarkCombined(benchmark::State& state, const Matrix& matrix) {
 
   auto matrix_values_A_data = matrix.tridiag.diag.data();
   auto matrix_values_B_data = matrix.tridiag.subdiag.data();
-  auto factorization_A_data = factorization.blocksA().data();
-  auto factorization_B_data = factorization.blocksB().data();
+  auto factorization_A_data = factorization.data().tridiag.diag.data();
+  auto factorization_B_data = factorization.data().tridiag.diag.data();
   auto solution_data = rhs_in_solution_out.tridiag.data();
   for (auto _ : state) {
     benchmark::DoNotOptimize(matrix_values_A_data);

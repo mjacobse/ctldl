@@ -133,12 +133,7 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
                         FactorOuterDiag{}}}) {}
 
   auto numRepetitions() const noexcept { return m_num_repetitions; }
-  std::span<const FactorTridiagDiag> blocksA() const noexcept {
-    return m_data.tridiag.diag;
-  }
-  std::span<const FactorTridiagSubdiag> blocksB() const noexcept {
-    return m_data.tridiag.subdiag;
-  }
+  const auto& data() const noexcept { return m_data; };
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixBlocksInputValues>

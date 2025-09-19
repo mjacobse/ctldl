@@ -50,8 +50,7 @@ class FactorizationRepeatingBlockTridiagonal {
       const std::size_t num_repetitions)
       : m_base(num_repetitions) {}
 
-  auto blocksA() const noexcept { return m_base.blocksA(); }
-  auto blocksB() const noexcept { return m_base.blocksB(); }
+  const auto& data() const noexcept { return m_base.data().tridiag; }
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixValuesA, class MatrixValuesB>
