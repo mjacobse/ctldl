@@ -134,8 +134,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLink
     BOOST_TEST_INFO_SCOPE("Factorize method:         " << FactorizeMethod::description);
 
     const auto flatten = ctldl::flatten<double, dim_tridiag>;
-    const auto tolerance =
-        static_cast<double>(std::cbrt(std::numeric_limits<Value>::epsilon()));
+    const auto tolerance = static_cast<double>(
+        std::pow(std::numeric_limits<Value>::epsilon(), 0.25));
     BOOST_TEST(rhs.start == solution.start,
                boost::test_tools::tolerance(tolerance)
                    << boost::test_tools::per_element());

@@ -1,4 +1,5 @@
 #include "tests/multiply_factorize_solve_correct/repeating/test_functor.hpp"
+#include "tests/test_matrices/repeating/indef.hpp"
 #include "tests/test_matrices/repeating/nos2.hpp"
 #include "tests/test_matrices/repeating/tridiagonal.hpp"
 #include "tests/utility/solution_generator.hpp"
@@ -23,8 +24,10 @@ BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
       makeTypeArgument<TestMatrixTridiagonal<1, double>>() *
       makeTypeArgument<TestMatrixSingleEntryTopRight<1, double>>();
   const auto matrices_2x2 =
-      makeTypeArgument<TestMatrixTridiagonal<2, double>>() *
-      makeTypeArgument<TestMatrixSingleEntryTopRight<2, double>>();
+      makeTypeArgument<TestMatrixTridiagonal<2, double>,
+                       TestMatrixIndefA<double>>() ^
+      makeTypeArgument<TestMatrixSingleEntryTopRight<2, double>,
+                       TestMatrixIndefB<double>>();
   const auto matrices_3x3 =
       makeTypeArgument<TestMatrixTridiagonal<3, double>,
                        TestMatrixTridiagonal<3, float>, TestMatrixNos2A<double>,

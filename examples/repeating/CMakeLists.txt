@@ -1,5 +1,6 @@
 include(ctldlExampleTargets)
 
+add_example(indef)
 add_example(nos2)
 add_example(nos4)
 add_example(tridiagonal)
