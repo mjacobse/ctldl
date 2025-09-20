@@ -41,8 +41,8 @@ struct TesterMultiplyFactorizeSolveCorrectSingle {
     BOOST_TEST_INFO("Solution:          " << solution_generator.description);
     BOOST_TEST_INFO("Factorize method:  " << FactorizeMethod::description);
 
-    const auto tolerance =
-        static_cast<double>(std::sqrt(std::numeric_limits<Value>::epsilon()));
+    const auto tolerance = static_cast<double>(
+        std::pow(std::numeric_limits<Value>::epsilon(), 0.375));
     BOOST_TEST(rhs == solution, boost::test_tools::tolerance(tolerance)
                                     << boost::test_tools::per_element());
   }

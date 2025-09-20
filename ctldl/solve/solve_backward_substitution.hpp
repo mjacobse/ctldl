@@ -7,10 +7,11 @@
 
 namespace ctldl {
 
-template <std::size_t i, class FactorData, class Vector>
+template <std::size_t i, class FactorData, class ValueSolution, class Vector>
 [[gnu::always_inline]] inline void solveBackwardSubstitutionRow(
-    const FactorData& fact, const typename FactorData::Value solution_i,
+    const FactorData& fact, const ValueSolution solution_i,
     Vector& partial_solution) {
+  using ValueOut = std::remove_reference_t<decltype(partial_solution[0])>;
   constexpr auto& sparsity = FactorData::sparsity;
 
   constexpr auto row_begin = std::size_t{sparsity.row_begin_indices[i]};
@@ -19,7 +20,8 @@ template <std::size_t i, class FactorData, class Vector>
        ++entry_index_ij) {
     const std::size_t j = sparsity.entries[entry_index_ij].col_index;
     const auto j_orig = FactorData::origColIndex(j);
-    partial_solution[j_orig] -= fact.L[entry_index_ij] * solution_i;
+    partial_solution[j_orig] -= static_cast<ValueOut>(fact.L[entry_index_ij]) *
+                                static_cast<ValueOut>(solution_i);
   }
 }
 
@@ -28,11 +30,9 @@ template <std::size_t i, class FactorData, class VectorSolution,
 [[gnu::always_inline]] inline void solveBackwardSubstitutionImpl(
     const FactorData& factor_block, const VectorSolution& solution,
     VectorPartialSolution&& partial_solution) {
-  using Value = typename FactorData::Value;
-
   constexpr auto i_orig = FactorData::origRowIndex(i);
-  const auto solution_i = static_cast<Value>(solution[i_orig]);
-  solveBackwardSubstitutionRow<i>(factor_block, solution_i, partial_solution);
+  solveBackwardSubstitutionRow<i>(factor_block, solution[i_orig],
+                                  partial_solution);
 }
 
 template <std::size_t... RowIndices, class FactorData, class VectorSolution,

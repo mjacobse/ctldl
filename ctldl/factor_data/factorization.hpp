@@ -16,6 +16,7 @@
 
 #include <array>
 #include <cstddef>
+#include <type_traits>
 
 namespace ctldl {
 
@@ -79,9 +80,10 @@ class Factorization {
 
   template <class Rhs>
   void diagonalSolve(Rhs&& rhs_in_solution_out) const {
+    using ValueRhs = std::remove_reference_t<decltype(rhs_in_solution_out[0])>;
     for (std::size_t i = 0; i < dim; ++i) {
       const auto i_orig = origRowIndex(i);
-      rhs_in_solution_out[i_orig] /= D[i];
+      rhs_in_solution_out[i_orig] /= static_cast<ValueRhs>(D[i]);
     }
   }
 
