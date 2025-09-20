@@ -7,6 +7,7 @@
 #include <ctldl/factor_data/sparsity_to_factorize_outer.hpp>
 #include <ctldl/factor_data/sparsity_to_factorize_tridiagonal.hpp>
 #include <ctldl/factor_data/sparsity_to_factorize_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/factorize/regularization_small_positive_constant.hpp>
 #include <ctldl/matrix/multiply_repeating_block_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/matrix/matrix_link.hpp>
 #include <ctldl/matrix/matrix_outer.hpp>
@@ -95,7 +96,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLink
         generateMatrix(TestMatrixOuterDiag{}, value_generator)};
     const MatrixTridiagonalArrowheadLinked matrix{
         matrices_start, matrices_tridiag, matrices_link, matrices_outer};
-    factorization.factorize(matrix, FactorizeMethod{});
+    factorization.factorize(matrix, RegularizationSmallPositiveConstant{},
+                            FactorizeMethod{});
 
     const auto solution_tridiag = block<dim_tridiag, double>(
         solution_generator.generate((num_repetitions + 1) * dim_tridiag));

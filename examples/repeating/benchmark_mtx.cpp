@@ -2,6 +2,7 @@
 
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/factor_data/sparsity_to_factorize_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/factorize/regularization_small_positive_constant.hpp>
 #include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/vector/vector_tridiagonal_arrowhead_linked.hpp>
 
@@ -53,7 +54,8 @@ void copyRightHandSide(const RightHandSide& in, RightHandSide& out) {
 
 [[gnu::noinline]] void runFactorize(const Matrix& matrix,
                                     Factorization& factorization) {
-  factorization.factorize(matrix, factorize_method);
+  factorization.factorize(matrix, ctldl::RegularizationSmallPositiveConstant{},
+                          factorize_method);
 }
 
 void benchmarkFactorize(benchmark::State& state,
@@ -85,7 +87,8 @@ void benchmarkSolve(benchmark::State& state, const Matrix& matrix) {
   const auto num_repetitions = std::size_t{matrix.tridiag.subdiag.size()};
 
   Factorization factorization(num_repetitions);
-  factorization.factorize(matrix, factorize_method);
+  factorization.factorize(matrix, ctldl::RegularizationSmallPositiveConstant{},
+                          factorize_method);
 
   const RightHandSide rhs{
       getArrayOfOnes<sparsity.dim_start>(),
@@ -111,7 +114,8 @@ void benchmarkSolve(benchmark::State& state, const Matrix& matrix) {
 [[gnu::noinline]] void runCombined(const Matrix& matrix,
                                    Factorization& factorization,
                                    RightHandSide& rhs_in_solution_out) {
-  factorization.factorize(matrix, factorize_method);
+  factorization.factorize(matrix, ctldl::RegularizationSmallPositiveConstant{},
+                          factorize_method);
   factorization.solveInPlace(rhs_in_solution_out);
 }
 

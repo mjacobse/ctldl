@@ -1,6 +1,7 @@
 // Example Overwolfach/LFAT5 from the SuiteSparse Matrix Collection
 
 #include <ctldl/factor_data/factorization.hpp>
+#include <ctldl/factorize/regularization_none.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
 
@@ -56,7 +57,7 @@ int main() {
                  6.08806201550387560e-01,  1.50804479999999967e+04,
                  9.42527999999999935e+01,  3.14176000000000011e+00,
                  7.85440000000000027e-01,  1.57088000000000005e+00});
-  factorization.factorize(matrix);
+  factorization.factorize(matrix, ctldl::RegularizationNone{});
   auto rhs_in_solution_out = rhs;
   factorization.solveInPlace(rhs_in_solution_out);
 
