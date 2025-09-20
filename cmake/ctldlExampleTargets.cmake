@@ -24,8 +24,10 @@ endfunction()
 
 function(add_example_mtx EXAMPLE_NAME)
     add_example_target_mtx(example ${EXAMPLE_NAME})
-    add_example_target_mtx(benchmark ${EXAMPLE_NAME})
-    target_link_libraries(benchmark_mtx_${EXAMPLE_NAME} PRIVATE
-        benchmark::benchmark
-    )
+    if(CTLDL_BUILD_BENCHMARKS)
+        add_example_target_mtx(benchmark ${EXAMPLE_NAME})
+        target_link_libraries(benchmark_mtx_${EXAMPLE_NAME} PRIVATE
+            benchmark::benchmark
+        )
+    endif()
 endfunction()
