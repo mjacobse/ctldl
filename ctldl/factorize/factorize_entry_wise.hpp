@@ -4,6 +4,7 @@
 #include <ctldl/factor_data/empty_factor_data_left.hpp>
 #include <ctldl/factorize/factor_initialization.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
+#include <ctldl/factorize/regularization.hpp>
 #include <ctldl/matrix/empty_matrix_input.hpp>
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
@@ -164,7 +165,7 @@ template <std::size_t i, class FactorData22, class Init22, class FactorData21,
           class FactorData11>
 [[gnu::always_inline]] inline void factorizeEntryWiseImpl(
     FactorData22& factor22, const Init22& init22, const FactorData21& factor21,
-    const FactorData11& factor11) {
+    const FactorData11& factor11, const Regularization auto& regularization) {
   constexpr auto& sparsity21 = FactorData21::sparsity;
   constexpr auto& sparsity22 = FactorData22::sparsity;
   static_assert(sparsity22.num_rows == sparsity21.num_rows);
@@ -176,6 +177,7 @@ template <std::size_t i, class FactorData22, class Init22, class FactorData21,
   Di = applyContributionsRowDiagonal<i>(factor21, factor11, Di);
   Di = factorizeEntryWiseImplRow(factor22, init22, factor21, factor11, Di,
                                  makeIndexSequence<row_begin, row_end>());
+  Di = regularization.regularize(Di, i);
   factor22.D[i] = Di;
 }
 
@@ -184,8 +186,10 @@ template <std::size_t... RowIndices, class FactorData22, class Init22,
 void factorizeEntryWiseImpl(FactorData22& factor22, const Init22& init22,
                             const FactorData21& factor21,
                             const FactorData11& factor11,
+                            const Regularization auto& regularization,
                             std::index_sequence<RowIndices...>) {
-  (factorizeEntryWiseImpl<RowIndices>(factor22, init22, factor21, factor11),
+  (factorizeEntryWiseImpl<RowIndices>(factor22, init22, factor21, factor11,
+                                      regularization),
    ...);
 }
 
@@ -209,7 +213,8 @@ template <class FactorData11, class Init21, class Init22, class FactorData21,
           class FactorData22>
 void factorizeEntryWise(const FactorData11& factor11, const Init21& init21,
                         const Init22& init22, FactorData21& factor21,
-                        FactorData22& factor22) {
+                        FactorData22& factor22,
+                        const Regularization auto& regularization) {
   static_assert(isChordalBlocked(FactorData11::sparsity, FactorData21::sparsity,
                                  FactorData22::sparsity));
   static_assert(isSparsitySubsetLowerTriangle<Init22::sparsity>(
@@ -220,7 +225,7 @@ void factorizeEntryWise(const FactorData11& factor11, const Init21& init21,
   constexpr auto num_rows = std::size_t{FactorData22::sparsity.num_rows};
   factorizeEntryWiseSubdiagonalImpl(factor21, init21, factor11,
                                     std::make_index_sequence<num_rows>());
-  factorizeEntryWiseImpl(factor22, init22, factor21, factor11,
+  factorizeEntryWiseImpl(factor22, init22, factor21, factor11, regularization,
                          std::make_index_sequence<num_rows>());
 }
 
@@ -234,24 +239,31 @@ void factorizeEntryWise(const FactorData11& factor11, const Init21& init21,
  * go directly starting with the input values.
  */
 template <class FactorData, class Init>
-void factorizeEntryWise(FactorData& factor, const Init& init) {
+void factorizeEntryWise(FactorData& factor, const Init& init,
+                        const Regularization auto& regularization) {
   constexpr EmptyFactorDataLeft<FactorData> empty21;
   constexpr EmptyFactorDataDiagonal<decltype(empty21)> empty11;
   constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_init21;
-  factorizeEntryWise(empty11, empty_init21, init, empty21, factor);
+  factorizeEntryWise(empty11, empty_init21, init, empty21, factor,
+                     regularization);
 }
 
 template <class FactorData11, class Init21, class Init22, class FactorData21,
           class FactorData22>
 void factorize(const FactorData11& factor11, const Init21& init21,
                const Init22& init22, FactorData21& factor21,
-               FactorData22& factor22, FactorizeMethodEntryWise) {
-  factorizeEntryWise(factor11, init21, init22, factor21, factor22);
+               FactorData22& factor22,
+               const Regularization auto& regularization,
+               FactorizeMethodEntryWise) {
+  factorizeEntryWise(factor11, init21, init22, factor21, factor22,
+                     regularization);
 }
 
 template <class FactorData, class Init>
-void factorize(FactorData& factor, const Init& init, FactorizeMethodEntryWise) {
-  factorizeEntryWise(factor, init);
+void factorize(FactorData& factor, const Init& init,
+               const Regularization auto& regularization,
+               FactorizeMethodEntryWise) {
+  factorizeEntryWise(factor, init, regularization);
 }
 
 }  // namespace ctldl

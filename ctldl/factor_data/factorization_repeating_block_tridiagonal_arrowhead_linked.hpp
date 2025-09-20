@@ -6,6 +6,7 @@
 #include <ctldl/factorize/factorize_entry_wise.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/factorize/factorize_up_looking.hpp>
+#include <ctldl/factorize/regularization.hpp>
 #include <ctldl/matrix/matrix_link.hpp>
 #include <ctldl/matrix/matrix_outer.hpp>
 #include <ctldl/matrix/matrix_start.hpp>
@@ -138,21 +139,23 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixBlocksInputValues>
   void factorize(const MatrixBlocksInputValues& input,
+                 const Regularization auto& regularization,
                  const FactorizeMethodTag method_tag = {}) {
     // start
-    m_data.start.diag.factorize(input.start.diag, method_tag);
+    m_data.start.diag.factorize(input.start.diag, regularization, method_tag);
     // tridiagonal
     ::ctldl::factorize(m_data.start.diag, input.start.next,
                        input.tridiag.diag[0], m_data.start.next,
-                       m_data.tridiag.diag[0], method_tag);
+                       m_data.tridiag.diag[0], regularization, method_tag);
     for (std::size_t i = 0; i < m_num_repetitions; ++i) {
       ::ctldl::factorize(m_data.tridiag.diag[i], input.tridiag.subdiag[i],
                          input.tridiag.diag[i + 1], m_data.tridiag.subdiag[i],
-                         m_data.tridiag.diag[i + 1], method_tag);
+                         m_data.tridiag.diag[i + 1], regularization,
+                         method_tag);
     }
     ::ctldl::factorize(m_data.tridiag.diag[m_num_repetitions], input.link.prev,
                        input.link.diag, m_data.link.prev, m_data.link.diag,
-                       method_tag);
+                       regularization, method_tag);
     // outer
     const FactorInitNone<dim_outer, dim_tridiag> no_init_outer_subdiag;
     const FactorInitNone<dim_outer, dim_outer> no_init_outer_diag;
@@ -176,7 +179,7 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
                                        m_data.link.next, m_data.outer.diag);
     ::ctldl::factorize(m_data.link.diag, FactorInitNone<dim_outer, dim_link>{},
                        no_init_outer_diag, m_data.link.next, m_data.outer.diag,
-                       method_tag);
+                       regularization, method_tag);
   }
 
   template <class Rhs>

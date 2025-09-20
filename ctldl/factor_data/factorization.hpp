@@ -2,6 +2,7 @@
 
 #include <ctldl/factorize/factorize.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
+#include <ctldl/factorize/regularization.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
@@ -64,8 +65,9 @@ class Factorization {
 
   template <class FactorizeMethodTag = FactorizeMethodUpLooking, class Matrix>
   void factorize(const Matrix& matrix,
+                 const Regularization auto& regularization,
                  const FactorizeMethodTag method_tag = {}) {
-    ::ctldl::factorize(*this, matrix, method_tag);
+    ::ctldl::factorize(*this, matrix, regularization, method_tag);
   }
 
   template <class Rhs>

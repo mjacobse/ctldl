@@ -3,6 +3,7 @@
 #include "tests/utility/to_test_info.hpp"
 
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/factorize/regularization_small_positive_constant.hpp>
 #include <ctldl/matrix/multiply_repeating_block_tridiagonal.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/is_square.hpp>
@@ -42,7 +43,9 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     FactorizationRepeatingBlockTridiagonal<sparsity_A, sparsity_B, Value,
                                            permutation>
         factorization(num_repetitions);
-    factorization.factorize(matrices_A, matrices_B, FactorizeMethod{});
+    factorization.factorize(matrices_A, matrices_B,
+                            RegularizationSmallPositiveConstant{},
+                            FactorizeMethod{});
 
     const auto solution = block<block_dim, double>(
         solution_generator.generate((num_repetitions + 1) * block_dim));

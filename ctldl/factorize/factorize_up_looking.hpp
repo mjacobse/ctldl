@@ -5,6 +5,7 @@
 #include <ctldl/factorize/factor_initialization.hpp>
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/factorize/fill_with_original_matrix.hpp>
+#include <ctldl/factorize/regularization.hpp>
 #include <ctldl/matrix/empty_matrix_input.hpp>
 #include <ctldl/sparsity/get_influenced.hpp>
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
@@ -177,7 +178,8 @@ template <std::size_t i, class FactorData11, class Init21, class Init22,
           class FactorData21, class FactorData22>
 [[gnu::always_inline]] inline void factorizeUpLookingImpl(
     const FactorData11& factor11, const Init21& init21, const Init22& init22,
-    FactorData21& factor21, FactorData22& factor22) {
+    FactorData21& factor21, FactorData22& factor22,
+    const Regularization auto& regularization) {
   constexpr auto& sparsity21 = FactorData21::sparsity;
   constexpr auto& sparsity22 = FactorData22::sparsity;
   static_assert(sparsity22.num_rows == sparsity21.num_rows);
@@ -195,6 +197,7 @@ template <std::size_t i, class FactorData11, class Init21, class Init22,
   constexpr auto row_end22 = sparsity22.row_begin_indices[i + 1];
   Di = factorizeUpLookingInnerSelf(factor22, Di,
                                    makeIndexSequence<row_begin22, row_end22>());
+  Di = regularization.regularize(Di, i);
   factor22.D[i] = Di;
 }
 
@@ -203,9 +206,10 @@ template <std::size_t... RowIndices, class FactorData11, class Init21,
 void factorizeUpLookingImpl(const FactorData11& factor11, const Init21& init21,
                             const Init22& init22, FactorData21& factor21,
                             FactorData22& factor22,
+                            const Regularization auto& regularization,
                             std::index_sequence<RowIndices...>) {
   (factorizeUpLookingImpl<RowIndices>(factor11, init21, init22, factor21,
-                                      factor22),
+                                      factor22, regularization),
    ...);
 }
 
@@ -229,7 +233,8 @@ template <class FactorData11, class Init21, class Init22, class FactorData21,
           class FactorData22>
 void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
                         const Init22& init22, FactorData21& factor21,
-                        FactorData22& factor22) {
+                        FactorData22& factor22,
+                        const Regularization auto& regularization) {
   static_assert(isChordalBlocked(FactorData11::sparsity, FactorData21::sparsity,
                                  FactorData22::sparsity));
   static_assert(isSparsitySubsetLowerTriangle<Init22::sparsity>(
@@ -239,7 +244,7 @@ void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
                                  FactorData21::permutation_col));
   constexpr auto num_rows = std::size_t{FactorData22::sparsity.num_rows};
   factorizeUpLookingImpl(factor11, init21, init22, factor21, factor22,
-                         std::make_index_sequence<num_rows>());
+                         regularization, std::make_index_sequence<num_rows>());
 }
 
 /**
@@ -252,24 +257,31 @@ void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
  * go directly starting with the initial values.
  */
 template <class FactorData, class Init>
-void factorizeUpLooking(FactorData& factor, const Init& init) {
+void factorizeUpLooking(FactorData& factor, const Init& init,
+                        const Regularization auto& regularization) {
   constexpr EmptyFactorDataLeft<FactorData> empty21;
   constexpr EmptyFactorDataDiagonal<decltype(empty21)> empty11;
   constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_init21;
-  factorizeUpLooking(empty11, empty_init21, init, empty21, factor);
+  factorizeUpLooking(empty11, empty_init21, init, empty21, factor,
+                     regularization);
 }
 
 template <class FactorData11, class Init21, class Init22, class FactorData21,
           class FactorData22>
 void factorize(const FactorData11& factor11, const Init21& init21,
                const Init22& init22, FactorData21& factor21,
-               FactorData22& factor22, FactorizeMethodUpLooking) {
-  factorizeUpLooking(factor11, init21, init22, factor21, factor22);
+               FactorData22& factor22,
+               const Regularization auto& regularization,
+               FactorizeMethodUpLooking) {
+  factorizeUpLooking(factor11, init21, init22, factor21, factor22,
+                     regularization);
 }
 
 template <class FactorData, class Init>
-void factorize(FactorData& factor, const Init& init, FactorizeMethodUpLooking) {
-  factorizeUpLooking(factor, init);
+void factorize(FactorData& factor, const Init& init,
+               const Regularization auto& regularization,
+               FactorizeMethodUpLooking) {
+  factorizeUpLooking(factor, init, regularization);
 }
 
 template <std::size_t i, class FactorData11, class FactorData21, class Init31,

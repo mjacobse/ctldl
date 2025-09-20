@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/factorize/regularization.hpp>
 #include <ctldl/matrix/matrix_link.hpp>
 #include <ctldl/matrix/matrix_outer.hpp>
 #include <ctldl/matrix/matrix_start.hpp>
@@ -55,6 +56,7 @@ class FactorizationRepeatingBlockTridiagonal {
   template <class FactorizeMethodTag = FactorizeMethodUpLooking,
             class MatrixValuesA, class MatrixValuesB>
   void factorize(const MatrixValuesA& values_A, const MatrixValuesB& values_B,
+                 const Regularization auto& regularization,
                  const FactorizeMethodTag method_tag = {}) {
     m_base.factorize(
         MatrixTridiagonalArrowheadLinked{
@@ -62,7 +64,7 @@ class FactorizationRepeatingBlockTridiagonal {
             MatrixTridiagonal{values_A, values_B},
             makeEmptyMatrixLink<dim, 0, 0>(),
             makeEmptyMatrixRepeatingOuter<0, dim>(m_base.numRepetitions())},
-        method_tag);
+        regularization, method_tag);
   }
 
   template <class Rhs>

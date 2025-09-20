@@ -3,6 +3,7 @@
 #include "tests/utility/to_test_info.hpp"
 
 #include <ctldl/factor_data/factorization.hpp>
+#include <ctldl/factorize/regularization_small_positive_constant.hpp>
 #include <ctldl/matrix/multiply.hpp>
 #include <ctldl/permutation/permutation.hpp>
 
@@ -26,7 +27,8 @@ struct TesterMultiplyFactorizeSolveCorrectSingle {
 
     auto test_matrix = generateMatrix(TestMatrix{}, value_generator);
     Factorization<sparsity, Value, permutation> factorization;
-    factorization.factorize(test_matrix, FactorizeMethod{});
+    factorization.factorize(test_matrix, RegularizationSmallPositiveConstant{},
+                            FactorizeMethod{});
 
     const auto solution = solution_generator.generate(dim);
     std::array<double, dim> rhs = {0};

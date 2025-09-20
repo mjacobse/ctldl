@@ -2,6 +2,7 @@
 
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/factor_data/sparsity_to_factorize_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/factorize/regularization_small_positive_constant.hpp>
 #include <ctldl/fileio/mtx_file_read_repeating_block_tridiagonal_arrowhead_linked.hpp>
 #include <ctldl/vector/vector_tridiagonal_arrowhead_linked.hpp>
 
@@ -58,7 +59,8 @@ int main(const int argc, const char** argv) {
   auto rhs_in_solution_out = rhs;
 
   for (std::size_t i = 0; i < num_iterations; ++i) {
-    factorization.factorize(matrix);
+    factorization.factorize(matrix,
+                            ctldl::RegularizationSmallPositiveConstant{});
 
     rhs_in_solution_out.start = rhs.start;
     std::copy(rhs.tridiag.cbegin(), rhs.tridiag.cend(),

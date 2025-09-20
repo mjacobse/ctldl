@@ -1,4 +1,5 @@
 #include <ctldl/factor_data/factorization_repeating_block_tridiagonal.hpp>
+#include <ctldl/factorize/regularization_none.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
@@ -110,7 +111,8 @@ int main() {
   const std::vector<MatrixB> matrix_values_B(num_repetitions);
 
   for (int i = 0; i < 1000000; ++i) {
-    factorization.factorize(matrix_values_A, matrix_values_B);
+    factorization.factorize(matrix_values_A, matrix_values_B,
+                            ctldl::RegularizationNone{});
   }
 
   const auto rhs_single = [] {
