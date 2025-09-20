@@ -12,7 +12,6 @@ add_executable(tests_integration
 )
 target_link_libraries(tests_integration PRIVATE
     ctldl
-    ctldl_warnings
     Boost::unit_test_framework
 )
 

@@ -7,5 +7,4 @@ target_sources(ctldl_fileio_mtx PRIVATE
 
 target_link_libraries(ctldl_fileio_mtx PRIVATE
     ctldl_includes
-    ctldl_warnings
 )
