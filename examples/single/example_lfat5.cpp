@@ -37,9 +37,9 @@ struct Matrix {
 int main() {
   ctldl::Factorization<Matrix::sparsity, double, permutation> factorization;
   const auto rhs = [] {
-    std::array<double, dim> rhs;
-    std::fill(rhs.begin(), rhs.end(), 1.0);
-    return rhs;
+    std::array<double, dim> ret;
+    std::fill(ret.begin(), ret.end(), 1.0);
+    return ret;
   }();
 
   Matrix matrix({1.57088000000000005e+00,  -9.42527999999999935e+01,

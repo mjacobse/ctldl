@@ -16,16 +16,16 @@ BOOST_AUTO_TEST_CASE(ComputeEliminationTreeRepeatingExample0) {
   constexpr auto tree = computeEliminationTreeRepeating(sparsity_A, sparsity_B);
 
   constexpr auto tree_expected = [] {
-    EliminationTree<2 * 5> tree;
-    tree.parent[0] = 2;
-    tree.parent[1] = 2 + 5;
-    tree.parent[2] = 3;
-    tree.parent[3] = 4;
-    tree.parent[4] = 0 + 5;
-    tree.parent[0 + 5] = 2 + 5;
-    tree.parent[2 + 5] = 3 + 5;
-    tree.parent[3 + 5] = 4 + 5;
-    return tree;
+    EliminationTree<2 * 5> ret;
+    ret.parent[0] = 2;
+    ret.parent[1] = 2 + 5;
+    ret.parent[2] = 3;
+    ret.parent[3] = 4;
+    ret.parent[4] = 0 + 5;
+    ret.parent[0 + 5] = 2 + 5;
+    ret.parent[2 + 5] = 3 + 5;
+    ret.parent[3 + 5] = 4 + 5;
+    return ret;
   }();
 
   CTLDL_TEST_STATIC(tree.parent == tree_expected.parent,
@@ -39,16 +39,16 @@ BOOST_AUTO_TEST_CASE(ComputeEliminationTreeRepeatingExample1) {
   constexpr auto tree = computeEliminationTreeRepeating(sparsity_A, sparsity_B);
 
   constexpr auto tree_expected = [] {
-    EliminationTree<2 * 7> tree;
-    tree.parent[0] = 1;
-    tree.parent[1] = 2;
-    tree.parent[3] = 1 + 7;
-    tree.parent[4] = 1 + 7;
-    tree.parent[0 + 5] = 0 + 7;
-    tree.parent[1 + 5] = 0 + 7;
-    tree.parent[2 + 5] = 1 + 7;
-    tree.parent[3 + 5] = 2 + 7;
-    return tree;
+    EliminationTree<2 * 7> ret;
+    ret.parent[0] = 1;
+    ret.parent[1] = 2;
+    ret.parent[3] = 1 + 7;
+    ret.parent[4] = 1 + 7;
+    ret.parent[0 + 5] = 0 + 7;
+    ret.parent[1 + 5] = 0 + 7;
+    ret.parent[2 + 5] = 1 + 7;
+    ret.parent[3 + 5] = 2 + 7;
+    return ret;
   }();
 
   CTLDL_TEST_STATIC(tree.parent == tree_expected.parent,

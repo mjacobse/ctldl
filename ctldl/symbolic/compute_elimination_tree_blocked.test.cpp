@@ -19,12 +19,12 @@ BOOST_AUTO_TEST_CASE(ComputeEliminationTreeBlockedNos2Test) {
       computeEliminationTreeBlocked(sparsity11, sparsity21, sparsity22);
 
   constexpr auto tree_expected = [] {
-    EliminationTree<6> tree;
-    tree.parent[0] = 3;
-    tree.parent[1] = 4;
-    tree.parent[2] = 4;
-    tree.parent[4] = 5;
-    return tree;
+    EliminationTree<6> ret;
+    ret.parent[0] = 3;
+    ret.parent[1] = 4;
+    ret.parent[2] = 4;
+    ret.parent[4] = 5;
+    return ret;
   }();
 
   CTLDL_TEST_STATIC(tree.parent == tree_expected.parent,
