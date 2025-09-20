@@ -109,28 +109,28 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
     {7,21},
   });
   constexpr auto permutation = ctldl::Permutation<22>{{
-    18,
     10,
-    17,
-    21,
-    13,
-    12,
     11,
-    20,
+    12,
+    13,
     16,
-    8,
+    20,
+    19,
+    18,
+    21,
+    17,
     14,
     15,
+    8,
     4,
     7,
-    19,
+    0,
     1,
     3,
     2,
-    0,
     6,
-    9,
     5,
+    9,
   }};
   return ctldl::SparsityToFactorizeTridiagonal{diag, subdiag, permutation};
 }
@@ -200,20 +200,20 @@ constexpr auto getRepeatingMtxSparsityLink() {
     {0,9},
   });
   constexpr auto permutation = ctldl::Permutation<14>{{
-    2,
     4,
-    10,
-    9,
     5,
-    11,
-    13,
-    8,
-    12,
-    3,
-    7,
     6,
-    1,
+    7,
+    2,
+    8,
+    9,
+    10,
+    11,
+    12,
     0,
+    1,
+    13,
+    3,
   }};
   return ctldl::SparsityToFactorizeLink{prev, diag, next, permutation};
 }
@@ -253,8 +253,8 @@ constexpr auto getRepeatingMtxSparsityOuter() {
     {1,1},
   });
   constexpr auto permutation = ctldl::Permutation<2>{{
-    1,
     0,
+    1,
   }};
   return ctldl::SparsityToFactorizeOuter{subdiag, diag, permutation};
 }

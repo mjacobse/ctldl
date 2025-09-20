@@ -61,12 +61,12 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
   });
   constexpr auto permutation = ctldl::Permutation<7>{{
     3,
-    4,
     5,
-    6,
+    4,
     0,
     1,
     2,
+    6,
   }};
   return ctldl::SparsityToFactorizeTridiagonal{diag, subdiag, permutation};
 }
