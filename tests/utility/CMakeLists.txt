@@ -4,7 +4,6 @@ add_executable(tests_unit_testutility
 )
 target_link_libraries(tests_unit_testutility PRIVATE
     ctldl
-    ctldl_warnings
     Boost::unit_test_framework
 )
 

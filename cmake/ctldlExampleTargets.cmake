@@ -2,7 +2,6 @@ function(add_example_target TARGET_NAME TARGET_SOURCE)
     add_executable(${TARGET_NAME} ${TARGET_SOURCE})
     target_link_libraries(${TARGET_NAME} PRIVATE
         ctldl
-        ctldl_warnings
     )
 endfunction()
 

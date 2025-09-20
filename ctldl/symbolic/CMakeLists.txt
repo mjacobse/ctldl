@@ -8,7 +8,6 @@ if(BUILD_TESTING)
     )
     target_link_libraries(tests_unit_symbolic PRIVATE
         ctldl
-        ctldl_warnings
         Boost::unit_test_framework
     )
 
