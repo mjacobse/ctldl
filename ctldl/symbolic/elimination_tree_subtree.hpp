@@ -31,8 +31,7 @@ template <std::size_t dim, std::size_t dim_subtree>
 constexpr void setSubtreeFront(EliminationTree<dim>& tree,
                                const EliminationTree<dim_subtree>& subtree) {
   static_assert(dim_subtree <= dim);
-  std::copy(subtree.parent.cbegin(), subtree.parent.cend(),
-            tree.parent.begin());
+  std::ranges::copy(subtree.parent, tree.parent.begin());
 }
 
 }  // namespace ctldl

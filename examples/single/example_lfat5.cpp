@@ -38,7 +38,7 @@ int main() {
   ctldl::Factorization<Matrix::sparsity, double, permutation> factorization;
   const auto rhs = [] {
     std::array<double, dim> ret;
-    std::fill(ret.begin(), ret.end(), 1.0);
+    std::ranges::fill(ret, 1.0);
     return ret;
   }();
 

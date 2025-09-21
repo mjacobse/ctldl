@@ -11,7 +11,7 @@ namespace ctldl {
 SolutionGenerator getSolutionGeneratorAllOnes() {
   const auto func = [](const std::size_t dim) {
     std::vector<double> ret(dim);
-    std::fill(ret.begin(), ret.end(), 1.0);
+    std::ranges::fill(ret, 1.0);
     return ret;
   };
   return {func, "[1 1 ... 1 1]"};
@@ -33,8 +33,8 @@ SolutionGenerator getSolutionGeneratorNormallyDistributed(
     const auto seed = dim;
     std::mt19937 rng(seed);
     std::normal_distribution<> distribution(0.0, standard_deviation);
-    std::generate(ret.begin(), ret.end(),
-                  [&distribution, &rng] { return distribution(rng); });
+    std::ranges::generate(ret,
+                          [&distribution, &rng] { return distribution(rng); });
     return ret;
   };
   return {func, "normally distributed"};

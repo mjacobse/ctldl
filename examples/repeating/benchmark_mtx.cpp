@@ -41,13 +41,13 @@ const auto factorize_method = ctldl::FactorizeMethodUpLooking{};
 template <std::size_t dim>
 auto getArrayOfOnes() {
   std::array<double, dim> arr;
-  std::fill(arr.begin(), arr.end(), 1.0);
+  std::ranges::fill(arr, 1.0);
   return arr;
 }
 
 void copyRightHandSide(const RightHandSide& in, RightHandSide& out) {
   out.start = in.start;
-  std::copy(in.tridiag.cbegin(), in.tridiag.cend(), out.tridiag.begin());
+  std::ranges::copy(in.tridiag, out.tridiag.begin());
   out.link = in.link;
   out.outer = in.outer;
 }

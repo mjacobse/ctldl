@@ -26,8 +26,8 @@ struct BoolMatrix {
     return std::accumulate(
         values.cbegin(), values.cend(), std::size_t{0},
         [](const std::size_t carry, const std::array<bool, num_cols>& row) {
-          return carry + static_cast<std::size_t>(
-                             std::count(row.cbegin(), row.cend(), true));
+          return carry +
+                 static_cast<std::size_t>(std::ranges::count(row, true));
         });
   }
 };

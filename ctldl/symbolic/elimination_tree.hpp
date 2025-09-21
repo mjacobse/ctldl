@@ -17,7 +17,7 @@ struct EliminationTree {
 
   constexpr EliminationTree() {
     fixInitIfZeroLengthArray(parent);
-    std::fill(parent.begin(), parent.end(), no_parent);
+    std::ranges::fill(parent, no_parent);
   };
 
   constexpr bool hasParent(const std::size_t node) const {
@@ -35,8 +35,7 @@ struct EliminationTree {
 template <std::size_t dim>
 constexpr bool operator==(const EliminationTree<dim>& lhs,
                           const EliminationTree<dim>& rhs) {
-  return std::equal(lhs.parent.cbegin(), lhs.parent.cend(),
-                    rhs.parent.cbegin());
+  return std::ranges::equal(lhs.parent, rhs.parent);
 }
 
 }  // namespace ctldl
