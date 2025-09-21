@@ -13,10 +13,6 @@ struct MatrixOuter {
   Diag diag;
 };
 
-// needed for clang < 17 which does not do the CTAD for aggregates otherwise
-template <class Subdiag, class Diag>
-MatrixOuter(Subdiag, Diag) -> MatrixOuter<Subdiag, Diag>;
-
 template <std::size_t num_rows, std::size_t num_cols>
 constexpr auto makeEmptyMatrixRepeatingOuter(
     const std::size_t num_repetitions) {

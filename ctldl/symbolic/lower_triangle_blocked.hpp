@@ -18,11 +18,6 @@ struct LowerTriangleBlocked3x3 {
   Block33 block33;
 };
 
-// needed for clang < 17 which does not do the CTAD for aggregates otherwise
-template <class T11, class T21, class T22, class T31, class T32, class T33>
-LowerTriangleBlocked3x3(T11, T21, T22, T31, T32, T33)
-    -> LowerTriangleBlocked3x3<T11, T21, T22, T31, T32, T33>;
-
 template <class T11, class T21, class T22>
 struct LowerTriangleBlocked {
   using Block11 = T11;
@@ -32,9 +27,5 @@ struct LowerTriangleBlocked {
   Block21 block21;
   Block22 block22;
 };
-
-// needed for clang < 17 which does not do the CTAD for aggregates otherwise
-template <class T11, class T21, class T22>
-LowerTriangleBlocked(T11, T21, T22) -> LowerTriangleBlocked<T11, T21, T22>;
 
 }  // namespace ctldl
