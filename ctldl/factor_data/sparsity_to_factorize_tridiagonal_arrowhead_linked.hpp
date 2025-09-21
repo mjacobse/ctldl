@@ -51,27 +51,4 @@ struct SparsityToFactorizeTridiagonalArrowheadLinked {
       outer;
 };
 
-// needed for clang < 17 which does not do the CTAD for aggregates otherwise
-template <std::size_t dim_start, std::size_t dim_tridiag, std::size_t dim_link,
-          std::size_t dim_outer, std::size_t nnz_start_diag,
-          std::size_t nnz_start_tridiag, std::size_t nnz_start_outer,
-          std::size_t nnz_tridiag_diag, std::size_t nnz_tridiag_subdiag,
-          std::size_t nnz_link_tridiag, std::size_t nnz_link_diag,
-          std::size_t nnz_link_outer, std::size_t nnz_outer_subdiagonal,
-          std::size_t nnz_outer_diagonal>
-SparsityToFactorizeTridiagonalArrowheadLinked(
-    SparsityToFactorizeStart<dim_start, dim_tridiag, dim_outer, nnz_start_diag,
-                             nnz_start_tridiag, nnz_start_outer>,
-    SparsityToFactorizeTridiagonal<dim_tridiag, nnz_tridiag_diag,
-                                   nnz_tridiag_subdiag>,
-    SparsityToFactorizeLink<dim_tridiag, dim_link, dim_outer, nnz_link_tridiag,
-                            nnz_link_diag, nnz_link_outer>,
-    SparsityToFactorizeOuter<dim_tridiag, dim_outer, nnz_outer_subdiagonal,
-                             nnz_outer_diagonal>)
-    -> SparsityToFactorizeTridiagonalArrowheadLinked<
-        dim_start, dim_tridiag, dim_link, dim_outer, nnz_start_diag,
-        nnz_start_tridiag, nnz_start_outer, nnz_tridiag_diag,
-        nnz_tridiag_subdiag, nnz_link_tridiag, nnz_link_diag, nnz_link_outer,
-        nnz_outer_subdiagonal, nnz_outer_diagonal>;
-
 }  // namespace ctldl
