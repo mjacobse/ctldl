@@ -14,8 +14,7 @@ std::vector<Value> flatten(
     const std::span<const std::array<Value, block_dim>> values_blocked) {
   std::vector<Value> values_flattened;
   for (const auto& block : values_blocked) {
-    std::copy(block.cbegin(), block.cend(),
-              std::back_inserter(values_flattened));
+    std::ranges::copy(block, std::back_inserter(values_flattened));
   }
   return values_flattened;
 }

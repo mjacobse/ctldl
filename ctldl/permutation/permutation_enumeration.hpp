@@ -22,7 +22,7 @@ struct EnumeratePermutationsHelper {
       std::iota(ret.begin(), ret.end(), 0);
     } else {
       ret = EnumeratePermutationsHelper<dim, i - 1>::value;
-      std::next_permutation(ret.begin(), ret.end());
+      std::ranges::next_permutation(ret);
     }
     return ret;
   }();

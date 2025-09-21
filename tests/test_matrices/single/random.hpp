@@ -31,10 +31,9 @@ struct TestMatrixRandom {
     const auto standard_deviation = Value{1.0};
     std::normal_distribution<> distribution(0.0, standard_deviation);
     for (auto& matrix : matrices) {
-      std::generate(matrix.values.begin(), matrix.values.end(),
-                    [&distribution, &value_generator] {
-                      return distribution(value_generator);
-                    });
+      std::ranges::generate(matrix.values, [&distribution, &value_generator] {
+        return distribution(value_generator);
+      });
     }
     return matrices;
   }

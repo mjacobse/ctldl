@@ -9,6 +9,7 @@
 #include <array>
 #include <cstddef>
 #include <numeric>
+#include <ranges>
 
 
 namespace ctldl {
@@ -44,9 +45,9 @@ constexpr auto computeEliminationTreeRepeating(const SparsityA& sparsity_A,
 
     setSubtreeFront(tree, tree_init);
     clearSubtreeBack(tree, dim);
-    std::transform(ancestors.cbegin() + dim, ancestors.cend(),
-                   ancestors.begin(),
-                   [](const std::size_t ancestor) { return ancestor - dim; });
+    std::ranges::transform(
+        std::views::drop(ancestors, dim), ancestors.begin(),
+        [](const std::size_t ancestor) { return ancestor - dim; });
     std::iota(ancestors.begin() + dim, ancestors.end(), dim);
   };
 

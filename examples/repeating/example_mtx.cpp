@@ -26,7 +26,7 @@ constexpr auto sparsity = ctldl::SparsityToFactorizeTridiagonalArrowheadLinked{
 template <std::size_t dim>
 auto getArrayOfOnes() {
   std::array<double, dim> arr;
-  std::fill(arr.begin(), arr.end(), 1.0);
+  std::ranges::fill(arr, 1.0);
   return arr;
 }
 
@@ -63,8 +63,7 @@ int main(const int argc, const char** argv) {
                             ctldl::RegularizationSmallPositiveConstant{});
 
     rhs_in_solution_out.start = rhs.start;
-    std::copy(rhs.tridiag.cbegin(), rhs.tridiag.cend(),
-              rhs_in_solution_out.tridiag.begin());
+    std::ranges::copy(rhs.tridiag, rhs_in_solution_out.tridiag.begin());
     rhs_in_solution_out.link = rhs.link;
     rhs_in_solution_out.outer = rhs.outer;
 

@@ -117,14 +117,14 @@ int main() {
 
   const auto rhs_single = [] {
     std::array<double, dim> rhs;
-    std::fill(rhs.begin(), rhs.end(), 1.0);
+    std::ranges::fill(rhs, 1.0);
     return rhs;
   }();
   const std::vector<std::array<double, dim>> rhs(num_repetitions + 1,
                                                  rhs_single);
   auto rhs_in_solution_out = rhs;
   for (int i = 0; i < 1000000; ++i) {
-    std::copy(rhs.cbegin(), rhs.cend(), rhs_in_solution_out.begin());
+    std::ranges::copy(rhs, rhs_in_solution_out.begin());
     factorization.solveInPlace(rhs_in_solution_out);
   }
 

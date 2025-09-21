@@ -41,7 +41,7 @@ struct Permutation {
 template <std::size_t dim>
 constexpr bool operator==(const Permutation<dim>& lhs,
                           const Permutation<dim>& rhs) {
-  return std::equal(std::cbegin(lhs), std::cend(lhs), std::cbegin(rhs));
+  return std::ranges::equal(lhs, rhs);
 }
 
 }  // namespace ctldl

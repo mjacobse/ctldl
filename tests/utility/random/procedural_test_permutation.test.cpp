@@ -14,8 +14,8 @@ BOOST_AUTO_TEST_CASE(ProceduralTestPermutationTest) {
   constexpr int dim = 5;
   constexpr auto permutation = ProceduralTestPermutation<seed, dim>{}.value;
   constexpr Permutation<dim> permutation_identity;
-  CTLDL_TEST_STATIC(std::is_permutation(
-      permutation.cbegin(), permutation.cend(), permutation_identity.cbegin()));
+  CTLDL_TEST_STATIC(
+      std::ranges::is_permutation(permutation, permutation_identity));
 }
 
 }  // namespace ctldl
