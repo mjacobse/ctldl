@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctldl/permutation/permutation_enumeration.hpp>
+#include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 

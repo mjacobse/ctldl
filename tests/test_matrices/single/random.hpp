@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity.hpp>
+
 #include <algorithm>
 #include <array>
 #include <cstddef>

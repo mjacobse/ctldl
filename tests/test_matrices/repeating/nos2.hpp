@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ctldl/permutation/permutation_enumeration.hpp>
-
 #include <array>
 #include <cstddef>
 #include <vector>
