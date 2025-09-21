@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <ranges>
@@ -25,6 +26,9 @@ struct Sparsity {
                    std::begin(entries), [](const auto& entry) {
                      return Entry{entry.row_index, entry.col_index};
                    });
+    assert(std::ranges::all_of(entries, [](const auto entry) {
+      return entry.row_index < num_rows && entry.col_index < num_cols;
+    }));
   }
 
   template <class SparsityIn>
