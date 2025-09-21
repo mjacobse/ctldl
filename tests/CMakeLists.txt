@@ -11,7 +11,7 @@ add_executable(tests_integration
     utility/solution_generator.cpp
 )
 target_link_libraries(tests_integration PRIVATE
-    ctldl
+    ctldl::ctldl
     Boost::unit_test_framework
 )
 

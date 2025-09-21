@@ -1,7 +1,7 @@
 function(add_example_target TARGET_NAME TARGET_SOURCE)
     add_executable(${TARGET_NAME} ${TARGET_SOURCE})
     target_link_libraries(${TARGET_NAME} PRIVATE
-        ctldl
+        ctldl::ctldl
     )
 endfunction()
 
@@ -17,7 +17,7 @@ function(add_example_target_mtx PREFIX EXAMPLE_NAME)
         mtx_includes/${MTX_INCLUDE_DIRECTORY}
     )
     target_link_libraries(${TARGET_NAME} PRIVATE
-        ctldl_fileio_mtx
+        ctldl::ctldl_fileio_mtx
     )
 endfunction()
 

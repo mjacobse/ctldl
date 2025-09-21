@@ -7,7 +7,7 @@ if(BUILD_TESTING)
         filled_in_sparsity_repeating_arrowhead.test.cpp
     )
     target_link_libraries(tests_unit_symbolic PRIVATE
-        ctldl
+        ctldl::ctldl
         Boost::unit_test_framework
     )
 

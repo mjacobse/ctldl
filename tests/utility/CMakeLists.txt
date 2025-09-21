@@ -3,7 +3,7 @@ add_executable(tests_unit_testutility
     runner_tests_unit_testutility.cpp
 )
 target_link_libraries(tests_unit_testutility PRIVATE
-    ctldl
+    ctldl::ctldl
     Boost::unit_test_framework
 )
 

@@ -1,4 +1,5 @@
 add_library(ctldl INTERFACE)
+add_library(ctldl::ctldl ALIAS ctldl)
 
 target_link_libraries(ctldl INTERFACE
     ctldl_includes

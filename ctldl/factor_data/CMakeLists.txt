@@ -4,7 +4,7 @@ if(BUILD_TESTING)
         factorization_repeating_block_tridiagonal_arrowhead_linked.test.cpp
     )
     target_link_libraries(tests_unit_factor_data PRIVATE
-        ctldl
+        ctldl::ctldl
         Boost::unit_test_framework
     )
 
