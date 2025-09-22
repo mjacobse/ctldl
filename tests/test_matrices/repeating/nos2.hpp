@@ -22,7 +22,7 @@ struct TestMatrixNos2A {
     };
     static constexpr auto sparsity = Sparsity{};
 
-    static constexpr double valueAt(const std::size_t i) {
+    static constexpr Value valueAt(const std::size_t i) {
       return Sparsity::entries[i].value;
     }
   };

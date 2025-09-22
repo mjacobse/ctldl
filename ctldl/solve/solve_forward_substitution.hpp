@@ -86,10 +86,9 @@ template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
   static_assert(FactorData::sparsity.num_rows ==
                 FactorDataLeft::sparsity.num_rows);
   static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
-  using Value = typename FactorData::Value;
 
   constexpr auto i_orig = FactorData::origRowIndex(i);
-  auto solution_i = static_cast<Value>(rhs_in_solution_out[i_orig]);
+  auto solution_i = rhs_in_solution_out[i_orig];
   solution_i = solveForwardSubstitutionRow<i>(left, solution_left, solution_i);
   solution_i = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, solution_i);
   return solution_i;
