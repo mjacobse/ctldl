@@ -68,7 +68,7 @@ int main() {
 
   for (const auto& solution_part : rhs) {
     for (const auto v : solution_part) {
-      std::printf("%f\n", double{v});
+      std::printf("%f\n", static_cast<double>(v));
     }
   }
 }

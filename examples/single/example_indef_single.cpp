@@ -35,6 +35,6 @@ int main() {
   factorization.solveInPlace(rhs);
 
   for (const auto v : rhs) {
-    std::printf("%f\n", double{v});
+    std::printf("%f\n", static_cast<double>(v));
   }
 }
