@@ -70,7 +70,9 @@ struct TestMatrixNos4A {
   static auto generate(ValueGenerator& /*value_generator*/,
                        const std::size_t num_matrices) {
     std::vector<Matrix> matrices(num_matrices, Matrix(false));
-    matrices.back() = Matrix(true);
+    if (!matrices.empty()) {
+      matrices.back() = Matrix(true);
+    }
     return matrices;
   }
 };
