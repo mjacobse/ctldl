@@ -1,7 +1,11 @@
-add_library(ctldl INTERFACE)
+add_library(ctldl)
 add_library(ctldl::ctldl ALIAS ctldl)
 
-target_link_libraries(ctldl INTERFACE
+target_sources(ctldl PRIVATE
+    utility/contracts.cpp
+)
+
+target_link_libraries(ctldl PUBLIC
     ctldl_includes
 )
 

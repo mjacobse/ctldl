@@ -19,8 +19,11 @@
 #include <ctldl/sparsity/sparsity_permuted.hpp>
 #include <ctldl/symbolic/filled_in_sparsity_blocked.hpp>
 #include <ctldl/symbolic/filled_in_sparsity_repeating.hpp>
+#include <ctldl/utility/contracts.hpp>
 
 #include <cstddef>
+#include <limits>
+#include <source_location>
 #include <span>
 #include <vector>
 
@@ -130,7 +133,22 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
                 std::vector<FactorTridiagSubdiag>(num_repetitions)},
             FactorLink{},
             MatrixOuter{std::vector<FactorOuterSubdiag>(num_repetitions + 1),
-                        FactorOuterDiag{}}}) {}
+                        FactorOuterDiag{}}}) {
+    checkNumRepetitionsClassInvariant();
+  }
+
+  void checkNumRepetitionsClassInvariant(
+      std::source_location source_location =
+          std::source_location::current()) const {
+    contract_assert(numRepetitions() < std::numeric_limits<std::size_t>::max(),
+                    source_location);
+    contract_assert(m_data.tridiag.diag.size() == numRepetitions() + 1,
+                    source_location);
+    contract_assert(m_data.tridiag.subdiag.size() == numRepetitions(),
+                    source_location);
+    contract_assert(m_data.outer.subdiag.size() == numRepetitions() + 1,
+                    source_location);
+  }
 
   auto numRepetitions() const noexcept { return m_data.tridiag.subdiag.size(); }
   const auto& data() const noexcept { return m_data; };
@@ -191,6 +209,8 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
   template <class Rhs>
   [[gnu::flatten]] void forwardSolve(Rhs& rhs) const {
+    checkNumRepetitionsClassInvariant();
+
     const auto num_repetitions = std::size_t{numRepetitions()};
     solveForwardSubstitution(m_data.start.diag, rhs.start);
     solveForwardSubstitution(m_data.tridiag.diag[0], rhs.tridiag[0],
@@ -213,6 +233,8 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
   template <class Rhs>
   void diagonalSolve(Rhs& rhs) const {
+    checkNumRepetitionsClassInvariant();
+
     const auto num_repetitions = std::size_t{numRepetitions()};
     m_data.start.diag.diagonalSolve(rhs.start);
     for (std::size_t i = 0; i <= num_repetitions; ++i) {
@@ -224,6 +246,8 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
   template <class Rhs>
   [[gnu::flatten]] void backwardSolve(Rhs& rhs) const {
+    checkNumRepetitionsClassInvariant();
+
     const auto num_repetitions = std::size_t{numRepetitions()};
     // finish rhs_outer
     solveBackwardSubstitution(m_data.outer.diag, rhs.outer);
