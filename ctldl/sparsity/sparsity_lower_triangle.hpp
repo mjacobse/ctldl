@@ -15,7 +15,7 @@ template <class Sparsity>
 constexpr auto getNnzLowerTriangle(const Sparsity& sparsity) {
   static_assert(isSquare<Sparsity>());
   std::size_t nnz = 0;
-  for (const auto entry : sparsity.entries) {
+  for (const auto entry : sparsity.entries()) {
     nnz += (entry.row_index > entry.col_index);
   }
   return nnz;
@@ -30,7 +30,7 @@ constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
   std::array<Entry, nnz> entries;
   fixInitIfZeroLengthArray(entries);
   std::size_t entry_index = 0;
-  for (const auto entry : sparsity.entries) {
+  for (const auto entry : sparsity.entries()) {
     if (entry.row_index <= entry.col_index) {
       continue;
     }
@@ -44,7 +44,7 @@ constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
 template <auto sparsity, class PermutationIn>
 constexpr auto getSparsityLowerTriangle(const PermutationIn& permutation) {
   static_assert(isSquare(sparsity));
-  constexpr auto dim = std::size_t{sparsity.num_rows};
+  constexpr auto dim = std::size_t{sparsity.numRows()};
   constexpr auto nnz = getNnzLowerTriangle(sparsity);
   const auto entries = getEntriesLowerTriangle<nnz>(sparsity, permutation);
   return Sparsity<nnz, dim, dim>(entries);

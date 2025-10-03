@@ -27,7 +27,7 @@ struct TestMatrixNos4A {
         {8, 6}, {8, 8},
         {9, 8}, {9, 9}});
 
-    static constexpr std::array<double, sparsity.nnz> values = {{
+    static constexpr std::array<double, sparsity.nnz()> values = {{
         0.17155418,
         0.035777088, 0.41788854,
         -0.1, 0.34310835,
@@ -38,7 +38,7 @@ struct TestMatrixNos4A {
         0.43577709,
         -0.1, 0.17155418,
         -0.035777088, 0.41788854}};
-    static constexpr std::array<double, sparsity.nnz> values_last_block = {{
+    static constexpr std::array<double, sparsity.nnz()> values_last_block = {{
         0.1,
         0.0, 0.2,
         -0.1, 0.34310835,
@@ -93,7 +93,7 @@ struct TestMatrixNos4B {
         // empty row
         {9, 9}});
 
-    static constexpr std::array<double, sparsity.nnz> values = {{
+    static constexpr std::array<double, sparsity.nnz()> values = {{
         // empty row
         -0.2,
         -0.071554176, -0.035777088, -0.071554176, 0.035777088,

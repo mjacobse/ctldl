@@ -14,7 +14,7 @@ template <class Sparsity, class UnaryFunction>
 constexpr void foreachNonZeroWithFill(const Sparsity& sparsity,
                                       UnaryFunction f) {
   static_assert(isSquare<Sparsity>());
-  constexpr auto dim = Sparsity::num_rows;
+  constexpr auto dim = Sparsity::numRows();
 
   const auto tree = computeEliminationTree(sparsity);
   std::array<std::size_t, dim> visitor;

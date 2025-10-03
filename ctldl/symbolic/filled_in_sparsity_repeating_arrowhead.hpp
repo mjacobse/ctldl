@@ -21,9 +21,9 @@ constexpr auto getNumNonZerosWithFillRepeatingArrowhead(
     const SparsityOuter& sparsity_C) {
   static_assert(isSquare<SparsityDiag>());
   static_assert(isSquare<SparsitySubdiag>());
-  static_assert(SparsityDiag::num_rows == SparsitySubdiag::num_rows);
-  constexpr auto dim = std::size_t{SparsityDiag::num_rows};
-  static_assert(SparsityOuter::num_cols == SparsityDiag::num_cols);
+  static_assert(SparsityDiag::numRows() == SparsitySubdiag::numRows());
+  constexpr auto dim = std::size_t{SparsityDiag::numRows()};
+  static_assert(SparsityOuter::numCols() == SparsityDiag::numCols());
 
   RepeatingBlockTridiagonalArrowhead nnz{std::size_t{0}, std::size_t{0},
                                          std::size_t{0}};
@@ -48,10 +48,10 @@ template <auto sparsity_in_A, auto sparsity_in_B, auto sparsity_in_C,
 constexpr auto getFilledInSparsityRepeatingArrowhead() {
   static_assert(isSquare(sparsity_in_A));
   static_assert(isSquare(sparsity_in_B));
-  static_assert(sparsity_in_B.num_rows == sparsity_in_A.num_rows);
-  static_assert(sparsity_in_C.num_cols == sparsity_in_A.num_cols);
-  constexpr auto dim = std::size_t{sparsity_in_A.num_rows};
-  constexpr auto dim_outer = std::size_t{sparsity_in_C.num_rows};
+  static_assert(sparsity_in_B.numRows() == sparsity_in_A.numRows());
+  static_assert(sparsity_in_C.numCols() == sparsity_in_A.numCols());
+  constexpr auto dim = std::size_t{sparsity_in_A.numRows()};
+  constexpr auto dim_outer = std::size_t{sparsity_in_C.numRows()};
 
   constexpr auto sparsity_A =
       SparsityCSR(getSparsityLowerTriangle<sparsity_in_A>(permutation));

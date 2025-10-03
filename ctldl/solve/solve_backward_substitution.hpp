@@ -14,11 +14,11 @@ template <std::size_t i, class FactorData, class ValueSolution, class Vector>
   using ValueOut = std::remove_reference_t<decltype(partial_solution[0])>;
   constexpr auto& sparsity = FactorData::sparsity;
 
-  constexpr auto row_begin = std::size_t{sparsity.row_begin_indices[i]};
-  constexpr auto row_end = std::size_t{sparsity.row_begin_indices[i + 1]};
+  constexpr auto row_begin = std::size_t{sparsity.rowBeginIndices()[i]};
+  constexpr auto row_end = std::size_t{sparsity.rowBeginIndices()[i + 1]};
   for (auto entry_index_ij = row_begin; entry_index_ij != row_end;
        ++entry_index_ij) {
-    const std::size_t j = sparsity.entries[entry_index_ij].col_index;
+    const std::size_t j = sparsity.entries()[entry_index_ij].col_index;
     const auto j_orig = FactorData::origColIndex(j);
     partial_solution[j_orig] -= static_cast<ValueOut>(fact.L[entry_index_ij]) *
                                 static_cast<ValueOut>(solution_i);
@@ -73,7 +73,7 @@ template <class FactorData, class VectorSolution, class VectorPartialSolution>
 void solveBackwardSubstitution(const FactorData& factor_block,
                                const VectorSolution& solution,
                                VectorPartialSolution&& partial_solution) {
-  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
+  constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
   solveBackwardSubstitutionImpl(factor_block, solution, partial_solution,
                                 makeIndexSequenceReversed<0, num_rows>());
 }

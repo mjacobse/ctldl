@@ -14,35 +14,38 @@ namespace ctldl {
 
 template <std::size_t nnz_, std::size_t num_rows_, std::size_t num_cols_>
 struct Sparsity {
-  static constexpr auto nnz = nnz_;
-  static constexpr auto num_rows = num_rows_;
-  static constexpr auto num_cols = num_cols_;
+  static constexpr std::size_t nnz() { return nnz_; }
+  static constexpr std::size_t numRows() { return num_rows_; }
+  static constexpr std::size_t numCols() { return num_cols_; }
 
-  std::array<Entry, nnz> entries;
+  std::array<Entry, nnz_> m_entries;
+  constexpr const std::array<Entry, nnz_>& entries() const {
+    return m_entries;
+  }
 
   constexpr explicit Sparsity(std::ranges::input_range auto&& entries_init) {
-    fixInitIfZeroLengthArray(entries);
-    std::ranges::transform(entries_init, std::begin(entries),
+    fixInitIfZeroLengthArray(m_entries);
+    std::ranges::transform(entries_init, std::begin(m_entries),
                            [](const auto& entry) {
                              return Entry{entry.row_index, entry.col_index};
                            });
-    assert(std::ranges::all_of(entries, [](const auto entry) {
-      return entry.row_index < num_rows && entry.col_index < num_cols;
+    assert(std::ranges::all_of(entries(), [](const auto entry) {
+      return entry.row_index < numRows() && entry.col_index < numCols();
     }));
   }
 
   template <class SparsityIn>
-    requires(std::ranges::input_range<decltype(SparsityIn::entries)> &&
-             std::convertible_to<decltype(SparsityIn::num_rows), std::size_t> &&
-             std::convertible_to<decltype(SparsityIn::num_cols), std::size_t>)
+    requires(std::ranges::input_range<decltype(SparsityIn::entries())> &&
+             std::convertible_to<decltype(SparsityIn::numRows()), std::size_t> &&
+             std::convertible_to<decltype(SparsityIn::numCols()), std::size_t>)
   constexpr Sparsity(const SparsityIn& sparsity_in)
-      : Sparsity(sparsity_in.entries) {}
+      : Sparsity(sparsity_in.entries()) {}
 };
 
 template <class SparsityIn>
 Sparsity(const SparsityIn& sparsity_in)
-    -> Sparsity<std::tuple_size_v<decltype(SparsityIn::entries)>,
-                SparsityIn::num_rows, SparsityIn::num_cols>;
+    -> Sparsity<std::tuple_size_v<decltype(SparsityIn::entries())>,
+                SparsityIn::numRows(), SparsityIn::numCols()>;
 
 template <std::size_t num_rows, std::size_t num_cols, class Entries>
 constexpr auto makeSparsity(const Entries& entries) {
@@ -64,8 +67,8 @@ constexpr auto makeSparsity(const Entry (&entries)[nnz]) {
 
 template <class SparsityIn>
 constexpr auto makeSparsity(const SparsityIn& sparsity) {
-  return makeSparsity<SparsityIn::num_rows, SparsityIn::num_cols>(
-      sparsity.entries);
+  return makeSparsity<SparsityIn::numRows(), SparsityIn::numCols()>(
+      sparsity.entries());
 }
 
 template <std::size_t num_rows, std::size_t num_cols>

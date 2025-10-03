@@ -10,10 +10,10 @@
 
 namespace ctldl {
 
-template <auto sparsity, auto permutation = Permutation<sparsity.num_rows>{}>
+template <auto sparsity, auto permutation = Permutation<sparsity.numRows()>{}>
 constexpr auto getFilledInSparsity() {
   static_assert(isSquare(sparsity));
-  constexpr auto dim = std::size_t{sparsity.num_rows};
+  constexpr auto dim = std::size_t{sparsity.numRows()};
   return makeSparsity<dim, dim>(
       getEntriesWithFill<SparsityCSR(
           getSparsityLowerTriangle<sparsity>(permutation))>());

@@ -42,10 +42,10 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLink
   void operator()(const SolutionGenerator& solution_generator,
                   const std::size_t num_repetitions,
                   std::mt19937& value_generator) const {
-    constexpr auto dim_start = std::size_t{TestMatrixStartDiag::Matrix::sparsity.num_rows};
-    constexpr auto dim_tridiag = std::size_t{TestMatrixTridiagDiag::Matrix::sparsity.num_rows};
-    constexpr auto dim_link = std::size_t{TestMatrixLinkDiag::Matrix::sparsity.num_rows};
-    constexpr auto dim_outer = std::size_t{TestMatrixOuterDiag::Matrix::sparsity.num_rows};
+    constexpr auto dim_start = std::size_t{TestMatrixStartDiag::Matrix::sparsity.numRows()};
+    constexpr auto dim_tridiag = std::size_t{TestMatrixTridiagDiag::Matrix::sparsity.numRows()};
+    constexpr auto dim_link = std::size_t{TestMatrixLinkDiag::Matrix::sparsity.numRows()};
+    constexpr auto dim_outer = std::size_t{TestMatrixOuterDiag::Matrix::sparsity.numRows()};
 
     constexpr Permutation<dim_start> permutation_start{PermutationStart::value};
     constexpr Permutation<dim_tridiag> permutation_tridiag{PermutationTridiag::value};

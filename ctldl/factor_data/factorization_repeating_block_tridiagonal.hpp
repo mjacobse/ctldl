@@ -24,28 +24,28 @@ namespace ctldl {
 // [      B  A  B']
 // [         B  A ]
 template <Sparsity sparsity_A, Sparsity sparsity_B, class Value_,
-          Permutation<sparsity_A.num_rows> permutation_in =
+          Permutation<sparsity_A.numRows()> permutation_in =
               PermutationIdentity{}>
 class FactorizationRepeatingBlockTridiagonal {
  private:
   static_assert(isSquare(sparsity_A));
   static_assert(isSquare(sparsity_B));
-  static_assert(sparsity_B.num_rows == sparsity_A.num_rows);
+  static_assert(sparsity_B.numRows() == sparsity_A.numRows());
 
   static constexpr auto sparsity_to_factorize =
       SparsityToFactorizeTridiagonalArrowheadLinked{
-          makeEmptySparsityToFactorizeStart<0, sparsity_A.num_rows, 0>(),
+          makeEmptySparsityToFactorizeStart<0, sparsity_A.numRows(), 0>(),
           SparsityToFactorizeTridiagonal{sparsity_A, sparsity_B,
                                          permutation_in},
-          makeEmptySparsityToFactorizeLink<sparsity_A.num_cols, 0, 0>(),
-          makeEmptySparsityToFactorizeOuter<sparsity_A.num_cols, 0>()};
+          makeEmptySparsityToFactorizeLink<sparsity_A.numCols(), 0, 0>(),
+          makeEmptySparsityToFactorizeOuter<sparsity_A.numCols(), 0>()};
   using Base = FactorizationRepeatingBlockTridiagonalArrowheadLinked<
       sparsity_to_factorize, Value_>;
   Base m_base;
 
  public:
   using Value = Value_;
-  static constexpr auto dim = std::size_t{sparsity_A.num_rows};
+  static constexpr auto dim = std::size_t{sparsity_A.numRows()};
 
   explicit FactorizationRepeatingBlockTridiagonal(
       const std::size_t num_repetitions)

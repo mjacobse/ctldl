@@ -14,7 +14,7 @@ constexpr void addRowEliminationTree(const Sparsity& sparsity,
                                      std::array<std::size_t, dim>& ancestors,
                                      const std::size_t row_offset = 0,
                                      const std::size_t col_offset = 0) {
-  static_assert(dim >= Sparsity::num_rows);
+  static_assert(dim >= Sparsity::numRows());
 
   const auto i = row_index + row_offset;
   for (const auto entry : sparsity.rowView(row_index)) {

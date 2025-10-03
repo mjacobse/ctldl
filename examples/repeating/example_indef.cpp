@@ -21,27 +21,29 @@ constexpr int dim = 2;
 
 struct MatrixA {
   struct Sparsity {
-    static constexpr int num_rows = dim;
-    static constexpr int num_cols = dim;
-    static constexpr std::array<Entry, 1> entries = {{{1, 0, 1.0}}};
+    static constexpr int numRows() { return dim; }
+    static constexpr int numCols() { return dim; }
+    static constexpr std::array<Entry, 1> entries() {
+      return {{{1, 0, 1.0}}};
+    }
   };
   static constexpr auto sparsity = Sparsity{};
 
   static constexpr double valueAt(const std::size_t i) {
-    return Sparsity::entries[i].value;
+    return Sparsity::entries()[i].value;
   }
 };
 
 struct MatrixB {
   struct Sparsity {
-    static constexpr int num_rows = dim;
-    static constexpr int num_cols = dim;
-    static constexpr std::array<Entry, 5> entries = {};
+    static constexpr int numRows() { return dim; }
+    static constexpr int numCols() { return dim; }
+    static constexpr std::array<Entry, 5> entries() { return {}; }
   };
   static constexpr auto sparsity = Sparsity{};
 
   static constexpr double valueAt(const std::size_t i) {
-    return Sparsity::entries[i].value;
+    return Sparsity::entries()[i].value;
   }
 };
 

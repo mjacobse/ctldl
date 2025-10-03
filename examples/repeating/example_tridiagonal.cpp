@@ -20,27 +20,27 @@ struct MatrixA {
   };
 
   struct Sparsity {
-    static constexpr int num_rows = dim;
-    static constexpr int num_cols = dim;
+    static constexpr int numRows() { return dim; }
+    static constexpr int numCols() { return dim; }
     static constexpr int nnz = dim + (dim - 1);
-    static constexpr auto entries = [] {
+    static constexpr auto entries() {
       std::array<Entry, std::size_t{nnz}> ret{};
       std::size_t entry_index = 0;
-      for (std::size_t i = 0; i < num_rows; ++i) {
+      for (std::size_t i = 0; i < numRows(); ++i) {
         ret[entry_index] = {i, i, 2.0};
         entry_index += 1;
       }
-      for (std::size_t i = 1; i < num_rows; ++i) {
+      for (std::size_t i = 1; i < numCols(); ++i) {
         ret[entry_index] = {i, i - 1, -1.0};
         entry_index += 1;
       }
       return ret;
-    }();
+    }
   };
   static constexpr auto sparsity = Sparsity{};
 
   constexpr double valueAt(const std::size_t i) const {
-    return Sparsity::entries[i].value;
+    return Sparsity::entries()[i].value;
   }
 };
 

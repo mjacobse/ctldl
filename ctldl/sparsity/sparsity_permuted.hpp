@@ -15,20 +15,20 @@ constexpr auto getSparsityPermuted(const SparsityIn& sparsity,
                                    const PermutationRow& permutation_row,
                                    const PermutationCol& permutation_col) {
   using std::size;
-  constexpr auto nnz = std::size_t{size(decltype(sparsity.entries){})};
+  constexpr auto nnz = std::size_t{size(decltype(sparsity.entries()){})};
 
   const auto inverse_permutation_row = invertPermutation(permutation_row);
   const auto inverse_permutation_col = invertPermutation(permutation_col);
 
   std::array<Entry, nnz> entries;
   std::size_t entry_index = 0;
-  for (const auto entry : sparsity.entries) {
+  for (const auto entry : sparsity.entries()) {
     entries[entry_index] = permutedEntry(entry, inverse_permutation_row,
                                          inverse_permutation_col);
     entry_index += 1;
   }
 
-  return Sparsity<nnz, SparsityIn::num_rows, SparsityIn::num_cols>(entries);
+  return Sparsity<nnz, SparsityIn::numRows(), SparsityIn::numCols()>(entries);
 }
 
 }  // namespace ctldl

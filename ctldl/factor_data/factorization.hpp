@@ -21,12 +21,12 @@
 namespace ctldl {
 
 template <Sparsity sparsity_orig, class Value_,
-          Permutation<sparsity_orig.num_rows> permutation_in =
+          Permutation<sparsity_orig.numRows()> permutation_in =
               PermutationIdentity{}>
 class Factorization {
  public:
   static_assert(isSquare(sparsity_orig));
-  static constexpr auto dim = std::size_t{sparsity_orig.num_rows};
+  static constexpr auto dim = std::size_t{sparsity_orig.numRows()};
   using Value = Value_;
   static constexpr auto permutation = permutation_in;
 
@@ -60,7 +60,7 @@ class Factorization {
 
   static constexpr auto sparsity =
       SparsityCSR(getFilledInSparsity<sparsity_orig, permutation>());
-  static constexpr auto nnz = std::size_t{sparsity.nnz};
+  static constexpr auto nnz = std::size_t{sparsity.nnz()};
   static constexpr auto permutation_row = permutation;
   static constexpr auto permutation_col = permutation;
 

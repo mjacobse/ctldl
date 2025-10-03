@@ -46,8 +46,8 @@ struct SparsityToFactorizeOuter {
 template <class Subdiag, class Diag, class PermutationIn = PermutationIdentity>
 SparsityToFactorizeOuter(Subdiag, Diag, PermutationIn = PermutationIdentity{})
     -> SparsityToFactorizeOuter<
-        ctad_t<Sparsity, Subdiag>::num_cols, ctad_t<Sparsity, Diag>::num_rows,
-        ctad_t<Sparsity, Subdiag>::nnz, ctad_t<Sparsity, Diag>::nnz>;
+        ctad_t<Sparsity, Subdiag>::numCols(), ctad_t<Sparsity, Diag>::numRows(),
+        ctad_t<Sparsity, Subdiag>::nnz(), ctad_t<Sparsity, Diag>::nnz()>;
 
 template <std::size_t dim_inner, std::size_t dim_outer>
 constexpr auto makeEmptySparsityToFactorizeOuter() {

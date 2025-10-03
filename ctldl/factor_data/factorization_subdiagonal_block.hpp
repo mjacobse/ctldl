@@ -17,16 +17,16 @@
 namespace ctldl {
 
 template <Sparsity sparsity_in, class Value_,
-          Permutation<sparsity_in.num_rows> permutation_row_in =
+          Permutation<sparsity_in.numRows()> permutation_row_in =
               PermutationIdentity{},
-          Permutation<sparsity_in.num_cols> permutation_col_in =
+          Permutation<sparsity_in.numCols()> permutation_col_in =
               PermutationIdentity{}>
 class FactorizationSubdiagonalBlock {
  public:
   static constexpr auto sparsity = makeSparsityCSR(sparsity_in);
-  static constexpr auto nnz = std::size_t{sparsity.nnz};
-  static constexpr auto num_rows = std::size_t{sparsity.num_rows};
-  static constexpr auto num_cols = std::size_t{sparsity.num_cols};
+  static constexpr auto nnz = std::size_t{sparsity.nnz()};
+  static constexpr auto num_rows = std::size_t{sparsity.numRows()};
+  static constexpr auto num_cols = std::size_t{sparsity.numCols()};
   using Value = Value_;
   static constexpr auto permutation_row = permutation_row_in;
   static constexpr auto permutation_col = permutation_col_in;

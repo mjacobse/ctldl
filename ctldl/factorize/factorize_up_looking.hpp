@@ -28,8 +28,8 @@ namespace ctldl {
 template <std::size_t entry_index, class FactorData>
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerSelf(
     FactorData& fact) {
-  constexpr auto i = FactorData::sparsity.entries[entry_index].row_index;
-  constexpr auto j = FactorData::sparsity.entries[entry_index].col_index;
+  constexpr auto i = FactorData::sparsity.entries()[entry_index].row_index;
+  constexpr auto j = FactorData::sparsity.entries()[entry_index].col_index;
 
   const auto Lij_scaled = fact.L[entry_index];
 
@@ -72,8 +72,8 @@ template <std::size_t entry_index, class FactorData11, class FactorData21,
 [[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
     const FactorData11& factor11, FactorData21& factor21,
     FactorData22& factor22) {
-  constexpr auto i = FactorData21::sparsity.entries[entry_index].row_index;
-  constexpr auto j = FactorData21::sparsity.entries[entry_index].col_index;
+  constexpr auto i = FactorData21::sparsity.entries()[entry_index].row_index;
+  constexpr auto j = FactorData21::sparsity.entries()[entry_index].col_index;
 
   const auto Lij_scaled = factor21.L[entry_index];
 
@@ -120,8 +120,8 @@ template <std::size_t entry_index, class FactorData11, class FactorData21,
   constexpr auto& sparsity32 = FactorData32::sparsity;
   constexpr auto& sparsity33 = FactorData33::sparsity;
 
-  constexpr auto i = sparsity31.entries[entry_index].row_index;
-  constexpr auto j = sparsity31.entries[entry_index].col_index;
+  constexpr auto i = sparsity31.entries()[entry_index].row_index;
+  constexpr auto j = sparsity31.entries()[entry_index].col_index;
 
   const auto Lij_scaled = factor31.L[entry_index];
 
@@ -182,19 +182,19 @@ template <std::size_t i, class FactorData11, class Init21, class Init22,
     const Regularization auto& regularization) {
   constexpr auto& sparsity21 = FactorData21::sparsity;
   constexpr auto& sparsity22 = FactorData22::sparsity;
-  static_assert(sparsity22.num_rows == sparsity21.num_rows);
+  static_assert(sparsity22.numRows() == sparsity21.numRows());
 
   auto Di = getInitialFactorValueD<i>(init22, factor22);
 
   initializeFactorRow<i>(init21, factor21);
   initializeFactorRow<i>(init22, factor22);
 
-  constexpr auto row_begin21 = sparsity21.row_begin_indices[i];
-  constexpr auto row_end21 = sparsity21.row_begin_indices[i + 1];
+  constexpr auto row_begin21 = sparsity21.rowBeginIndices()[i];
+  constexpr auto row_end21 = sparsity21.rowBeginIndices()[i + 1];
   Di = factorizeUpLookingInnerLeft(factor11, factor21, factor22, Di,
                                    makeIndexSequence<row_begin21, row_end21>());
-  constexpr auto row_begin22 = sparsity22.row_begin_indices[i];
-  constexpr auto row_end22 = sparsity22.row_begin_indices[i + 1];
+  constexpr auto row_begin22 = sparsity22.rowBeginIndices()[i];
+  constexpr auto row_end22 = sparsity22.rowBeginIndices()[i + 1];
   Di = factorizeUpLookingInnerSelf(factor22, Di,
                                    makeIndexSequence<row_begin22, row_end22>());
   Di = regularization.regularize(Di, i);
@@ -242,7 +242,7 @@ void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
   static_assert(isSparsitySubset(Init21::sparsity, FactorData21::sparsity,
                                  FactorData21::permutation_row,
                                  FactorData21::permutation_col));
-  constexpr auto num_rows = std::size_t{FactorData22::sparsity.num_rows};
+  constexpr auto num_rows = std::size_t{FactorData22::sparsity.numRows()};
   factorizeUpLookingImpl(factor11, init21, init22, factor21, factor22,
                          regularization, std::make_index_sequence<num_rows>());
 }
@@ -261,7 +261,7 @@ void factorizeUpLooking(FactorData& factor, const Init& init,
                         const Regularization auto& regularization) {
   constexpr EmptyFactorDataLeft<FactorData> empty21;
   constexpr EmptyFactorDataDiagonal<decltype(empty21)> empty11;
-  constexpr EmptyMatrixInput<FactorData::sparsity.num_rows, 0> empty_init21;
+  constexpr EmptyMatrixInput<FactorData::sparsity.numRows(), 0> empty_init21;
   factorizeUpLooking(empty11, empty_init21, init, empty21, factor,
                      regularization);
 }
@@ -299,8 +299,8 @@ void factorizePartialUpLookingImpl(const FactorData11& factor11,
   initializeFactorRow<i>(init32, factor32);
   initializeFactorRow<i>(init33, factor33);
   auto Di = factor33.D[i];
-  constexpr auto row_begin31 = sparsity31.row_begin_indices[i];
-  constexpr auto row_end31 = sparsity31.row_begin_indices[i + 1];
+  constexpr auto row_begin31 = sparsity31.rowBeginIndices()[i];
+  constexpr auto row_end31 = sparsity31.rowBeginIndices()[i + 1];
   Di = factorizeUpLookingInnerLeft(factor11, factor21, factor31, factor32,
                                    factor33, Di,
                                    makeIndexSequence<row_begin31, row_end31>());
@@ -349,7 +349,7 @@ void factorizePartialUpLooking(const FactorData11& factor11,
                                const Init31& init31, const Init32& init32,
                                const Init33& init33, FactorData31& factor31,
                                FactorData32& factor32, FactorData33& factor33) {
-  constexpr auto num_rows = std::size_t{FactorData31::sparsity.num_rows};
+  constexpr auto num_rows = std::size_t{FactorData31::sparsity.numRows()};
   factorizePartialUpLookingImpl(factor11, factor21, init31, init32, init33,
                                 factor31, factor32, factor33,
                                 std::make_index_sequence<num_rows>());

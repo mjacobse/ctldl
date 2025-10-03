@@ -20,16 +20,16 @@ constexpr void foreachContributingEntry(const Sparsity& sparsity,
                                         const std::size_t j,
                                         const std::size_t column_limit,
                                         TernaryFunction f) {
-  const auto row_begin_i = sparsity_below.row_begin_indices[i];
-  const auto row_end_i = sparsity_below.row_begin_indices[i + 1];
-  const auto row_begin_j = sparsity.row_begin_indices[j];
-  const auto row_end_j = sparsity.row_begin_indices[j + 1];
+  const auto row_begin_i = sparsity_below.rowBeginIndices()[i];
+  const auto row_end_i = sparsity_below.rowBeginIndices()[i + 1];
+  const auto row_begin_j = sparsity.rowBeginIndices()[j];
+  const auto row_end_j = sparsity.rowBeginIndices()[j + 1];
 
   auto entry_index_ik = row_begin_i;
   auto entry_index_jk = row_begin_j;
   while (entry_index_ik != row_end_i && entry_index_jk != row_end_j) {
-    const auto col_index_i = sparsity_below.entries[entry_index_ik].col_index;
-    const auto col_index_j = sparsity.entries[entry_index_jk].col_index;
+    const auto col_index_i = sparsity_below.entries()[entry_index_ik].col_index;
+    const auto col_index_j = sparsity.entries()[entry_index_jk].col_index;
     if (col_index_i >= column_limit || col_index_j >= column_limit) {
       break;
     }
@@ -59,8 +59,8 @@ constexpr auto getNumContributionsMixed(const Sparsity& sparsity,
 }
 
 template <auto sparsity, auto sparsity_below, std::size_t i, std::size_t j,
-          std::size_t column_limit = std::min(sparsity.num_cols,
-                                              sparsity_below.num_cols)>
+          std::size_t column_limit = std::min(sparsity.numCols(),
+                                              sparsity_below.numCols())>
 constexpr auto getContributionsMixed() {
   constexpr auto num_contrib =
       getNumContributionsMixed(sparsity, sparsity_below, i, j, column_limit);

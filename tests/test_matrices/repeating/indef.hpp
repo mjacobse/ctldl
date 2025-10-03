@@ -15,14 +15,16 @@ struct TestMatrixIndefA {
       Value value;
     };
     struct Sparsity {
-      static constexpr int num_rows = 2;
-      static constexpr int num_cols = 2;
-      static constexpr std::array<Entry, 1> entries = {{{1, 0, 1.0}}};
+      static constexpr int numRows() { return 2; }
+      static constexpr int numCols() { return 2; }
+      static constexpr std::array<Entry, 1> entries() {
+        return {{{1, 0, 1.0}}};
+      }
     };
     static constexpr auto sparsity = Sparsity{};
 
     static constexpr double valueAt(const std::size_t i) {
-      return Sparsity::entries[i].value;
+      return Sparsity::entries()[i].value;
     }
   };
 
@@ -44,14 +46,14 @@ struct TestMatrixIndefB {
       Value value;
     };
     struct Sparsity {
-      static constexpr int num_rows = 2;
-      static constexpr int num_cols = 2;
-      static constexpr std::array<Entry, 0> entries = {};
+      static constexpr int numRows() { return 2; }
+      static constexpr int numCols() { return 2; }
+      static constexpr std::array<Entry, 0> entries() { return {}; }
     };
     static constexpr auto sparsity = Sparsity{};
 
     static constexpr Value valueAt(const std::size_t i) {
-      return Sparsity::entries[i].value;
+      return Sparsity::entries()[i].value;
     }
   };
 
