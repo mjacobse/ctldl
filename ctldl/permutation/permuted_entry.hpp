@@ -8,10 +8,10 @@
 
 namespace ctldl {
 
-template <class InputEntry, std::size_t num_rows, std::size_t num_cols>
+template <class InputEntry>
 constexpr Entry permutedEntry(const InputEntry entry,
-                              const Permutation<num_rows>& permutation_row,
-                              const Permutation<num_cols>& permutation_col) {
+                              const PermutationView permutation_row,
+                              const PermutationView permutation_col) {
   return Entry{permutation_row[entry.row_index],
                permutation_col[entry.col_index]};
 }

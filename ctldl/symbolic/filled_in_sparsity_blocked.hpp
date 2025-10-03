@@ -68,9 +68,9 @@ constexpr auto getFilledInNumNonZerosBlocked(const Sparsity11& sparsity11,
 
 template <auto sparsity11_in, auto sparsity21_in, auto sparsity22_in,
           auto sparsity31_in, auto sparsity32_in, auto sparsity33_in,
-          auto permutation1 = Permutation<sparsity11_in.numRows()>(),
-          auto permutation2 = Permutation<sparsity22_in.numRows()>(),
-          auto permutation3 = Permutation<sparsity33_in.numRows()>()>
+          auto permutation1 = PermutationStatic<sparsity11_in.numRows()>(),
+          auto permutation2 = PermutationStatic<sparsity22_in.numRows()>(),
+          auto permutation3 = PermutationStatic<sparsity33_in.numRows()>()>
 constexpr auto getFilledInSparsityBlocked3x3() {
   static_assert(isSquare(sparsity11_in));
   static_assert(isSquare(sparsity22_in));
@@ -155,13 +155,13 @@ constexpr auto getFilledInSparsityBlocked3x3() {
 }
 
 template <auto sparsity11, auto sparsity21, auto sparsity22,
-          auto permutation1 = Permutation<sparsity11.numRows()>(),
-          auto permutation2 = Permutation<sparsity22.numRows()>()>
+          auto permutation1 = PermutationStatic<sparsity11.numRows()>(),
+          auto permutation2 = PermutationStatic<sparsity22.numRows()>()>
 constexpr auto getFilledInSparsityBlocked() {
   constexpr auto sparsity31_dummy = makeEmptySparsity<0, sparsity11.numCols()>();
   constexpr auto sparsity32_dummy = makeEmptySparsity<0, sparsity22.numCols()>();
   constexpr auto sparsity33_dummy = makeEmptySparsity<0, 0>();
-  constexpr auto permutation3_dummy = Permutation<0>{};
+  constexpr auto permutation3_dummy = PermutationStatic<0>{};
   const auto sparsity = getFilledInSparsityBlocked3x3<
       sparsity11, sparsity21, sparsity22, sparsity31_dummy, sparsity32_dummy,
       sparsity33_dummy, permutation1, permutation2, permutation3_dummy>();

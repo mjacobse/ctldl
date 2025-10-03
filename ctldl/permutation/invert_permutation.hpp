@@ -3,22 +3,17 @@
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
-#include <array>
 #include <cstddef>
+#include <vector>
 
 namespace ctldl {
 
-template <class PermutationIn>
-constexpr auto invertPermutation(const PermutationIn& permutation) {
-  using std::size;
-  constexpr auto dim = std::size_t{size(PermutationIn{})};
-
-  std::array<std::size_t, dim> inverse_permutation;
-  fixInitIfZeroLengthArray(inverse_permutation);
-  for (std::size_t i = 0; i < dim; ++i) {
+constexpr auto invertPermutation(const PermutationView permutation) {
+  std::vector<std::size_t> inverse_permutation(permutation.size());
+  for (std::size_t i = 0; i < permutation.size(); ++i) {
     inverse_permutation[permutation[i]] = i;
   }
-  return Permutation<dim>{inverse_permutation};
+  return PermutationDynamic(inverse_permutation);
 }
 
 }  // namespace ctldl

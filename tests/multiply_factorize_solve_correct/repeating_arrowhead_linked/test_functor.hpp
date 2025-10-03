@@ -47,10 +47,10 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLink
     constexpr auto dim_link = std::size_t{TestMatrixLinkDiag::Matrix::sparsity.numRows()};
     constexpr auto dim_outer = std::size_t{TestMatrixOuterDiag::Matrix::sparsity.numRows()};
 
-    constexpr Permutation<dim_start> permutation_start{PermutationStart::value};
-    constexpr Permutation<dim_tridiag> permutation_tridiag{PermutationTridiag::value};
-    constexpr Permutation<dim_link> permutation_link{PermutationLink::value};
-    constexpr Permutation<dim_outer> permutation_outer{PermutationOuter::value};
+    constexpr PermutationStatic<dim_start> permutation_start{PermutationStart::value};
+    constexpr PermutationStatic<dim_tridiag> permutation_tridiag{PermutationTridiag::value};
+    constexpr PermutationStatic<dim_link> permutation_link{PermutationLink::value};
+    constexpr PermutationStatic<dim_outer> permutation_outer{PermutationOuter::value};
 
     constexpr auto sparsity = SparsityToFactorizeTridiagonalArrowheadLinked{
         SparsityToFactorizeStart{

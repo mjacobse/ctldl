@@ -14,7 +14,7 @@ struct EmptyFactorDataLeft {
   static constexpr auto sparsity = makeEmptySparsityCSR<num_rows, 0>();
   static constexpr std::array<Value, 0> L{};
   static constexpr auto permutation_row = FactorData::permutation_row;
-  static constexpr Permutation<0> permutation_col{};
+  static constexpr PermutationStatic<0> permutation_col{};
 
   static constexpr auto origRowIndex(const std::size_t factor_row_index) {
     return std::size_t{permutation_row[factor_row_index]};

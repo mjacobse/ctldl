@@ -47,7 +47,7 @@ struct MatrixB {
   }
 };
 
-constexpr ctldl::Permutation<dim> permutation{{0, 1}};
+constexpr ctldl::PermutationStatic<dim> permutation{{0, 1}};
 
 }  // anonymous namespace
 

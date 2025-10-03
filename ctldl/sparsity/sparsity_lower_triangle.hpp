@@ -21,9 +21,9 @@ constexpr auto getNnzLowerTriangle(const Sparsity& sparsity) {
   return nnz;
 }
 
-template <std::size_t nnz, class Sparsity, class PermutationIn>
+template <std::size_t nnz, class Sparsity>
 constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
-                                       const PermutationIn& permutation) {
+                                       const PermutationView permutation) {
   static_assert(isSquare<Sparsity>());
   const auto inverse_permutation = invertPermutation(permutation);
 
@@ -41,8 +41,8 @@ constexpr auto getEntriesLowerTriangle(const Sparsity& sparsity,
   return entries;
 }
 
-template <auto sparsity, class PermutationIn>
-constexpr auto getSparsityLowerTriangle(const PermutationIn& permutation) {
+template <auto sparsity>
+constexpr auto getSparsityLowerTriangle(const PermutationView permutation) {
   static_assert(isSquare(sparsity));
   constexpr auto dim = std::size_t{sparsity.numRows()};
   constexpr auto nnz = getNnzLowerTriangle(sparsity);

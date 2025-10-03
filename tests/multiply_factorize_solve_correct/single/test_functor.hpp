@@ -23,7 +23,7 @@ struct TesterMultiplyFactorizeSolveCorrectSingle {
                   std::mt19937& value_generator) const {
     constexpr auto& sparsity = TestMatrix::Matrix::sparsity;
     constexpr auto dim = sparsity.numRows();
-    constexpr Permutation<dim> permutation(PermutationIn::value);
+    constexpr PermutationStatic<dim> permutation(PermutationIn::value);
 
     auto test_matrix = generateMatrix(TestMatrix{}, value_generator);
     Factorization<sparsity, Value, permutation> factorization;

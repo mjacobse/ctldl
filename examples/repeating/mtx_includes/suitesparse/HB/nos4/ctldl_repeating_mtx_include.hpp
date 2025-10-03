@@ -14,7 +14,7 @@ constexpr auto getRepeatingMtxSparsityStart() {
   constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
   constexpr auto next = ctldl::makeEmptySparsity<10, 0>();
   constexpr auto outer = ctldl::makeEmptySparsity<0, 0>();
-  constexpr ctldl::Permutation<0> permutation{};
+  constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeStart{diag, next, outer, permutation};
 }
 
@@ -61,7 +61,7 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
     {9,9},
   });
   constexpr auto permutation =
-      ctldl::Permutation<10>{{7, 8, 0, 4, 3, 2, 6, 5, 9, 1}};
+      ctldl::PermutationStatic<10>{{7, 8, 0, 4, 3, 2, 6, 5, 9, 1}};
   return ctldl::SparsityToFactorizeTridiagonal{diag, subdiag, permutation};
 }
 
@@ -69,13 +69,13 @@ constexpr auto getRepeatingMtxSparsityLink() {
   constexpr auto prev = ctldl::makeEmptySparsity<0, 10>();
   constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
   constexpr auto next = ctldl::makeEmptySparsity<0, 0>();
-  constexpr ctldl::Permutation<0> permutation{};
+  constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeLink{prev, diag, next, permutation};
 }
 
 constexpr auto getRepeatingMtxSparsityOuter() {
   constexpr auto subdiag = ctldl::makeEmptySparsity<0, 10>();
   constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
-  constexpr ctldl::Permutation<0> permutation{};
+  constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeOuter{subdiag, diag, permutation};
 }

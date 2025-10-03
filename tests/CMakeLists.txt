@@ -9,6 +9,7 @@ add_executable(tests_integration
     multiply_factorize_solve_correct/single/small_examples_all_permutations.cpp
     runner_tests_integration.cpp
     utility/solution_generator.cpp
+    utility/to_test_info.cpp
 )
 target_link_libraries(tests_integration PRIVATE
     ctldl::ctldl

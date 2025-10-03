@@ -40,7 +40,7 @@ struct SparsityToFactorizeOuter {
   static constexpr auto dim_inner = dim_inner_;
   Sparsity<nnz_subdiag, dim_outer, dim_inner_> subdiag;
   Sparsity<nnz_diag, dim_outer, dim_outer> diag;
-  Permutation<dim_outer> permutation = PermutationIdentity{};
+  PermutationStatic<dim_outer> permutation = PermutationIdentity{};
 };
 
 template <class Subdiag, class Diag, class PermutationIn = PermutationIdentity>
