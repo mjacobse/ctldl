@@ -13,8 +13,8 @@ template <auto sparsity_in_A, auto sparsity_in_B, auto permutation>
 constexpr auto getFilledInSparsityRepeating() {
   static_assert(isSquare(sparsity_in_A));
   static_assert(isSquare(sparsity_in_B));
-  static_assert(sparsity_in_B.num_rows == sparsity_in_A.num_rows);
-  constexpr auto dim = std::size_t{sparsity_in_A.num_rows};
+  static_assert(sparsity_in_B.numRows() == sparsity_in_A.numRows());
+  constexpr auto dim = std::size_t{sparsity_in_A.numRows()};
 
   const auto sparsity_filled =
       getFilledInSparsityRepeatingArrowhead<sparsity_in_A, sparsity_in_B,

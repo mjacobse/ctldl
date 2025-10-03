@@ -44,10 +44,10 @@ constexpr void foreachNonZeroWithFillRepeatingArrowhead(
     const SparsityOuter& sparsity_outer, UnaryFunction f) {
   static_assert(isSquare<SparsityDiag>());
   static_assert(isSquare<SparsitySubdiag>());
-  static_assert(SparsitySubdiag::num_rows == SparsityDiag::num_rows);
-  static_assert(SparsityOuter::num_cols == SparsityDiag::num_cols);
-  constexpr auto dim = std::size_t{SparsityDiag::num_rows};
-  constexpr auto dim_outer = std::size_t{SparsityOuter::num_rows};
+  static_assert(SparsitySubdiag::numRows() == SparsityDiag::numRows());
+  static_assert(SparsityOuter::numCols() == SparsityDiag::numCols());
+  constexpr auto dim = std::size_t{SparsityDiag::numRows()};
+  constexpr auto dim_outer = std::size_t{SparsityOuter::numRows()};
 
   const auto tree =
       computeEliminationTreeRepeating(sparsity_diag, sparsity_subdiag);

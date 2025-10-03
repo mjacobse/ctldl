@@ -13,7 +13,7 @@ template <std::size_t entry_index, class Matrix, class FactorData>
     const Matrix& input, FactorData& fact) {
   using Value = typename FactorData::Value;
   constexpr auto entry_orig =
-      FactorData::origEntry(FactorData::sparsity.entries[entry_index]);
+      FactorData::origEntry(FactorData::sparsity.entries()[entry_index]);
   fact.L[entry_index] = static_cast<Value>(
       getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
 }
@@ -36,8 +36,8 @@ template <std::size_t... EntryIndices, class Matrix, class FactorData>
 template <std::size_t i, class Matrix, class FactorData>
 [[gnu::always_inline]] inline auto fillRowWithOriginalMatrixValues(
     const Matrix& input, FactorData& fact) {
-  constexpr auto row_begin = FactorData::sparsity.row_begin_indices[i];
-  constexpr auto row_end = FactorData::sparsity.row_begin_indices[i + 1];
+  constexpr auto row_begin = FactorData::sparsity.rowBeginIndices()[i];
+  constexpr auto row_end = FactorData::sparsity.rowBeginIndices()[i + 1];
   fillRowWithOriginalMatrixValues(input, fact,
                                   makeIndexSequence<row_begin, row_end>());
 }
@@ -57,7 +57,7 @@ void fillWithOriginalMatrixValuesIncludingDiagonal(
 
 template <class Matrix, class FactorData>
 void fillWithOriginalMatrixValues(const Matrix& input, FactorData& fact) {
-  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
+  constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
   fillWithOriginalMatrixValues(input, fact,
                                std::make_index_sequence<num_rows>());
 }
@@ -65,7 +65,7 @@ void fillWithOriginalMatrixValues(const Matrix& input, FactorData& fact) {
 template <class Matrix, class FactorData>
 void fillWithOriginalMatrixValuesIncludingDiagonal(const Matrix& input,
                                                    FactorData& fact) {
-  constexpr auto num_rows = std::size_t{FactorData::sparsity.num_rows};
+  constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
   fillWithOriginalMatrixValuesIncludingDiagonal(
       input, fact, std::make_index_sequence<num_rows>());
 }

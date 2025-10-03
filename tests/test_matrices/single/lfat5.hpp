@@ -19,7 +19,7 @@ struct TestMatrixLFAT5 {
          {11, 7},  {12, 7},  {8, 8},   {11, 8},  {12, 8},  {9, 9},
          {10, 10}, {11, 11}, {13, 11}, {12, 12}, {13, 12}, {13, 13}});
 
-    static constexpr std::array<double, sparsity.nnz> values = {
+    static constexpr std::array<double, sparsity.nnz()> values = {
         {1.57088000000000005e+00,  -9.42527999999999935e+01,
          7.85440000000000027e-01,  1.25664000000000000e+07,
          -6.28320000000000000e+06, 6.08806201550387560e-01,

@@ -4,7 +4,7 @@ namespace ctldl {
 
 template <class Sparsity>
 constexpr bool isSquare() {
-  return Sparsity::num_rows == Sparsity::num_cols;
+  return Sparsity::numRows() == Sparsity::numCols();
 }
 
 template <class Sparsity>

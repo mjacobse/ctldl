@@ -14,7 +14,7 @@
       sortEntriesRowMajorSorted(entries);                             \
       return entries;                                                 \
     };                                                                \
-    CTLDL_TEST_STATIC(sortedEntries((sparsity_lhs).entries) ==        \
-                          sortedEntries((sparsity_rhs).entries),      \
+    CTLDL_TEST_STATIC(sortedEntries((sparsity_lhs).entries()) ==      \
+                          sortedEntries((sparsity_rhs).entries()),    \
                       boost::test_tools::per_element());              \
   }

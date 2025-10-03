@@ -9,7 +9,7 @@ namespace ctldl {
 
 template <class FactorData>
 struct EmptyFactorDataLeft {
-  static constexpr auto num_rows = FactorData::sparsity.num_rows;
+  static constexpr auto num_rows = FactorData::sparsity.numRows();
   using Value = typename FactorData::Value;
   static constexpr auto sparsity = makeEmptySparsityCSR<num_rows, 0>();
   static constexpr std::array<Value, 0> L{};

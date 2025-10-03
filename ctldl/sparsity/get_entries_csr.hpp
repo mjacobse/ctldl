@@ -11,10 +11,10 @@ namespace ctldl {
 
 template <class Sparsity>
 constexpr auto getRowCounts(const Sparsity& sparsity) {
-  std::array<std::size_t, Sparsity::num_rows> row_counts;
+  std::array<std::size_t, Sparsity::numRows()> row_counts;
   fixInitIfZeroLengthArray(row_counts);
   row_counts.fill(0);
-  for (const auto entry : sparsity.entries) {
+  for (const auto entry : sparsity.entries()) {
     row_counts[entry.row_index] += 1;
   }
   return row_counts;
@@ -35,10 +35,10 @@ constexpr auto getEntriesCSR(const Sparsity& sparsity) {
   const auto row_counts = getRowCounts(sparsity);
   const auto row_begin_indices = getRowBeginIndices(row_counts);
 
-  std::array<Entry, Sparsity::nnz> entries;
+  std::array<Entry, Sparsity::nnz()> entries;
   fixInitIfZeroLengthArray(entries);
   auto row_insert_indices = row_begin_indices;
-  for (const auto entry : sparsity.entries) {
+  for (const auto entry : sparsity.entries()) {
     entries[row_insert_indices[entry.row_index]] =
         Entry{entry.row_index, entry.col_index};
     row_insert_indices[entry.row_index] += 1;

@@ -17,12 +17,12 @@ struct FactorInitNone {
 template <std::size_t entry_index, class Init, class FactorData>
 auto getInitialFactorValuePlainL(const Init& init, const FactorData& factor) {
   constexpr auto& sparsity = FactorData::sparsity;
-  if constexpr (std::is_same_v<Init, FactorInitNone<sparsity.num_rows,
-                                                    sparsity.num_cols>>) {
+  if constexpr (std::is_same_v<Init, FactorInitNone<sparsity.numRows(),
+                                                    sparsity.numCols()>>) {
     return factor.L[entry_index];
   } else {
-    constexpr auto i = std::size_t{sparsity.entries[entry_index].row_index};
-    constexpr auto j = std::size_t{sparsity.entries[entry_index].col_index};
+    constexpr auto i = std::size_t{sparsity.entries()[entry_index].row_index};
+    constexpr auto j = std::size_t{sparsity.entries()[entry_index].col_index};
     constexpr auto entry_orig = FactorData::origEntry({i, j});
     return getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(init);
   }
@@ -38,8 +38,8 @@ auto getInitialFactorValueL(const Init& init, const FactorData& factor) {
 template <std::size_t row_index, class Init, class FactorData>
 auto getInitialFactorValuePlainD(const Init& init, const FactorData& factor) {
   constexpr auto& sparsity = FactorData::sparsity;
-  if constexpr (std::is_same_v<Init, FactorInitNone<sparsity.num_rows,
-                                                    sparsity.num_cols>>) {
+  if constexpr (std::is_same_v<Init, FactorInitNone<sparsity.numRows(),
+                                                    sparsity.numCols()>>) {
     return factor.D[row_index];
   } else {
     constexpr auto row_index_orig = FactorData::origRowIndex(row_index);
@@ -57,8 +57,8 @@ auto getInitialFactorValueD(const Init& init, const FactorData& factor) {
 template <std::size_t row_index, class Init, class FactorData>
 void initializeFactorRow(const Init& init, FactorData& factor) {
   if constexpr (!std::is_same_v<
-                    Init, FactorInitNone<FactorData::sparsity.num_rows,
-                                         FactorData::sparsity.num_cols>>) {
+                    Init, FactorInitNone<FactorData::sparsity.numRows(),
+                                         FactorData::sparsity.numCols()>>) {
     fillRowWithOriginalMatrixValues<row_index>(init, factor);
   }
 }

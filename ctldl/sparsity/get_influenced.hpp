@@ -51,7 +51,7 @@ struct Influenced {
  */
 template <std::size_t i, std::size_t j, auto sparsity_source,
           auto sparsity_target,
-          std::size_t target_column_limit = sparsity_target.num_cols>
+          std::size_t target_column_limit = sparsity_target.numCols()>
 constexpr auto getInfluencedList() {
   constexpr auto num_influenced =
       getNumInfluenced(sparsity_source, j, target_column_limit);

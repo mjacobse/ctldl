@@ -18,18 +18,22 @@ struct SparsityCSR : public Sparsity<nnz, num_rows, num_cols> {
   constexpr explicit SparsityCSR(
       std::pair<std::array<Entry, nnz>, std::array<std::size_t, num_rows + 1>>
           helper)
-      : Base(helper.first), row_begin_indices(helper.second) {}
+      : Base(helper.first), m_row_begin_indices(helper.second) {}
 
  public:
-  std::array<std::size_t, num_rows + 1> row_begin_indices;
+  std::array<std::size_t, num_rows + 1> m_row_begin_indices;
+  constexpr const std::array<std::size_t, num_rows + 1>& rowBeginIndices()
+      const {
+    return m_row_begin_indices;
+  }
 
   template <class SparsityIn>
   constexpr explicit SparsityCSR(const SparsityIn& sparsity)
       : SparsityCSR(getEntriesCSR(sparsity)) {}
 
   constexpr auto rowView(const std::size_t i) const {
-    return std::span{Base::entries.data() + row_begin_indices[i],
-                     Base::entries.data() + row_begin_indices[i + 1]};
+    return std::span{Base::entries().data() + rowBeginIndices()[i],
+                     Base::entries().data() + rowBeginIndices()[i + 1]};
   }
 
   constexpr auto find(const std::size_t i, const std::size_t j) const {
@@ -50,7 +54,8 @@ struct SparsityCSR : public Sparsity<nnz, num_rows, num_cols> {
 
 template <class SparsityIn>
 SparsityCSR(const SparsityIn&)
-    -> SparsityCSR<SparsityIn::nnz, SparsityIn::num_rows, SparsityIn::num_cols>;
+    -> SparsityCSR<SparsityIn::nnz(), SparsityIn::numRows(),
+                   SparsityIn::numCols()>;
 
 template <class SparsityIn>
 constexpr auto makeSparsityCSR(const SparsityIn& sparsity) {

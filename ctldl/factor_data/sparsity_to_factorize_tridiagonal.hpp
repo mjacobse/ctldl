@@ -38,8 +38,8 @@ template <class SparsityDiag, class SparsitySubdiag,
           class PermutationIn = PermutationIdentity>
 SparsityToFactorizeTridiagonal(SparsityDiag, SparsitySubdiag,
                                PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeTridiagonal<ctad_t<Sparsity, SparsityDiag>::num_rows,
-                                      ctad_t<Sparsity, SparsityDiag>::nnz,
-                                      ctad_t<Sparsity, SparsitySubdiag>::nnz>;
+    -> SparsityToFactorizeTridiagonal<ctad_t<Sparsity, SparsityDiag>::numRows(),
+                                      ctad_t<Sparsity, SparsityDiag>::nnz(),
+                                      ctad_t<Sparsity, SparsitySubdiag>::nnz()>;
 
 }  // namespace ctldl

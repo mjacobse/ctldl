@@ -27,16 +27,16 @@ constexpr auto getFilledInNumNonZerosBlocked3x3(const Sparsity11& sparsity11,
   LowerTriangleBlocked3x3 nnz{std::size_t{0}, std::size_t{0}, std::size_t{0},
                               std::size_t{0}, std::size_t{0}, std::size_t{0}};
   const auto count_nonzero = [&](const std::size_t i, const std::size_t j) {
-    if (j < sparsity11.num_cols) {
-      if (i < sparsity11.num_rows) {
+    if (j < sparsity11.numCols()) {
+      if (i < sparsity11.numRows()) {
         nnz.block11 += 1;
-      } else if (i < sparsity11.num_rows + sparsity22.num_rows) {
+      } else if (i < sparsity11.numRows() + sparsity22.numRows()) {
         nnz.block21 += 1;
       } else {
         nnz.block31 += 1;
       }
-    } else if (j < sparsity11.num_cols + sparsity22.num_cols) {
-      if (i < sparsity11.num_rows + sparsity22.num_rows) {
+    } else if (j < sparsity11.numCols() + sparsity22.numCols()) {
+      if (i < sparsity11.numRows() + sparsity22.numRows()) {
         nnz.block22 += 1;
       } else {
         nnz.block32 += 1;
@@ -56,9 +56,9 @@ constexpr auto getFilledInNumNonZerosBlocked(const Sparsity11& sparsity11,
                                              const Sparsity21& sparsity21,
                                              const Sparsity22& sparsity22) {
   constexpr auto sparsity31_dummy =
-      makeEmptySparsityCSR<0, Sparsity11::num_cols>();
+      makeEmptySparsityCSR<0, Sparsity11::numCols()>();
   constexpr auto sparsity32_dummy =
-      makeEmptySparsityCSR<0, Sparsity22::num_cols>();
+      makeEmptySparsityCSR<0, Sparsity22::numCols()>();
   constexpr auto sparsity33_dummy = makeEmptySparsityCSR<0, 0>();
   const auto nnz = getFilledInNumNonZerosBlocked3x3(
       sparsity11, sparsity21, sparsity22, sparsity31_dummy, sparsity32_dummy,
@@ -68,14 +68,14 @@ constexpr auto getFilledInNumNonZerosBlocked(const Sparsity11& sparsity11,
 
 template <auto sparsity11_in, auto sparsity21_in, auto sparsity22_in,
           auto sparsity31_in, auto sparsity32_in, auto sparsity33_in,
-          auto permutation1 = Permutation<sparsity11_in.num_rows>(),
-          auto permutation2 = Permutation<sparsity22_in.num_rows>(),
-          auto permutation3 = Permutation<sparsity33_in.num_rows>()>
+          auto permutation1 = Permutation<sparsity11_in.numRows()>(),
+          auto permutation2 = Permutation<sparsity22_in.numRows()>(),
+          auto permutation3 = Permutation<sparsity33_in.numRows()>()>
 constexpr auto getFilledInSparsityBlocked3x3() {
   static_assert(isSquare(sparsity11_in));
   static_assert(isSquare(sparsity22_in));
-  static_assert(sparsity21_in.num_cols == sparsity11_in.num_cols);
-  static_assert(sparsity22_in.num_rows == sparsity21_in.num_rows);
+  static_assert(sparsity21_in.numCols() == sparsity11_in.numCols());
+  static_assert(sparsity22_in.numRows() == sparsity21_in.numRows());
 
   constexpr auto sparsity11 =
       SparsityCSR(getSparsityLowerTriangle<sparsity11_in>(permutation1));
@@ -103,33 +103,33 @@ constexpr auto getFilledInSparsityBlocked3x3() {
                                       std::size_t{0}, std::size_t{0},
                                       std::size_t{0}, std::size_t{0}};
   const auto add_nonzero = [&](const std::size_t i, const std::size_t j) {
-    if (j < sparsity11.num_cols) {
-      if (i < sparsity11.num_rows) {
+    if (j < sparsity11.numCols()) {
+      if (i < sparsity11.numRows()) {
         entries11[entry_index.block11] = Entry{i, j};
         entry_index.block11 += 1;
-      } else if (i < sparsity11.num_rows + sparsity22.num_rows) {
-        entries21[entry_index.block21] = Entry{i - sparsity11.num_rows, j};
+      } else if (i < sparsity11.numRows() + sparsity22.numRows()) {
+        entries21[entry_index.block21] = Entry{i - sparsity11.numRows(), j};
         entry_index.block21 += 1;
       } else {
         entries31[entry_index.block31] =
-            Entry{i - sparsity11.num_rows - sparsity22.num_rows, j};
+            Entry{i - sparsity11.numRows() - sparsity22.numRows(), j};
         entry_index.block31 += 1;
       }
-    } else if (j < sparsity11.num_cols + sparsity22.num_cols) {
-      if (i < sparsity11.num_rows + sparsity22.num_rows) {
+    } else if (j < sparsity11.numCols() + sparsity22.numCols()) {
+      if (i < sparsity11.numRows() + sparsity22.numRows()) {
         entries22[entry_index.block22] =
-            Entry{i - sparsity11.num_rows, j - sparsity11.num_cols};
+            Entry{i - sparsity11.numRows(), j - sparsity11.numCols()};
         entry_index.block22 += 1;
       } else {
         entries32[entry_index.block32] =
-            Entry{i - sparsity11.num_rows - sparsity22.num_rows,
-                  j - sparsity11.num_cols};
+            Entry{i - sparsity11.numRows() - sparsity22.numRows(),
+                  j - sparsity11.numCols()};
         entry_index.block32 += 1;
       }
     } else {
       entries33[entry_index.block33] =
-          Entry{i - sparsity11.num_rows - sparsity22.num_rows,
-                j - sparsity11.num_cols - sparsity22.num_cols};
+          Entry{i - sparsity11.numRows() - sparsity22.numRows(),
+                j - sparsity11.numCols() - sparsity22.numCols()};
       entry_index.block33 += 1;
     }
   };
@@ -146,20 +146,20 @@ constexpr auto getFilledInSparsityBlocked3x3() {
   sortEntriesRowMajorSorted(entries33);
 
   return LowerTriangleBlocked3x3{
-      makeSparsity<sparsity11.num_rows, sparsity11.num_cols>(entries11),
-      makeSparsity<sparsity21.num_rows, sparsity21.num_cols>(entries21),
-      makeSparsity<sparsity22.num_rows, sparsity22.num_cols>(entries22),
-      makeSparsity<sparsity31.num_rows, sparsity31.num_cols>(entries31),
-      makeSparsity<sparsity32.num_rows, sparsity32.num_cols>(entries32),
-      makeSparsity<sparsity33.num_rows, sparsity33.num_cols>(entries33)};
+      makeSparsity<sparsity11.numRows(), sparsity11.numCols()>(entries11),
+      makeSparsity<sparsity21.numRows(), sparsity21.numCols()>(entries21),
+      makeSparsity<sparsity22.numRows(), sparsity22.numCols()>(entries22),
+      makeSparsity<sparsity31.numRows(), sparsity31.numCols()>(entries31),
+      makeSparsity<sparsity32.numRows(), sparsity32.numCols()>(entries32),
+      makeSparsity<sparsity33.numRows(), sparsity33.numCols()>(entries33)};
 }
 
 template <auto sparsity11, auto sparsity21, auto sparsity22,
-          auto permutation1 = Permutation<sparsity11.num_rows>(),
-          auto permutation2 = Permutation<sparsity22.num_rows>()>
+          auto permutation1 = Permutation<sparsity11.numRows()>(),
+          auto permutation2 = Permutation<sparsity22.numRows()>()>
 constexpr auto getFilledInSparsityBlocked() {
-  constexpr auto sparsity31_dummy = makeEmptySparsity<0, sparsity11.num_cols>();
-  constexpr auto sparsity32_dummy = makeEmptySparsity<0, sparsity22.num_cols>();
+  constexpr auto sparsity31_dummy = makeEmptySparsity<0, sparsity11.numCols()>();
+  constexpr auto sparsity32_dummy = makeEmptySparsity<0, sparsity22.numCols()>();
   constexpr auto sparsity33_dummy = makeEmptySparsity<0, 0>();
   constexpr auto permutation3_dummy = Permutation<0>{};
   const auto sparsity = getFilledInSparsityBlocked3x3<

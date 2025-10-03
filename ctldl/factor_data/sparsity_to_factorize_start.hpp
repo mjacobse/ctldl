@@ -44,9 +44,9 @@ template <class Diag, class Next, class Outer,
 SparsityToFactorizeStart(Diag, Next, Outer,
                          PermutationIn = PermutationIdentity{})
     -> SparsityToFactorizeStart<
-        ctad_t<Sparsity, Diag>::num_rows, ctad_t<Sparsity, Next>::num_rows,
-        ctad_t<Sparsity, Outer>::num_rows, ctad_t<Sparsity, Diag>::nnz,
-        ctad_t<Sparsity, Next>::nnz, ctad_t<Sparsity, Outer>::nnz>;
+        ctad_t<Sparsity, Diag>::numRows(), ctad_t<Sparsity, Next>::numRows(),
+        ctad_t<Sparsity, Outer>::numRows(), ctad_t<Sparsity, Diag>::nnz(),
+        ctad_t<Sparsity, Next>::nnz(), ctad_t<Sparsity, Outer>::nnz()>;
 
 template <std::size_t dim_start, std::size_t dim_next, std::size_t dim_outer>
 constexpr auto makeEmptySparsityToFactorizeStart() {

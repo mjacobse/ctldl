@@ -15,15 +15,16 @@ struct TestMatrixNos2A {
       Value value;
     };
     struct Sparsity {
-      static constexpr int num_rows = 3;
-      static constexpr int num_cols = 3;
-      static constexpr std::array<Entry, 3> entries = {
-          {{0, 0, 640000.0}, {1, 1, 25600000.0}, {2, 2, 78643200000.0}}};
+      static constexpr int numRows() { return 3; }
+      static constexpr int numCols() { return 3; }
+      static constexpr std::array<Entry, 3> entries() {
+        return {{{0, 0, 640000.0}, {1, 1, 25600000.0}, {2, 2, 78643200000.0}}};
+      }
     };
     static constexpr auto sparsity = Sparsity{};
 
     static constexpr Value valueAt(const std::size_t i) {
-      return Sparsity::entries[i].value;
+      return Sparsity::entries()[i].value;
     }
   };
 
@@ -45,18 +46,20 @@ struct TestMatrixNos2B {
       Value value;
     };
     struct Sparsity {
-      static constexpr int num_rows = 3;
-      static constexpr int num_cols = 3;
-      static constexpr std::array<Entry, 5> entries = {{{0, 0, -320000.0},
-                                                        {1, 1, -39321600000.0},
-                                                        {1, 2, -614400000.0},
-                                                        {2, 1, 614400000.0},
-                                                        {2, 2, 6400000.0}}};
+      static constexpr int numRows() { return 3; }
+      static constexpr int numCols() { return 3; }
+      static constexpr std::array<Entry, 5> entries() {
+        return {{{0, 0, -320000.0},
+                 {1, 1, -39321600000.0},
+                 {1, 2, -614400000.0},
+                 {2, 1, 614400000.0},
+                 {2, 2, 6400000.0}}};
+      }
     };
     static constexpr auto sparsity = Sparsity{};
 
     static constexpr Value valueAt(const std::size_t i) {
-      return Sparsity::entries[i].value;
+      return Sparsity::entries()[i].value;
     }
   };
 

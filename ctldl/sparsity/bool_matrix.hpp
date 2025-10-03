@@ -17,15 +17,15 @@ namespace ctldl {
  * convenient way, where an entry is true if and only if there is a nonzero
  * entry in the matrix to be represented.
  */
-template <std::size_t num_rows_, std::size_t num_cols_>
+template <std::size_t num_rows, std::size_t num_cols>
 struct BoolMatrix {
-  static constexpr auto num_rows = num_rows_;
-  static constexpr auto num_cols = num_cols_;
-  std::array<std::array<bool, num_cols>, num_rows> values;
+  static constexpr std::size_t numRows() { return num_rows; }
+  static constexpr std::size_t numCols() { return num_cols; }
+  std::array<std::array<bool, numCols()>, numRows()> values;
   constexpr auto nnz() const {
     return std::accumulate(
         values.cbegin(), values.cend(), std::size_t{0},
-        [](const std::size_t carry, const std::array<bool, num_cols>& row) {
+        [](const std::size_t carry, const std::array<bool, numCols()>& row) {
           return carry +
                  static_cast<std::size_t>(std::ranges::count(row, true));
         });
@@ -34,8 +34,8 @@ struct BoolMatrix {
 
 template <auto bool_matrix>
 constexpr auto makeSparseEntriesFromBoolMatrix() {
-  constexpr auto num_rows = std::size_t{bool_matrix.num_rows};
-  constexpr auto num_cols = std::size_t{bool_matrix.num_cols};
+  constexpr auto num_rows = std::size_t{bool_matrix.numRows()};
+  constexpr auto num_cols = std::size_t{bool_matrix.numCols()};
   constexpr auto nnz = bool_matrix.nnz();
 
   std::array<Entry, nnz> entries;

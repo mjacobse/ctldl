@@ -43,9 +43,9 @@ template <class Prev, class Diag, class Next,
           class PermutationIn = PermutationIdentity>
 SparsityToFactorizeLink(Prev, Diag, Next, PermutationIn = PermutationIdentity{})
     -> SparsityToFactorizeLink<
-        ctad_t<Sparsity, Prev>::num_cols, ctad_t<Sparsity, Diag>::num_rows,
-        ctad_t<Sparsity, Next>::num_rows, ctad_t<Sparsity, Prev>::nnz,
-        ctad_t<Sparsity, Diag>::nnz, ctad_t<Sparsity, Next>::nnz>;
+        ctad_t<Sparsity, Prev>::numCols(), ctad_t<Sparsity, Diag>::numRows(),
+        ctad_t<Sparsity, Next>::numRows(), ctad_t<Sparsity, Prev>::nnz(),
+        ctad_t<Sparsity, Diag>::nnz(), ctad_t<Sparsity, Next>::nnz()>;
 
 template <std::size_t dim_prev, std::size_t dim_link, std::size_t dim_next>
 constexpr auto makeEmptySparsityToFactorizeLink() {

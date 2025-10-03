@@ -25,7 +25,7 @@ struct Matrix {
        {11, 7},  {12, 7},  {8, 8},   {11, 8},  {12, 8},  {9, 9},
        {10, 10}, {11, 11}, {13, 11}, {12, 12}, {13, 12}, {13, 13}});
 
-  std::array<double, sparsity.nnz> values;
+  std::array<double, sparsity.nnz()> values;
   constexpr double valueAt(const std::size_t i) const {
     return values[i];
   }

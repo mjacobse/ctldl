@@ -19,8 +19,8 @@ constexpr auto computeEliminationTreeRepeating(const SparsityA& sparsity_A,
                                                const SparsityB& sparsity_B) {
   static_assert(isSquare<SparsityA>());
   static_assert(isSquare<SparsityB>());
-  static_assert(SparsityA::num_rows == SparsityB::num_rows);
-  constexpr auto dim = SparsityA::num_rows;
+  static_assert(SparsityA::numRows() == SparsityB::numRows());
+  constexpr auto dim = SparsityA::numRows();
 
   EliminationTree<2 * dim> tree;
   EliminationTree<dim> tree_init;

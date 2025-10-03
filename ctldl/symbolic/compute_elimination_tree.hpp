@@ -13,7 +13,7 @@ namespace ctldl {
 template <class Sparsity>
 constexpr auto computeEliminationTree(const Sparsity& sparsity) {
   static_assert(isSquare<Sparsity>());
-  constexpr auto dim = Sparsity::num_rows;
+  constexpr auto dim = Sparsity::numRows();
 
   EliminationTree<dim> tree;
   std::array<std::size_t, dim> ancestors;

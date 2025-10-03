@@ -22,28 +22,28 @@ struct TestMatrixTridiagonal {
     };
 
     struct Sparsity {
-      static constexpr int num_rows = block_dim;
-      static constexpr int num_cols = block_dim;
-      static constexpr int nnz = block_dim + (block_dim - 1);
-      static constexpr auto entries = [] {
-        std::array<Entry, std::size_t{nnz}> ret;
+      static constexpr int numRows() { return block_dim; }
+      static constexpr int numCols() { return block_dim; }
+      static constexpr int nnz() { return block_dim + (block_dim - 1); }
+      static constexpr auto entries() {
+        std::array<Entry, std::size_t{nnz()}> ret;
         fixInitIfZeroLengthArray(ret);
         std::size_t entry_index = 0;
-        for (std::size_t i = 0; i < num_rows; ++i) {
+        for (std::size_t i = 0; i < numRows(); ++i) {
           ret[entry_index] = {i, i, 2.0};
           entry_index += 1;
         }
-        for (std::size_t i = 1; i < num_rows; ++i) {
+        for (std::size_t i = 1; i < numRows(); ++i) {
           ret[entry_index] = {i, i - 1, -1.0};
           entry_index += 1;
         }
         return ret;
-      }();
+      }
     };
     static constexpr auto sparsity = Sparsity{};
 
     constexpr Value valueAt(const std::size_t i) const {
-      return Sparsity::entries[i].value;
+      return Sparsity::entries()[i].value;
     }
   };
 
