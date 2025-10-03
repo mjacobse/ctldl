@@ -18,14 +18,15 @@ struct Sparsity {
   static constexpr std::size_t numRows() { return num_rows_; }
   static constexpr std::size_t numCols() { return num_cols_; }
 
-  std::array<Entry, nnz_> m_entries;
+  // only public to allow usage as NTTP
+  std::array<Entry, nnz_> m_entries_do_not_touch;
   constexpr const std::array<Entry, nnz_>& entries() const {
-    return m_entries;
+    return m_entries_do_not_touch;
   }
 
   constexpr explicit Sparsity(std::ranges::input_range auto&& entries_init) {
-    fixInitIfZeroLengthArray(m_entries);
-    std::ranges::transform(entries_init, std::begin(m_entries),
+    fixInitIfZeroLengthArray(m_entries_do_not_touch);
+    std::ranges::transform(entries_init, std::begin(m_entries_do_not_touch),
                            [](const auto& entry) {
                              return Entry{entry.row_index, entry.col_index};
                            });

@@ -18,13 +18,14 @@ struct SparsityCSR : public Sparsity<nnz, num_rows, num_cols> {
   constexpr explicit SparsityCSR(
       std::pair<std::array<Entry, nnz>, std::array<std::size_t, num_rows + 1>>
           helper)
-      : Base(helper.first), m_row_begin_indices(helper.second) {}
+      : Base(helper.first), m_row_begin_indices_do_not_touch(helper.second) {}
 
  public:
-  std::array<std::size_t, num_rows + 1> m_row_begin_indices;
+  // only public to allow usage as NTTP
+  std::array<std::size_t, num_rows + 1> m_row_begin_indices_do_not_touch;
   constexpr const std::array<std::size_t, num_rows + 1>& rowBeginIndices()
       const {
-    return m_row_begin_indices;
+    return m_row_begin_indices_do_not_touch;
   }
 
   template <class SparsityIn>
