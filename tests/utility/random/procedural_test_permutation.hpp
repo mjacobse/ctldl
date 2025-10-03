@@ -6,19 +6,20 @@
 
 #include <ctldl/permutation/permutation.hpp>
 
+#include <array>
 #include <cstddef>
 
 namespace ctldl {
 
 template <std::size_t dim>
 struct PermutationDistribution {
-  using result_type = Permutation<dim>;
+  using result_type = PermutationStatic<dim>;
 
   template <class Generator>
   constexpr auto operator()(Generator& generator) const {
-    Permutation<dim> permutation;
-    shuffle(permutation.indices.begin(), permutation.indices.end(), generator);
-    return permutation;
+    std::array<std::size_t, dim> indices = PermutationStatic<dim>().indices();
+    shuffle(indices.begin(), indices.end(), generator);
+    return PermutationStatic<dim>(indices);
   }
 };
 

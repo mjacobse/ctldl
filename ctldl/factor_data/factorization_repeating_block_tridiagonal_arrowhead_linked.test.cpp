@@ -56,9 +56,9 @@ BOOST_AUTO_TEST_CASE(Spline) {
   constexpr auto dim_link = std::size_t{0};
   constexpr auto dim_outer = std::size_t{0};
 
-  constexpr Permutation permutation_start{
+  constexpr PermutationStatic permutation_start{
       std::array<std::size_t, dim_start>{0, 1, 2, 3}};
-  constexpr Permutation permutation_tridiag{
+  constexpr PermutationStatic permutation_tridiag{
       std::array<std::size_t, dim_tridiag>{3, 5, 4, 0, 1, 2, 6}};
 
   constexpr auto sparsity = SparsityToFactorizeTridiagonalArrowheadLinked{

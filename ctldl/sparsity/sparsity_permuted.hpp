@@ -10,10 +10,10 @@
 
 namespace ctldl {
 
-template <class SparsityIn, class PermutationRow, class PermutationCol>
+template <class SparsityIn>
 constexpr auto getSparsityPermuted(const SparsityIn& sparsity,
-                                   const PermutationRow& permutation_row,
-                                   const PermutationCol& permutation_col) {
+                                   const PermutationView permutation_row,
+                                   const PermutationView permutation_col) {
   using std::size;
   constexpr auto nnz = std::size_t{size(decltype(sparsity.entries()){})};
 

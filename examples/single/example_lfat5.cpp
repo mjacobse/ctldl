@@ -14,7 +14,7 @@
 namespace {
 
 constexpr int dim = 14;
-constexpr ctldl::Permutation<dim> permutation{
+constexpr ctldl::PermutationStatic<dim> permutation{
     {13, 11, 12, 8, 7, 0, 4, 3, 9, 1, 5, 10, 2, 6}};
 
 struct Matrix {

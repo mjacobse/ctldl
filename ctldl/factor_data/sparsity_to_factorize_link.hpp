@@ -36,7 +36,7 @@ struct SparsityToFactorizeLink {
   Sparsity<nnz_prev, dim_link, dim_prev_> prev;
   Sparsity<nnz_link, dim_link, dim_link> diag;
   Sparsity<nnz_next, dim_next_, dim_link> next;
-  Permutation<dim_link> permutation = PermutationIdentity{};
+  PermutationStatic<dim_link> permutation = PermutationIdentity{};
 };
 
 template <class Prev, class Diag, class Next,

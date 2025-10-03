@@ -17,9 +17,9 @@
 namespace ctldl {
 
 template <Sparsity sparsity_in, class Value_,
-          Permutation<sparsity_in.numRows()> permutation_row_in =
+          PermutationStatic<sparsity_in.numRows()> permutation_row_in =
               PermutationIdentity{},
-          Permutation<sparsity_in.numCols()> permutation_col_in =
+          PermutationStatic<sparsity_in.numCols()> permutation_col_in =
               PermutationIdentity{}>
 class FactorizationSubdiagonalBlock {
  public:

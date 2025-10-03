@@ -21,7 +21,7 @@
 namespace ctldl {
 
 template <Sparsity sparsity_orig, class Value_,
-          Permutation<sparsity_orig.numRows()> permutation_in =
+          PermutationStatic<sparsity_orig.numRows()> permutation_in =
               PermutationIdentity{}>
 class Factorization {
  public:

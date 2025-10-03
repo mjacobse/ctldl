@@ -34,7 +34,7 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     static_assert(isSquare(sparsity_B));
     static_assert(sparsity_B.numRows() == sparsity_A.numRows());
     constexpr auto block_dim = std::size_t{sparsity_A.numRows()};
-    constexpr Permutation<block_dim> permutation(PermutationIn::value);
+    constexpr PermutationStatic<block_dim> permutation(PermutationIn::value);
 
     const auto matrices_A =
         generateMatrices(TestMatrixA{}, value_generator, num_repetitions + 1);

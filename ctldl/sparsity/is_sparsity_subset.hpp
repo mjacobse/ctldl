@@ -13,8 +13,10 @@ namespace ctldl {
 template <class SparsityLhs, class SparsityRhs>
 constexpr bool isSparsitySubset(
     const SparsityLhs& sparsity_lhs_in, const SparsityRhs& sparsity_rhs_in,
-    const Permutation<SparsityLhs::numRows()>& permutation_row = {},
-    const Permutation<SparsityLhs::numCols()>& permutation_col = {}) {
+    const PermutationView permutation_row =
+        PermutationStatic<SparsityLhs::numRows()>{},
+    const PermutationView permutation_col =
+        PermutationStatic<SparsityLhs::numCols()>{}) {
   const auto sparsity_lhs = makeSparsityCSR(
       getSparsityPermuted(sparsity_lhs_in, permutation_row, permutation_col));
   const auto sparsity_rhs = makeSparsityCSR(sparsity_rhs_in);
@@ -47,9 +49,9 @@ constexpr bool isSparsitySubset(
   return true;
 }
 
-template <auto sparsity_lhs, class SparsityRhs, class Permutation>
-constexpr bool isSparsitySubsetLowerTriangle(const SparsityRhs& sparsity_rhs,
-                                             const Permutation& permutation) {
+template <auto sparsity_lhs, class SparsityRhs>
+constexpr bool isSparsitySubsetLowerTriangle(
+    const SparsityRhs& sparsity_rhs, const PermutationView permutation) {
   return isSparsitySubset(getSparsityLowerTriangle<sparsity_lhs>(permutation),
                           sparsity_rhs);
 }

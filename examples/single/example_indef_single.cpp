@@ -12,7 +12,7 @@
 namespace {
 
 constexpr int dim = 2;
-constexpr ctldl::Permutation<dim> permutation{{0, 1}};
+constexpr ctldl::PermutationStatic<dim> permutation{{0, 1}};
 
 struct Matrix {
   static constexpr auto sparsity = ctldl::makeSparsity<dim, dim>({{1, 0}});

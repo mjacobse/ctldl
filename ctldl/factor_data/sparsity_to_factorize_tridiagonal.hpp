@@ -31,7 +31,7 @@ struct SparsityToFactorizeTridiagonal {
   static constexpr auto dim = dim_;
   Sparsity<nnz_diagonal, dim, dim> diag;
   Sparsity<nnz_subdiagonal, dim, dim> subdiag;
-  Permutation<dim> permutation = PermutationIdentity{};
+  PermutationStatic<dim> permutation = PermutationIdentity{};
 };
 
 template <class SparsityDiag, class SparsitySubdiag,

@@ -36,7 +36,7 @@ struct SparsityToFactorizeStart {
   Sparsity<nnz_start, dim_start, dim_start> diag;
   Sparsity<nnz_next, dim_next_, dim_start> next;
   Sparsity<nnz_outer, dim_outer_, dim_start> outer;
-  Permutation<dim_start> permutation = PermutationIdentity{};
+  PermutationStatic<dim_start> permutation = PermutationIdentity{};
 };
 
 template <class Diag, class Next, class Outer,

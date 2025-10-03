@@ -13,7 +13,7 @@ namespace {
 
 BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadEmptyTest) {
   constexpr auto empty = makeEmptySparsity<1, 1>();
-  constexpr Permutation<1> permutation{};
+  constexpr PermutationStatic<1> permutation{};
   constexpr auto filled =
       getFilledInSparsityRepeatingArrowhead<empty, empty, empty, permutation,
                                             permutation>();
@@ -24,8 +24,8 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadFromDiagonalTest) {
   constexpr auto sparsity_A = makeSparsity<3, 3>({{1, 0}, {2, 1}});
   constexpr auto sparsity_B = makeEmptySparsity<3, 3>();
   constexpr auto sparsity_C = makeSparsity<1, 3>({{0, 0}});
-  constexpr Permutation<3> permutation{};
-  constexpr Permutation<1> permutation_outer{};
+  constexpr PermutationStatic<3> permutation{};
+  constexpr PermutationStatic<1> permutation_outer{};
   constexpr auto filled =
       getFilledInSparsityRepeatingArrowhead<sparsity_A, sparsity_B, sparsity_C,
                                             permutation, permutation_outer>();
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadFromBothTest) {
   constexpr auto sparsity_A = makeSparsity<3, 3>({{2, 1}});
   constexpr auto sparsity_B = makeSparsity<3, 3>({{1, 0}});
   constexpr auto sparsity_C = makeSparsity<1, 3>({{0, 0}});
-  constexpr Permutation<3> permutation{};
-  constexpr Permutation<1> permutation_outer{};
+  constexpr PermutationStatic<3> permutation{};
+  constexpr PermutationStatic<1> permutation_outer{};
   constexpr auto filled =
       getFilledInSparsityRepeatingArrowhead<sparsity_A, sparsity_B, sparsity_C,
                                             permutation, permutation_outer>();
@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadBackwardsTest) {
   constexpr auto sparsity_A = makeEmptySparsity<4, 4>();
   constexpr auto sparsity_B = makeSparsity<4, 4>({{0, 1}, {1, 2}, {2, 3}});
   constexpr auto sparsity_C = makeSparsity<1, 4>({{0, 3}});
-  constexpr Permutation<4> permutation{};
-  constexpr Permutation<1> permutation_outer{};
+  constexpr PermutationStatic<4> permutation{};
+  constexpr PermutationStatic<1> permutation_outer{};
   constexpr auto filled =
       getFilledInSparsityRepeatingArrowhead<sparsity_A, sparsity_B, sparsity_C,
                                             permutation, permutation_outer>();

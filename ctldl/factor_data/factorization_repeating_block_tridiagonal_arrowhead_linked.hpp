@@ -63,19 +63,19 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
   static constexpr auto sparsity_factor = getFilledInSparsityRepeatingArrowhead<
       sparsity_tridiag_diag, sparsity_tridiag_subdiag, sparsity_outer_subdiag,
-      Permutation<dim_tridiag>{}, Permutation<dim_outer>{}>();
+      PermutationStatic<dim_tridiag>{}, PermutationStatic<dim_outer>{}>();
 
   static constexpr auto helper = [] {
     constexpr auto sparsity_link_tridiag_permuted_cols = getSparsityPermuted(
-        sparsity.link.prev, Permutation<dim_link>{}, permutation_tridiag);
+        sparsity.link.prev, PermutationStatic<dim_link>{}, permutation_tridiag);
     constexpr auto sparsity_link_outer_permuted_rows = getSparsityPermuted(
-        sparsity.link.next, permutation_outer, Permutation<dim_link>{});
+        sparsity.link.next, permutation_outer, PermutationStatic<dim_link>{});
     return getFilledInSparsityBlocked3x3<
         sparsity_factor.diag, sparsity_link_tridiag_permuted_cols,
         sparsity.link.diag, sparsity_factor.outer,
         sparsity_link_outer_permuted_rows, sparsity_outer_diag,
-        Permutation<dim_tridiag>{}, permutation_link,
-        Permutation<dim_outer>{}>();
+        PermutationStatic<dim_tridiag>{}, permutation_link,
+        PermutationStatic<dim_outer>{}>();
   }();
   static constexpr auto sparsity_factor_link_tridiag = helper.block21;
   static constexpr auto sparsity_factor_link_diag = helper.block22;
