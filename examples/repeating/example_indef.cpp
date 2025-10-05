@@ -38,7 +38,7 @@ struct MatrixB {
   struct Sparsity {
     static constexpr int numRows() { return dim; }
     static constexpr int numCols() { return dim; }
-    static constexpr std::array<Entry, 5> entries() { return {}; }
+    static constexpr std::array<Entry, 0> entries() { return {}; }
   };
   static constexpr auto sparsity = Sparsity{};
 
