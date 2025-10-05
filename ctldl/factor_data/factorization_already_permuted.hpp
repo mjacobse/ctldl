@@ -13,9 +13,9 @@ namespace ctldl {
 // We implement that by unpermuting the sparsity and letting the Factorization
 // permute it back again. That way we factorize the correct sparsity and also
 // remember the correct permutation within Factorization.
-template <Sparsity sparsity, class Value, PermutationStatic permutation>
+template <SparsityStatic sparsity, class Value, PermutationStatic permutation>
 using FactorizationAlreadyPermuted =
-    Factorization<getSparsityLowerTriangle<sparsity>(
+    Factorization<getSparsityStaticLowerTriangle<sparsity>(
                       invertPermutation(permutation)),
                   Value, permutation>;
 

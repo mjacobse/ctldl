@@ -60,7 +60,7 @@ template <int block_dim, class Value>
 struct TestMatrixSingleEntryTopRight {
   struct Matrix {
     static constexpr auto sparsity =
-        makeSparsity<block_dim, block_dim>({Entry{0, block_dim - 1}});
+        makeSparsityStatic<block_dim, block_dim>({Entry{0, block_dim - 1}});
 
     constexpr auto valueAt(const std::size_t /*i*/) const {
       return Value{-1.0};

@@ -11,13 +11,13 @@
 #include <cstddef>
 
 constexpr auto getRepeatingMtxSparsityStart() {
-  constexpr auto diag = ctldl::makeSparsity<4, 4>({
+  constexpr auto diag = ctldl::makeSparsityStatic<4, 4>({
     {0,0},
     {1,1},
     {2,2},
     {3,3},
   });
-  constexpr auto next = ctldl::makeSparsity<7, 4>({
+  constexpr auto next = ctldl::makeSparsityStatic<7, 4>({
     {0,0},
     {0,1},
     {1,1},
@@ -25,7 +25,7 @@ constexpr auto getRepeatingMtxSparsityStart() {
     {1,3},
     {2,3},
   });
-  constexpr auto outer = ctldl::makeEmptySparsity<0, 4>();
+  constexpr auto outer = ctldl::makeEmptySparsityStatic<0, 4>();
   constexpr auto permutation = ctldl::PermutationStatic<4>{{
     0,
     1,
@@ -36,7 +36,7 @@ constexpr auto getRepeatingMtxSparsityStart() {
 }
 
 constexpr auto getRepeatingMtxSparsityTridiag() {
-  constexpr auto diag = ctldl::makeSparsity<7, 7>({
+  constexpr auto diag = ctldl::makeSparsityStatic<7, 7>({
     {0,0},
     {3,0},
     {4,0},
@@ -51,7 +51,7 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
     {5,5},
     {6,6},
   });
-  constexpr auto subdiag = ctldl::makeSparsity<7, 7>({
+  constexpr auto subdiag = ctldl::makeSparsityStatic<7, 7>({
     {0,3},
     {0,4},
     {1,4},
@@ -72,16 +72,16 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
 }
 
 constexpr auto getRepeatingMtxSparsityLink() {
-  constexpr auto prev = ctldl::makeEmptySparsity<0, 7>();
-  constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
-  constexpr auto next = ctldl::makeEmptySparsity<0, 0>();
+  constexpr auto prev = ctldl::makeEmptySparsityStatic<0, 7>();
+  constexpr auto diag = ctldl::makeEmptySparsityStatic<0, 0>();
+  constexpr auto next = ctldl::makeEmptySparsityStatic<0, 0>();
   constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeLink{prev, diag, next, permutation};
 }
 
 constexpr auto getRepeatingMtxSparsityOuter() {
-  constexpr auto subdiag = ctldl::makeEmptySparsity<0, 7>();
-  constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
+  constexpr auto subdiag = ctldl::makeEmptySparsityStatic<0, 7>();
+  constexpr auto diag = ctldl::makeEmptySparsityStatic<0, 0>();
   constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeOuter{subdiag, diag, permutation};
 }

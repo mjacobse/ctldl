@@ -46,7 +46,7 @@ struct MatrixA {
 
 struct MatrixB {
   static constexpr auto sparsity =
-      ctldl::makeSparsity<dim, dim>({ctldl::Entry{0, dim - 1}});
+      ctldl::makeSparsityStatic<dim, dim>({ctldl::Entry{0, dim - 1}});
 
   constexpr double valueAt(const std::size_t /*i*/) const { return -1.0; }
 };

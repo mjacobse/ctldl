@@ -1,23 +1,27 @@
 #pragma once
 
 #include <ctldl/sparsity/is_square.hpp>
+#include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/compute_elimination_tree_repeating.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
 #include <ctldl/symbolic/foreach_ancestor_in_subtree.hpp>
+#include <ctldl/utility/contracts.hpp>
 
 #include <array>
 #include <cstddef>
 #include <numeric>
+#include <span>
 
 namespace ctldl {
 
-template <class Sparsity, std::size_t dim, class BinaryFunction>
+template <class BinaryFunction>
 constexpr void foreachAncestorInSubtreeRepeatingOuter(
-    const Sparsity& sparsity, const EliminationTree<2 * dim>& tree,
-    const std::size_t row_index, std::array<std::size_t, dim>& visitor,
+    const SparsityViewCSR sparsity, const EliminationTree& tree,
+    const std::size_t row_index, const std::span<std::size_t> visitor,
     BinaryFunction f, const std::size_t row_offset = 0,
     const std::size_t col_offset = 0) {
-  const auto get_parent = [&tree](const std::size_t j) {
+  const auto dim = std::size_t{visitor.size()};
+  const auto get_parent = [dim, &tree](const std::size_t j) {
     if (!tree.hasParent(j)) {
       // We use the elimination tree of the tridiagonal part (i.e. it does not
       // know anything about the outer part). So if the parent of the full tree
@@ -37,34 +41,33 @@ constexpr void foreachAncestorInSubtreeRepeatingOuter(
                                row_offset, col_offset);
 }
 
-template <class SparsityDiag, class SparsitySubdiag, class SparsityOuter,
-          class UnaryFunction>
+template <class UnaryFunction>
 constexpr void foreachNonZeroWithFillRepeatingArrowhead(
-    const SparsityDiag& sparsity_diag, const SparsitySubdiag& sparsity_subdiag,
-    const SparsityOuter& sparsity_outer, UnaryFunction f) {
-  static_assert(isSquare<SparsityDiag>());
-  static_assert(isSquare<SparsitySubdiag>());
-  static_assert(SparsitySubdiag::numRows() == SparsityDiag::numRows());
-  static_assert(SparsityOuter::numCols() == SparsityDiag::numCols());
-  constexpr auto dim = std::size_t{SparsityDiag::numRows()};
-  constexpr auto dim_outer = std::size_t{SparsityOuter::numRows()};
+    const SparsityViewCSR sparsity_diag, const SparsityViewCSR sparsity_subdiag,
+    const SparsityViewCSR sparsity_outer, UnaryFunction f) {
+  pre(isSquare(sparsity_diag));
+  pre(isSquare(sparsity_subdiag));
+  pre(sparsity_subdiag.numRows() == sparsity_diag.numRows());
+  pre(sparsity_outer.numCols() == sparsity_diag.numCols());
+  const auto dim = std::size_t{sparsity_diag.numRows()};
+  const auto dim_outer = std::size_t{sparsity_outer.numRows()};
 
   const auto tree =
       computeEliminationTreeRepeating(sparsity_diag, sparsity_subdiag);
-  std::array<std::size_t, 2 * dim> visitor;
+  std::vector<std::size_t> visitor(2 * dim);
   std::iota(visitor.begin(), visitor.end(), 0);
   for (std::size_t i = 0; i < dim; ++i) {
-    constexpr auto row_offset = dim;
-    constexpr auto col_offset = dim;
+    const auto row_offset = dim;
+    const auto col_offset = dim;
     foreachAncestorInSubtree(sparsity_subdiag, tree, i, visitor, f, row_offset);
     foreachAncestorInSubtree(sparsity_diag, tree, i, visitor, f, row_offset,
                              col_offset);
   }
 
-  std::array<std::size_t, dim> visitor_outer;
+  std::vector<std::size_t> visitor_outer(dim);
   std::iota(visitor_outer.begin(), visitor_outer.end(), 0);
   for (std::size_t i = 0; i < dim_outer; ++i) {
-    constexpr auto row_offset = 2 * dim;
+    const auto row_offset = 2 * dim;
     foreachAncestorInSubtreeRepeatingOuter(sparsity_outer, tree, i,
                                            visitor_outer, f, row_offset);
   }

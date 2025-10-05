@@ -11,32 +11,33 @@
 #include <cstddef>
 
 constexpr auto getRepeatingMtxSparsityStart() {
-  constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
-  constexpr auto next = ctldl::makeEmptySparsity<3, 0>();
-  constexpr auto outer = ctldl::makeEmptySparsity<0, 0>();
+  constexpr auto diag = ctldl::makeEmptySparsityStatic<0, 0>();
+  constexpr auto next = ctldl::makeEmptySparsityStatic<3, 0>();
+  constexpr auto outer = ctldl::makeEmptySparsityStatic<0, 0>();
   constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeStart{diag, next, outer, permutation};
 }
 
 constexpr auto getRepeatingMtxSparsityTridiag() {
-  constexpr auto diag = ctldl::makeSparsity<3, 3>({{0, 0}, {1, 1}, {2, 2}});
+  constexpr auto diag =
+      ctldl::makeSparsityStatic<3, 3>({{0, 0}, {1, 1}, {2, 2}});
   constexpr auto subdiag =
-      ctldl::makeSparsity<3, 3>({{0, 0}, {1, 1}, {2, 1}, {1, 2}, {2, 2}});
+      ctldl::makeSparsityStatic<3, 3>({{0, 0}, {1, 1}, {2, 1}, {1, 2}, {2, 2}});
   constexpr auto permutation = ctldl::PermutationStatic<3>{{0, 1, 2}};
   return ctldl::SparsityToFactorizeTridiagonal{diag, subdiag, permutation};
 }
 
 constexpr auto getRepeatingMtxSparsityLink() {
-  constexpr auto prev = ctldl::makeEmptySparsity<0, 3>();
-  constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
-  constexpr auto next = ctldl::makeEmptySparsity<0, 0>();
+  constexpr auto prev = ctldl::makeEmptySparsityStatic<0, 3>();
+  constexpr auto diag = ctldl::makeEmptySparsityStatic<0, 0>();
+  constexpr auto next = ctldl::makeEmptySparsityStatic<0, 0>();
   constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeLink{prev, diag, next, permutation};
 }
 
 constexpr auto getRepeatingMtxSparsityOuter() {
-  constexpr auto subdiag = ctldl::makeEmptySparsity<0, 3>();
-  constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
+  constexpr auto subdiag = ctldl::makeEmptySparsityStatic<0, 3>();
+  constexpr auto diag = ctldl::makeEmptySparsityStatic<0, 0>();
   constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeOuter{subdiag, diag, permutation};
 }

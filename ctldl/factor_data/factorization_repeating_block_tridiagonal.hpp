@@ -23,7 +23,7 @@ namespace ctldl {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <Sparsity sparsity_A, Sparsity sparsity_B, class Value_,
+template <SparsityStatic sparsity_A, SparsityStatic sparsity_B, class Value_,
           PermutationStatic<sparsity_A.numRows()> permutation_in =
               PermutationIdentity{}>
 class FactorizationRepeatingBlockTridiagonal {

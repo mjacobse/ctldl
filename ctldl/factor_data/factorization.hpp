@@ -20,7 +20,7 @@
 
 namespace ctldl {
 
-template <Sparsity sparsity_orig, class Value_,
+template <SparsityStatic sparsity_orig, class Value_,
           PermutationStatic<sparsity_orig.numRows()> permutation_in =
               PermutationIdentity{}>
 class Factorization {
@@ -59,7 +59,7 @@ class Factorization {
   }
 
   static constexpr auto sparsity =
-      SparsityCSR(getFilledInSparsity<sparsity_orig, permutation>());
+      SparsityStaticCSR(getFilledInSparsity<sparsity_orig, permutation>());
   static constexpr auto nnz = std::size_t{sparsity.nnz()};
   static constexpr auto permutation_row = permutation;
   static constexpr auto permutation_col = permutation;

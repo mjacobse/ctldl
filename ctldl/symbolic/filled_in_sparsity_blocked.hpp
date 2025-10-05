@@ -16,14 +16,10 @@
 
 namespace ctldl {
 
-template <class Sparsity11, class Sparsity21, class Sparsity22,
-          class Sparsity31, class Sparsity32, class Sparsity33>
-constexpr auto getFilledInNumNonZerosBlocked3x3(const Sparsity11& sparsity11,
-                                                const Sparsity21& sparsity21,
-                                                const Sparsity22& sparsity22,
-                                                const Sparsity31& sparsity31,
-                                                const Sparsity32& sparsity32,
-                                                const Sparsity33& sparsity33) {
+constexpr auto getFilledInNumNonZerosBlocked3x3(
+    const SparsityViewCSR sparsity11, const SparsityViewCSR sparsity21,
+    const SparsityViewCSR sparsity22, const SparsityViewCSR sparsity31,
+    const SparsityViewCSR sparsity32, const SparsityViewCSR sparsity33) {
   LowerTriangleBlocked3x3 nnz{std::size_t{0}, std::size_t{0}, std::size_t{0},
                               std::size_t{0}, std::size_t{0}, std::size_t{0}};
   const auto count_nonzero = [&](const std::size_t i, const std::size_t j) {
@@ -51,15 +47,14 @@ constexpr auto getFilledInNumNonZerosBlocked3x3(const Sparsity11& sparsity11,
   return nnz;
 }
 
-template <class Sparsity11, class Sparsity21, class Sparsity22>
-constexpr auto getFilledInNumNonZerosBlocked(const Sparsity11& sparsity11,
-                                             const Sparsity21& sparsity21,
-                                             const Sparsity22& sparsity22) {
-  constexpr auto sparsity31_dummy =
-      makeEmptySparsityCSR<0, Sparsity11::numCols()>();
-  constexpr auto sparsity32_dummy =
-      makeEmptySparsityCSR<0, Sparsity22::numCols()>();
-  constexpr auto sparsity33_dummy = makeEmptySparsityCSR<0, 0>();
+constexpr auto getFilledInNumNonZerosBlocked(const SparsityViewCSR sparsity11,
+                                             const SparsityViewCSR sparsity21,
+                                             const SparsityViewCSR sparsity22) {
+  const auto sparsity31_dummy =
+      makeEmptySparsityDynamicCSR(0, sparsity11.numCols());
+  const auto sparsity32_dummy =
+      makeEmptySparsityDynamicCSR(0, sparsity22.numCols());
+  const auto sparsity33_dummy = makeEmptySparsityDynamicCSR(0, 0);
   const auto nnz = getFilledInNumNonZerosBlocked3x3(
       sparsity11, sparsity21, sparsity22, sparsity31_dummy, sparsity32_dummy,
       sparsity33_dummy);
@@ -77,18 +72,18 @@ constexpr auto getFilledInSparsityBlocked3x3() {
   static_assert(sparsity21_in.numCols() == sparsity11_in.numCols());
   static_assert(sparsity22_in.numRows() == sparsity21_in.numRows());
 
-  constexpr auto sparsity11 =
-      SparsityCSR(getSparsityLowerTriangle<sparsity11_in>(permutation1));
-  constexpr auto sparsity21 = SparsityCSR(
-      getSparsityPermuted(sparsity21_in, permutation2, permutation1));
-  constexpr auto sparsity22 =
-      SparsityCSR(getSparsityLowerTriangle<sparsity22_in>(permutation2));
-  constexpr auto sparsity31 = SparsityCSR(
-      getSparsityPermuted(sparsity31_in, permutation3, permutation1));
-  constexpr auto sparsity32 = SparsityCSR(
-      getSparsityPermuted(sparsity32_in, permutation3, permutation2));
-  constexpr auto sparsity33 =
-      SparsityCSR(getSparsityLowerTriangle<sparsity33_in>(permutation3));
+  constexpr auto sparsity11 = SparsityStaticCSR(
+      getSparsityStaticLowerTriangle<sparsity11_in>(permutation1));
+  constexpr auto sparsity21 = SparsityStaticCSR(
+      getSparsityStaticPermuted(sparsity21_in, permutation2, permutation1));
+  constexpr auto sparsity22 = SparsityStaticCSR(
+      getSparsityStaticLowerTriangle<sparsity22_in>(permutation2));
+  constexpr auto sparsity31 = SparsityStaticCSR(
+      getSparsityStaticPermuted(sparsity31_in, permutation3, permutation1));
+  constexpr auto sparsity32 = SparsityStaticCSR(
+      getSparsityStaticPermuted(sparsity32_in, permutation3, permutation2));
+  constexpr auto sparsity33 = SparsityStaticCSR(
+      getSparsityStaticLowerTriangle<sparsity33_in>(permutation3));
 
   constexpr auto nnz = getFilledInNumNonZerosBlocked3x3(
       sparsity11, sparsity21, sparsity22, sparsity31, sparsity32, sparsity33);
@@ -146,21 +141,24 @@ constexpr auto getFilledInSparsityBlocked3x3() {
   sortEntriesRowMajorSorted(entries33);
 
   return LowerTriangleBlocked3x3{
-      makeSparsity<sparsity11.numRows(), sparsity11.numCols()>(entries11),
-      makeSparsity<sparsity21.numRows(), sparsity21.numCols()>(entries21),
-      makeSparsity<sparsity22.numRows(), sparsity22.numCols()>(entries22),
-      makeSparsity<sparsity31.numRows(), sparsity31.numCols()>(entries31),
-      makeSparsity<sparsity32.numRows(), sparsity32.numCols()>(entries32),
-      makeSparsity<sparsity33.numRows(), sparsity33.numCols()>(entries33)};
+      makeSparsityStatic<sparsity11.numRows(), sparsity11.numCols()>(entries11),
+      makeSparsityStatic<sparsity21.numRows(), sparsity21.numCols()>(entries21),
+      makeSparsityStatic<sparsity22.numRows(), sparsity22.numCols()>(entries22),
+      makeSparsityStatic<sparsity31.numRows(), sparsity31.numCols()>(entries31),
+      makeSparsityStatic<sparsity32.numRows(), sparsity32.numCols()>(entries32),
+      makeSparsityStatic<sparsity33.numRows(), sparsity33.numCols()>(
+          entries33)};
 }
 
 template <auto sparsity11, auto sparsity21, auto sparsity22,
           auto permutation1 = PermutationStatic<sparsity11.numRows()>(),
           auto permutation2 = PermutationStatic<sparsity22.numRows()>()>
 constexpr auto getFilledInSparsityBlocked() {
-  constexpr auto sparsity31_dummy = makeEmptySparsity<0, sparsity11.numCols()>();
-  constexpr auto sparsity32_dummy = makeEmptySparsity<0, sparsity22.numCols()>();
-  constexpr auto sparsity33_dummy = makeEmptySparsity<0, 0>();
+  constexpr auto sparsity31_dummy =
+      makeEmptySparsityStatic<0, sparsity11.numCols()>();
+  constexpr auto sparsity32_dummy =
+      makeEmptySparsityStatic<0, sparsity22.numCols()>();
+  constexpr auto sparsity33_dummy = makeEmptySparsityStatic<0, 0>();
   constexpr auto permutation3_dummy = PermutationStatic<0>{};
   const auto sparsity = getFilledInSparsityBlocked3x3<
       sparsity11, sparsity21, sparsity22, sparsity31_dummy, sparsity32_dummy,

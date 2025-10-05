@@ -42,7 +42,7 @@ struct TestMatrixFromGenerator {
       BoolMatrixDistribution<num_rows, num_cols>{}, generator);
   static constexpr auto is_nonzero =
       applyRandomMatrixSparsityKind<kind>(is_nonzero_generated.result);
-  static constexpr auto sparsity = makeSparsity<num_rows, num_cols>(
+  static constexpr auto sparsity = makeSparsityStatic<num_rows, num_cols>(
       makeSparseEntriesFromBoolMatrix<is_nonzero>());
   using Base = TestMatrixRandom<sparsity, Value>;
 

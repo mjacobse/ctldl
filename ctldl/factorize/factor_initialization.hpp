@@ -11,7 +11,8 @@ namespace ctldl {
 
 template <std::size_t num_rows, std::size_t num_cols>
 struct FactorInitNone {
-  static constexpr auto sparsity = makeEmptySparsity<num_rows, num_cols>();
+  static constexpr auto sparsity =
+      makeEmptySparsityStatic<num_rows, num_cols>();
 };
 
 template <std::size_t entry_index, class Init, class FactorData>

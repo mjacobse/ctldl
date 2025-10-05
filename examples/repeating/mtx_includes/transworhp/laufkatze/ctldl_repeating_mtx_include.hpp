@@ -11,7 +11,7 @@
 #include <cstddef>
 
 constexpr auto getRepeatingMtxSparsityStart() {
-  constexpr auto diag = ctldl::makeSparsity<11, 11>({
+  constexpr auto diag = ctldl::makeSparsityStatic<11, 11>({
     {0,0},
     {1,1},
     {2,2},
@@ -26,7 +26,7 @@ constexpr auto getRepeatingMtxSparsityStart() {
     {9,9},
     {10,10},
   });
-  constexpr auto next = ctldl::makeSparsity<20, 11>({
+  constexpr auto next = ctldl::makeSparsityStatic<20, 11>({
     {0,0},
     {0,1},
     {1,1},
@@ -48,7 +48,7 @@ constexpr auto getRepeatingMtxSparsityStart() {
     {7,10},
     {8,10},
   });
-  constexpr auto outer = ctldl::makeSparsity<1, 11>({
+  constexpr auto outer = ctldl::makeSparsityStatic<1, 11>({
     {0,1},
     {0,2},
     {0,3},
@@ -75,7 +75,7 @@ constexpr auto getRepeatingMtxSparsityStart() {
 }
 
 constexpr auto getRepeatingMtxSparsityTridiag() {
-  constexpr auto diag = ctldl::makeSparsity<20, 20>({
+  constexpr auto diag = ctldl::makeSparsityStatic<20, 20>({
     {9,0},
     {10,0},
     {10,1},
@@ -113,7 +113,7 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
     {18,18},
     {19,19},
   });
-  constexpr auto subdiag = ctldl::makeSparsity<20, 20>({
+  constexpr auto subdiag = ctldl::makeSparsityStatic<20, 20>({
     {0,9},
     {0,10},
     {1,10},
@@ -163,15 +163,15 @@ constexpr auto getRepeatingMtxSparsityTridiag() {
 }
 
 constexpr auto getRepeatingMtxSparsityLink() {
-  constexpr auto prev = ctldl::makeEmptySparsity<0, 20>();
-  constexpr auto diag = ctldl::makeEmptySparsity<0, 0>();
-  constexpr auto next = ctldl::makeEmptySparsity<1, 0>();
+  constexpr auto prev = ctldl::makeEmptySparsityStatic<0, 20>();
+  constexpr auto diag = ctldl::makeEmptySparsityStatic<0, 0>();
+  constexpr auto next = ctldl::makeEmptySparsityStatic<1, 0>();
   constexpr ctldl::PermutationStatic<0> permutation{};
   return ctldl::SparsityToFactorizeLink{prev, diag, next, permutation};
 }
 
 constexpr auto getRepeatingMtxSparsityOuter() {
-  constexpr auto subdiag = ctldl::makeSparsity<1, 20>({
+  constexpr auto subdiag = ctldl::makeSparsityStatic<1, 20>({
     {0,0},
     {0,1},
     {0,2},
@@ -191,7 +191,7 @@ constexpr auto getRepeatingMtxSparsityOuter() {
     {0,18},
     {0,19},
   });
-  constexpr auto diag = ctldl::makeSparsity<1, 1>({
+  constexpr auto diag = ctldl::makeSparsityStatic<1, 1>({
     {0,0},
   });
   constexpr auto permutation = ctldl::PermutationStatic<1>{{

@@ -1,34 +1,36 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
-#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
+#include <ctldl/utility/contracts.hpp>
 
-#include <array>
 #include <cstddef>
+#include <optional>
+#include <vector>
 
 namespace ctldl {
 
-template <class SparsityLhs, class SparsityRhs>
 constexpr bool isSparsitySubset(
-    const SparsityLhs& sparsity_lhs_in, const SparsityRhs& sparsity_rhs_in,
-    const PermutationView permutation_row =
-        PermutationStatic<SparsityLhs::numRows()>{},
-    const PermutationView permutation_col =
-        PermutationStatic<SparsityLhs::numCols()>{}) {
-  const auto sparsity_lhs = makeSparsityCSR(
-      getSparsityPermuted(sparsity_lhs_in, permutation_row, permutation_col));
-  const auto sparsity_rhs = makeSparsityCSR(sparsity_rhs_in);
+    const SparsityView sparsity_lhs_in, const SparsityView sparsity_rhs_in,
+    const std::optional<PermutationView> permutation_row = std::nullopt,
+    const std::optional<PermutationView> permutation_col = std::nullopt) {
+  pre(sparsity_lhs_in.numRows() == sparsity_rhs_in.numRows());
+  pre(sparsity_lhs_in.numCols() == sparsity_rhs_in.numCols());
 
-  static_assert(sparsity_lhs.numRows() == sparsity_rhs.numRows());
-  static_assert(sparsity_lhs.numCols() == sparsity_rhs.numCols());
-  constexpr auto num_rows = std::size_t{sparsity_lhs.numRows()};
-  constexpr auto num_cols = std::size_t{sparsity_lhs.numCols()};
+  const auto sparsity_lhs = SparsityDynamicCSR(getSparsityDynamicPermuted(
+      sparsity_lhs_in,
+      permutation_row.value_or(PermutationDynamic(sparsity_lhs_in.numRows())),
+      permutation_col.value_or(PermutationDynamic(sparsity_lhs_in.numCols()))));
+  const auto sparsity_rhs = SparsityDynamicCSR(
+      SparsityDynamic(sparsity_rhs_in.numRows(), sparsity_rhs_in.numCols(),
+                      sparsity_rhs_in.entries()));
 
-  std::array<bool, num_cols> is_nonzero_rhs;
-  fixInitIfZeroLengthArray(is_nonzero_rhs);
-  is_nonzero_rhs.fill(false);
+  const auto num_rows = std::size_t{sparsity_lhs.numRows()};
+  const auto num_cols = std::size_t{sparsity_lhs.numCols()};
+
+  std::vector<bool> is_nonzero_rhs(num_cols, false);
   for (std::size_t row_index = 0; row_index < num_rows; ++row_index) {
     for (const auto entry : sparsity_rhs.rowView(row_index)) {
       is_nonzero_rhs[entry.col_index] = true;
@@ -49,11 +51,11 @@ constexpr bool isSparsitySubset(
   return true;
 }
 
-template <auto sparsity_lhs, class SparsityRhs>
 constexpr bool isSparsitySubsetLowerTriangle(
-    const SparsityRhs& sparsity_rhs, const PermutationView permutation) {
-  return isSparsitySubset(getSparsityLowerTriangle<sparsity_lhs>(permutation),
-                          sparsity_rhs);
+    const SparsityView sparsity_lhs, const SparsityView sparsity_rhs,
+    const PermutationView permutation) {
+  return isSparsitySubset(
+      getSparsityDynamicLowerTriangle(sparsity_lhs, permutation), sparsity_rhs);
 }
 
 }  // namespace ctldl

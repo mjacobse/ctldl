@@ -29,8 +29,8 @@ template <std::size_t dim_, std::size_t nnz_diagonal,
           std::size_t nnz_subdiagonal>
 struct SparsityToFactorizeTridiagonal {
   static constexpr auto dim = dim_;
-  Sparsity<nnz_diagonal, dim, dim> diag;
-  Sparsity<nnz_subdiagonal, dim, dim> subdiag;
+  SparsityStatic<nnz_diagonal, dim, dim> diag;
+  SparsityStatic<nnz_subdiagonal, dim, dim> subdiag;
   PermutationStatic<dim> permutation = PermutationIdentity{};
 };
 
@@ -38,8 +38,9 @@ template <class SparsityDiag, class SparsitySubdiag,
           class PermutationIn = PermutationIdentity>
 SparsityToFactorizeTridiagonal(SparsityDiag, SparsitySubdiag,
                                PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeTridiagonal<ctad_t<Sparsity, SparsityDiag>::numRows(),
-                                      ctad_t<Sparsity, SparsityDiag>::nnz(),
-                                      ctad_t<Sparsity, SparsitySubdiag>::nnz()>;
+    -> SparsityToFactorizeTridiagonal<
+        ctad_t<SparsityStatic, SparsityDiag>::numRows(),
+        ctad_t<SparsityStatic, SparsityDiag>::nnz(),
+        ctad_t<SparsityStatic, SparsitySubdiag>::nnz()>;
 
 }  // namespace ctldl

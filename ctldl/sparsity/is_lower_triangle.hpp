@@ -1,9 +1,10 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity.hpp>
+
 namespace ctldl {
 
-template <class Sparsity>
-constexpr bool isLowerTriangle(const Sparsity& sparsity) {
+constexpr bool isLowerTriangle(const SparsityView sparsity) {
   for (const auto& entry : sparsity.entries()) {
     if (entry.row_index <= entry.col_index) {
       return false;

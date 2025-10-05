@@ -1,23 +1,25 @@
 #pragma once
 
 #include <ctldl/sparsity/is_square.hpp>
+#include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/compute_elimination_tree.hpp>
 #include <ctldl/symbolic/foreach_ancestor_in_subtree.hpp>
+#include <ctldl/utility/contracts.hpp>
 
-#include <array>
 #include <cstddef>
 #include <numeric>
+#include <vector>
 
 namespace ctldl {
 
-template <class Sparsity, class UnaryFunction>
-constexpr void foreachNonZeroWithFill(const Sparsity& sparsity,
+template <class UnaryFunction>
+constexpr void foreachNonZeroWithFill(const SparsityViewCSR sparsity,
                                       UnaryFunction f) {
-  static_assert(isSquare<Sparsity>());
-  constexpr auto dim = Sparsity::numRows();
+  pre(isSquare(sparsity));
+  const auto dim = sparsity.numRows();
 
   const auto tree = computeEliminationTree(sparsity);
-  std::array<std::size_t, dim> visitor;
+  std::vector<std::size_t> visitor(dim);
   std::iota(visitor.begin(), visitor.end(), 0);
   for (std::size_t i = 0; i < dim; ++i) {
     foreachAncestorInSubtree(sparsity, tree, i, visitor, f);
