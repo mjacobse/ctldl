@@ -151,6 +151,10 @@ class SparsityViewCSR : public SparsityView {
       : SparsityView(sparsity),
         m_row_begin_indices(sparsity.rowBeginIndices()) {}
 
+  constexpr const std::span<const std::size_t> rowBeginIndices() const {
+    return m_row_begin_indices;
+  }
+
   constexpr auto rowView(const std::size_t i) const {
     return std::span{entries().data() + m_row_begin_indices[i],
                      entries().data() + m_row_begin_indices[i + 1]};

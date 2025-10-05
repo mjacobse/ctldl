@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
@@ -13,9 +14,9 @@ struct Contribution {
   std::size_t k;
 };
 
-template <class Sparsity, class SparsityBelow, class TernaryFunction>
-constexpr void foreachContributingEntry(const Sparsity& sparsity,
-                                        const SparsityBelow& sparsity_below,
+template <class TernaryFunction>
+constexpr void foreachContributingEntry(const SparsityViewCSR& sparsity,
+                                        const SparsityViewCSR& sparsity_below,
                                         const std::size_t i,
                                         const std::size_t j,
                                         const std::size_t column_limit,
@@ -41,9 +42,8 @@ constexpr void foreachContributingEntry(const Sparsity& sparsity,
   }
 }
 
-template <class Sparsity, class SparsityBelow>
-constexpr auto getNumContributionsMixed(const Sparsity& sparsity,
-                                        const SparsityBelow& sparsity_below,
+constexpr auto getNumContributionsMixed(const SparsityViewCSR sparsity,
+                                        const SparsityViewCSR sparsity_below,
                                         const std::size_t i,
                                         const std::size_t j,
                                         const std::size_t column_limit) {

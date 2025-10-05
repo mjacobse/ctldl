@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
@@ -7,8 +8,7 @@
 
 namespace ctldl {
 
-template <class SparsitySource>
-constexpr std::size_t getNumInfluenced(const SparsitySource& sparsity_source,
+constexpr std::size_t getNumInfluenced(const SparsityViewCSR sparsity_source,
                                        const std::size_t j,
                                        const std::size_t k_end) {
   std::size_t num = 0;
