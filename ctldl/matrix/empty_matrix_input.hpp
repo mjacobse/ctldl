@@ -9,7 +9,8 @@ namespace ctldl {
 
 template <std::size_t num_rows, std::size_t num_cols>
 struct EmptyMatrixInput {
-  static constexpr auto sparsity = makeEmptySparsityCSR<num_rows, num_cols>();
+  static constexpr auto sparsity =
+      makeEmptySparsityStaticCSR<num_rows, num_cols>();
 
   constexpr EmptyMatrixInput() = default;
 

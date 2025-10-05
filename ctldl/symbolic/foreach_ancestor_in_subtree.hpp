@@ -1,18 +1,19 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
 
 #include <array>
 #include <cstddef>
+#include <span>
 
 
 namespace ctldl {
 
-template <class Sparsity, std::size_t dim, class GetParentFunction,
-          class BinaryFunction>
+template <class GetParentFunction, class BinaryFunction>
 constexpr void foreachAncestorInSubtreeImpl(
-    const Sparsity& sparsity, const GetParentFunction get_parent,
-    const std::size_t row_index, std::array<std::size_t, dim>& visitor,
+    const SparsityViewCSR sparsity, const GetParentFunction get_parent,
+    const std::size_t row_index, const std::span<std::size_t> visitor,
     BinaryFunction f, const std::size_t row_offset = 0,
     const std::size_t col_offset = 0) {
   const auto i = row_index + row_offset;
@@ -26,11 +27,11 @@ constexpr void foreachAncestorInSubtreeImpl(
   }
 }
 
-template <class Sparsity, std::size_t dim, class BinaryFunction>
-constexpr void foreachAncestorInSubtree(const Sparsity& sparsity,
-                                        const EliminationTree<dim>& tree,
+template <class BinaryFunction>
+constexpr void foreachAncestorInSubtree(const SparsityViewCSR sparsity,
+                                        const EliminationTree& tree,
                                         const std::size_t row_index,
-                                        std::array<std::size_t, dim>& visitor,
+                                        const std::span<std::size_t> visitor,
                                         BinaryFunction f,
                                         const std::size_t row_offset = 0,
                                         const std::size_t col_offset = 0) {

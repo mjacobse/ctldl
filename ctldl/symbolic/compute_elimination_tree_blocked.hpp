@@ -4,52 +4,49 @@
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/add_row_elimination_tree.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
+#include <ctldl/utility/contracts.hpp>
 
-#include <array>
 #include <cstddef>
 #include <numeric>
+#include <vector>
 
 
 namespace ctldl {
 
-template <class Sparsity11, class Sparsity21, class Sparsity22,
-          class Sparsity31, class Sparsity32, class Sparsity33>
-constexpr auto computeEliminationTreeBlocked3x3(const Sparsity11& sparsity11,
-                                                const Sparsity21& sparsity21,
-                                                const Sparsity22& sparsity22,
-                                                const Sparsity31& sparsity31,
-                                                const Sparsity32& sparsity32,
-                                                const Sparsity33& sparsity33) {
-  static_assert(isSquare<Sparsity11>());
-  static_assert(isSquare<Sparsity22>());
-  static_assert(isSquare<Sparsity33>());
-  static_assert(Sparsity21::numCols() == Sparsity11::numCols());
-  static_assert(Sparsity21::numRows() == Sparsity22::numRows());
-  static_assert(Sparsity31::numCols() == Sparsity11::numCols());
-  static_assert(Sparsity32::numCols() == Sparsity22::numCols());
-  static_assert(Sparsity31::numRows() == Sparsity33::numRows());
-  static_assert(Sparsity32::numRows() == Sparsity33::numRows());
-  constexpr auto num_rows =
-      Sparsity11::numRows() + Sparsity22::numRows() + Sparsity33::numRows();
-  EliminationTree<num_rows> tree;
+constexpr auto computeEliminationTreeBlocked3x3(
+    const SparsityViewCSR sparsity11, const SparsityViewCSR sparsity21,
+    const SparsityViewCSR sparsity22, const SparsityViewCSR sparsity31,
+    const SparsityViewCSR sparsity32, const SparsityViewCSR sparsity33) {
+  pre(isSquare(sparsity11));
+  pre(isSquare(sparsity22));
+  pre(isSquare(sparsity33));
+  pre(sparsity21.numCols() == sparsity11.numCols());
+  pre(sparsity21.numRows() == sparsity22.numRows());
+  pre(sparsity31.numCols() == sparsity11.numCols());
+  pre(sparsity32.numCols() == sparsity22.numCols());
+  pre(sparsity31.numRows() == sparsity33.numRows());
+  pre(sparsity32.numRows() == sparsity33.numRows());
+  const auto num_rows =
+      sparsity11.numRows() + sparsity22.numRows() + sparsity33.numRows();
+  EliminationTree tree(num_rows);
 
-  std::array<std::size_t, num_rows> ancestors;
+  std::vector<std::size_t> ancestors(num_rows);
   std::iota(ancestors.begin(), ancestors.end(), 0);
 
-  for (std::size_t i = 0; i < Sparsity11::numRows(); ++i) {
+  for (std::size_t i = 0; i < sparsity11.numRows(); ++i) {
     addRowEliminationTree(sparsity11, i, tree, ancestors);
   }
-  for (std::size_t i = 0; i < Sparsity21::numRows(); ++i) {
-    constexpr auto row_offset = Sparsity11::numRows();
-    constexpr auto col_offset = Sparsity21::numCols();
+  for (std::size_t i = 0; i < sparsity21.numRows(); ++i) {
+    const auto row_offset = sparsity11.numRows();
+    const auto col_offset = sparsity21.numCols();
     addRowEliminationTree(sparsity21, i, tree, ancestors, row_offset);
     addRowEliminationTree(sparsity22, i, tree, ancestors, row_offset,
                           col_offset);
   }
-  for (std::size_t i = 0; i < Sparsity31::numRows(); ++i) {
-    constexpr auto row_offset = Sparsity11::numRows() + Sparsity22::numRows();
-    constexpr auto col_offset2 = Sparsity11::numCols();
-    constexpr auto col_offset3 = Sparsity11::numCols() + Sparsity22::numCols();
+  for (std::size_t i = 0; i < sparsity31.numRows(); ++i) {
+    const auto row_offset = sparsity11.numRows() + sparsity22.numRows();
+    const auto col_offset2 = sparsity11.numCols();
+    const auto col_offset3 = sparsity11.numCols() + sparsity22.numCols();
     addRowEliminationTree(sparsity31, i, tree, ancestors, row_offset);
     addRowEliminationTree(sparsity32, i, tree, ancestors, row_offset,
                           col_offset2);
@@ -59,15 +56,14 @@ constexpr auto computeEliminationTreeBlocked3x3(const Sparsity11& sparsity11,
   return tree;
 }
 
-template <class Sparsity11, class Sparsity21, class Sparsity22>
-constexpr auto computeEliminationTreeBlocked(const Sparsity11& sparsity11,
-                                             const Sparsity21& sparsity21,
-                                             const Sparsity22& sparsity22) {
+constexpr auto computeEliminationTreeBlocked(const SparsityViewCSR sparsity11,
+                                             const SparsityViewCSR sparsity21,
+                                             const SparsityViewCSR sparsity22) {
   return computeEliminationTreeBlocked3x3(
       sparsity11, sparsity21, sparsity22,
-      makeEmptySparsityCSR<0, Sparsity11::numCols()>(),
-      makeEmptySparsityCSR<0, Sparsity22::numCols()>(),
-      makeEmptySparsityCSR<0, 0>());
+      makeEmptySparsityDynamicCSR(0, sparsity11.numCols()),
+      makeEmptySparsityDynamicCSR(0, sparsity22.numCols()),
+      makeEmptySparsityDynamicCSR(0, 0));
 }
 
 }  // namespace ctldl

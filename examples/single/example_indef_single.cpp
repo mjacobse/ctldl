@@ -15,7 +15,7 @@ constexpr int dim = 2;
 constexpr ctldl::PermutationStatic<dim> permutation{{0, 1}};
 
 struct Matrix {
-  static constexpr auto sparsity = ctldl::makeSparsity<dim, dim>({{1, 0}});
+  static constexpr auto sparsity = ctldl::makeSparsityStatic<dim, dim>({{1, 0}});
 
   std::array<double, sparsity.nnz()> values;
   constexpr double valueAt(const std::size_t i) const {

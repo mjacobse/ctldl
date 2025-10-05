@@ -7,6 +7,7 @@
 #include <ctldl/matrix/multiply_repeating_block_tridiagonal.hpp>
 #include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/is_square.hpp>
+#include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/vector/block.hpp>
 #include <ctldl/vector/flatten.hpp>
 
@@ -27,8 +28,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
   void operator()(const SolutionGenerator& solution_generator,
                   const std::size_t num_repetitions,
                   std::mt19937& value_generator) const {
-    constexpr auto& sparsity_A = TestMatrixA::Matrix::sparsity;
-    constexpr auto& sparsity_B = TestMatrixB::Matrix::sparsity;
+    constexpr SparsityStatic sparsity_A = TestMatrixA::Matrix::sparsity;
+    constexpr SparsityStatic sparsity_B = TestMatrixB::Matrix::sparsity;
 
     static_assert(isSquare(sparsity_A));
     static_assert(isSquare(sparsity_B));

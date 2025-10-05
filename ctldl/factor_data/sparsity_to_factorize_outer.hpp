@@ -38,21 +38,23 @@ template <std::size_t dim_inner_, std::size_t dim_outer,
 struct SparsityToFactorizeOuter {
   static constexpr auto dim = dim_outer;
   static constexpr auto dim_inner = dim_inner_;
-  Sparsity<nnz_subdiag, dim_outer, dim_inner_> subdiag;
-  Sparsity<nnz_diag, dim_outer, dim_outer> diag;
+  SparsityStatic<nnz_subdiag, dim_outer, dim_inner_> subdiag;
+  SparsityStatic<nnz_diag, dim_outer, dim_outer> diag;
   PermutationStatic<dim_outer> permutation = PermutationIdentity{};
 };
 
 template <class Subdiag, class Diag, class PermutationIn = PermutationIdentity>
 SparsityToFactorizeOuter(Subdiag, Diag, PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeOuter<
-        ctad_t<Sparsity, Subdiag>::numCols(), ctad_t<Sparsity, Diag>::numRows(),
-        ctad_t<Sparsity, Subdiag>::nnz(), ctad_t<Sparsity, Diag>::nnz()>;
+    -> SparsityToFactorizeOuter<ctad_t<SparsityStatic, Subdiag>::numCols(),
+                                ctad_t<SparsityStatic, Diag>::numRows(),
+                                ctad_t<SparsityStatic, Subdiag>::nnz(),
+                                ctad_t<SparsityStatic, Diag>::nnz()>;
 
 template <std::size_t dim_inner, std::size_t dim_outer>
 constexpr auto makeEmptySparsityToFactorizeOuter() {
-  return SparsityToFactorizeOuter{makeEmptySparsity<dim_outer, dim_inner>(),
-                                  makeEmptySparsity<dim_outer, dim_outer>()};
+  return SparsityToFactorizeOuter{
+      makeEmptySparsityStatic<dim_outer, dim_inner>(),
+      makeEmptySparsityStatic<dim_outer, dim_outer>()};
 }
 
 }  // namespace ctldl

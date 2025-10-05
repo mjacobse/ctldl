@@ -29,11 +29,11 @@ struct TestMatrixTridiagonal {
         std::array<Entry, std::size_t{nnz()}> ret;
         fixInitIfZeroLengthArray(ret);
         std::size_t entry_index = 0;
-        for (std::size_t i = 0; i < numRows(); ++i) {
+        for (std::size_t i = 0; i < std::size_t{numRows()}; ++i) {
           ret[entry_index] = {i, i, 2.0};
           entry_index += 1;
         }
-        for (std::size_t i = 1; i < numRows(); ++i) {
+        for (std::size_t i = 1; i < std::size_t{numRows()}; ++i) {
           ret[entry_index] = {i, i - 1, -1.0};
           entry_index += 1;
         }
@@ -60,7 +60,7 @@ template <int block_dim, class Value>
 struct TestMatrixSingleEntryTopRight {
   struct Matrix {
     static constexpr auto sparsity =
-        makeSparsity<block_dim, block_dim>({Entry{0, block_dim - 1}});
+        makeSparsityStatic<block_dim, block_dim>({Entry{0, block_dim - 1}});
 
     constexpr auto valueAt(const std::size_t /*i*/) const {
       return Value{-1.0};

@@ -33,9 +33,9 @@ struct SparsityToFactorizeStart {
   static constexpr auto dim = dim_start;
   static constexpr auto dim_next = dim_next_;
   static constexpr auto dim_outer = dim_outer_;
-  Sparsity<nnz_start, dim_start, dim_start> diag;
-  Sparsity<nnz_next, dim_next_, dim_start> next;
-  Sparsity<nnz_outer, dim_outer_, dim_start> outer;
+  SparsityStatic<nnz_start, dim_start, dim_start> diag;
+  SparsityStatic<nnz_next, dim_next_, dim_start> next;
+  SparsityStatic<nnz_outer, dim_outer_, dim_start> outer;
   PermutationStatic<dim_start> permutation = PermutationIdentity{};
 };
 
@@ -43,16 +43,19 @@ template <class Diag, class Next, class Outer,
           class PermutationIn = PermutationIdentity>
 SparsityToFactorizeStart(Diag, Next, Outer,
                          PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeStart<
-        ctad_t<Sparsity, Diag>::numRows(), ctad_t<Sparsity, Next>::numRows(),
-        ctad_t<Sparsity, Outer>::numRows(), ctad_t<Sparsity, Diag>::nnz(),
-        ctad_t<Sparsity, Next>::nnz(), ctad_t<Sparsity, Outer>::nnz()>;
+    -> SparsityToFactorizeStart<ctad_t<SparsityStatic, Diag>::numRows(),
+                                ctad_t<SparsityStatic, Next>::numRows(),
+                                ctad_t<SparsityStatic, Outer>::numRows(),
+                                ctad_t<SparsityStatic, Diag>::nnz(),
+                                ctad_t<SparsityStatic, Next>::nnz(),
+                                ctad_t<SparsityStatic, Outer>::nnz()>;
 
 template <std::size_t dim_start, std::size_t dim_next, std::size_t dim_outer>
 constexpr auto makeEmptySparsityToFactorizeStart() {
-  return SparsityToFactorizeStart{makeEmptySparsity<dim_start, dim_start>(),
-                                  makeEmptySparsity<dim_next, dim_start>(),
-                                  makeEmptySparsity<dim_outer, dim_start>()};
+  return SparsityToFactorizeStart{
+      makeEmptySparsityStatic<dim_start, dim_start>(),
+      makeEmptySparsityStatic<dim_next, dim_start>(),
+      makeEmptySparsityStatic<dim_outer, dim_start>()};
 }
 
 }  // namespace ctldl

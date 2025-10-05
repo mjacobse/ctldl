@@ -15,9 +15,9 @@ template <auto sparsity,
 constexpr auto getFilledInSparsity() {
   static_assert(isSquare(sparsity));
   constexpr auto dim = std::size_t{sparsity.numRows()};
-  return makeSparsity<dim, dim>(
-      getEntriesWithFill<SparsityCSR(
-          getSparsityLowerTriangle<sparsity>(permutation))>());
+  return makeSparsityStatic<dim, dim>(
+      getEntriesWithFill<SparsityStaticCSR(
+          getSparsityStaticLowerTriangle<sparsity>(permutation))>());
 }
 
 }  // namespace ctldl

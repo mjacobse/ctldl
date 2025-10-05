@@ -82,7 +82,7 @@ void mtxAddEntryLink(const MtxEntry entry, Matrix& matrix) {
 
 template <auto sparsity_in>
 struct MtxInputMatrix {
-  static constexpr auto sparsity = SparsityCSR(sparsity_in);
+  static constexpr auto sparsity = SparsityStaticCSR(sparsity_in);
   std::array<double, sparsity.nnz()> values = {};
   double valueAt(const std::size_t entry_index) const {
     return values[entry_index];

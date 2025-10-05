@@ -1,24 +1,18 @@
 #pragma once
 
-#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
-
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <cstddef>
 #include <limits>
+#include <vector>
 
 
 namespace ctldl {
 
-template <std::size_t dim>
 struct EliminationTree {
   static constexpr auto no_parent = std::numeric_limits<std::size_t>::max();
 
-  constexpr EliminationTree() {
-    fixInitIfZeroLengthArray(parent);
-    std::ranges::fill(parent, no_parent);
-  };
+  constexpr EliminationTree(const std::size_t dim) : parent(dim, no_parent) {};
 
   constexpr bool hasParent(const std::size_t node) const {
     return parent[node] != no_parent;
@@ -29,12 +23,11 @@ struct EliminationTree {
     return parent[node];
   }
 
-  std::array<std::size_t, dim> parent;
+  std::vector<std::size_t> parent;
 };
 
-template <std::size_t dim>
-constexpr bool operator==(const EliminationTree<dim>& lhs,
-                          const EliminationTree<dim>& rhs) {
+constexpr bool operator==(const EliminationTree& lhs,
+                          const EliminationTree& rhs) {
   return std::ranges::equal(lhs.parent, rhs.parent);
 }
 

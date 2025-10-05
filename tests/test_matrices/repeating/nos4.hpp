@@ -15,7 +15,7 @@ struct TestMatrixNos4A {
 
   class Matrix {
    public:
-    static constexpr auto sparsity = makeSparsity<block_dim, block_dim>({
+    static constexpr auto sparsity = makeSparsityStatic<block_dim, block_dim>({
         {0, 0},
         {1, 0}, {1, 1},
         {2, 0}, {2, 2},
@@ -81,7 +81,7 @@ template <class Value>
 struct TestMatrixNos4B {
   static constexpr int block_dim = 10;
   struct Matrix {
-    static constexpr auto sparsity = makeSparsity<block_dim, block_dim>({
+    static constexpr auto sparsity = makeSparsityStatic<block_dim, block_dim>({
         // empty row
         {1, 1},
         {2, 0}, {2, 1}, {2, 4}, {2, 5},

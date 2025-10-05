@@ -33,25 +33,27 @@ struct SparsityToFactorizeLink {
   static constexpr auto dim_prev = dim_prev_;
   static constexpr auto dim = dim_link;
   static constexpr auto dim_next = dim_next_;
-  Sparsity<nnz_prev, dim_link, dim_prev_> prev;
-  Sparsity<nnz_link, dim_link, dim_link> diag;
-  Sparsity<nnz_next, dim_next_, dim_link> next;
+  SparsityStatic<nnz_prev, dim_link, dim_prev_> prev;
+  SparsityStatic<nnz_link, dim_link, dim_link> diag;
+  SparsityStatic<nnz_next, dim_next_, dim_link> next;
   PermutationStatic<dim_link> permutation = PermutationIdentity{};
 };
 
 template <class Prev, class Diag, class Next,
           class PermutationIn = PermutationIdentity>
 SparsityToFactorizeLink(Prev, Diag, Next, PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeLink<
-        ctad_t<Sparsity, Prev>::numCols(), ctad_t<Sparsity, Diag>::numRows(),
-        ctad_t<Sparsity, Next>::numRows(), ctad_t<Sparsity, Prev>::nnz(),
-        ctad_t<Sparsity, Diag>::nnz(), ctad_t<Sparsity, Next>::nnz()>;
+    -> SparsityToFactorizeLink<ctad_t<SparsityStatic, Prev>::numCols(),
+                               ctad_t<SparsityStatic, Diag>::numRows(),
+                               ctad_t<SparsityStatic, Next>::numRows(),
+                               ctad_t<SparsityStatic, Prev>::nnz(),
+                               ctad_t<SparsityStatic, Diag>::nnz(),
+                               ctad_t<SparsityStatic, Next>::nnz()>;
 
 template <std::size_t dim_prev, std::size_t dim_link, std::size_t dim_next>
 constexpr auto makeEmptySparsityToFactorizeLink() {
-  return SparsityToFactorizeLink{makeEmptySparsity<dim_link, dim_prev>(),
-                                 makeEmptySparsity<dim_link, dim_link>(),
-                                 makeEmptySparsity<dim_next, dim_link>()};
+  return SparsityToFactorizeLink{makeEmptySparsityStatic<dim_link, dim_prev>(),
+                                 makeEmptySparsityStatic<dim_link, dim_link>(),
+                                 makeEmptySparsityStatic<dim_next, dim_link>()};
 }
 
 }  // namespace ctldl

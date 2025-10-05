@@ -1,20 +1,21 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/symbolic/elimination_tree.hpp>
+#include <ctldl/utility/contracts.hpp>
 
-#include <array>
 #include <cstddef>
+#include <span>
 
 namespace ctldl {
 
-template <class Sparsity, std::size_t dim>
-constexpr void addRowEliminationTree(const Sparsity& sparsity,
+constexpr void addRowEliminationTree(const SparsityViewCSR sparsity,
                                      const std::size_t row_index,
-                                     EliminationTree<dim>& tree,
-                                     std::array<std::size_t, dim>& ancestors,
+                                     EliminationTree& tree,
+                                     const std::span<std::size_t> ancestors,
                                      const std::size_t row_offset = 0,
                                      const std::size_t col_offset = 0) {
-  static_assert(dim >= Sparsity::numRows());
+  pre(tree.parent.size() >= sparsity.numRows());
 
   const auto i = row_index + row_offset;
   for (const auto entry : sparsity.rowView(row_index)) {

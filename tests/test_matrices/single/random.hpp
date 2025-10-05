@@ -17,7 +17,7 @@ struct TestMatrixRandom {
   }
 
   struct Matrix {
-    static constexpr auto sparsity = Sparsity(sparsity_in);
+    static constexpr auto sparsity = SparsityStatic(sparsity_in);
     std::array<Value, sparsity.nnz()> values;
     Value valueAt(const std::size_t entry_index) const {
       return values[entry_index];

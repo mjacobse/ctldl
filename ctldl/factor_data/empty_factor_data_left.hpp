@@ -11,7 +11,7 @@ template <class FactorData>
 struct EmptyFactorDataLeft {
   static constexpr auto num_rows = FactorData::sparsity.numRows();
   using Value = typename FactorData::Value;
-  static constexpr auto sparsity = makeEmptySparsityCSR<num_rows, 0>();
+  static constexpr auto sparsity = makeEmptySparsityStaticCSR<num_rows, 0>();
   static constexpr std::array<Value, 0> L{};
   static constexpr auto permutation_row = FactorData::permutation_row;
   static constexpr PermutationStatic<0> permutation_col{};

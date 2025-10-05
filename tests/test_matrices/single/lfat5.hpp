@@ -12,7 +12,7 @@ template <class Value>
 struct TestMatrixLFAT5 {
   static constexpr int dim = 14;
   struct Matrix {
-    static constexpr auto sparsity = makeSparsity<dim, dim>(
+    static constexpr auto sparsity = makeSparsityStatic<dim, dim>(
         {{0, 0},   {3, 0},   {4, 0},   {1, 1},   {5, 1},   {2, 2},
          {6, 2},   {3, 3},   {7, 3},   {8, 3},   {4, 4},   {7, 4},
          {8, 4},   {5, 5},   {9, 5},   {6, 6},   {10, 6},  {7, 7},

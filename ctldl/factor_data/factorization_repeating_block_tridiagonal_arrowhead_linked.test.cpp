@@ -20,29 +20,30 @@ BOOST_AUTO_TEST_CASE(SplinePrepermuted) {
 
   constexpr auto sparsity = SparsityToFactorizeTridiagonalArrowheadLinked{
       SparsityToFactorizeStart{
-          makeEmptySparsity<dim_start, dim_start>(),
-          makeSparsity<dim_tridiag, dim_start>(
+          makeEmptySparsityStatic<dim_start, dim_start>(),
+          makeSparsityStatic<dim_tridiag, dim_start>(
               {{3, 0}, {3, 1}, {4, 1}, {4, 3}, {5, 2}, {5, 3}}),
-          makeEmptySparsity<dim_outer, dim_start>()},
+          makeEmptySparsityStatic<dim_outer, dim_start>()},
       SparsityToFactorizeTridiagonal{
-          makeSparsity<dim_tridiag, dim_tridiag>(
+          makeSparsityStatic<dim_tridiag, dim_tridiag>(
               {{3, 0}, {3, 2}, {4, 2}, {5, 1}, {6, 4}, {6, 5}}),
-          makeSparsity<dim_tridiag, dim_tridiag>(
+          makeSparsityStatic<dim_tridiag, dim_tridiag>(
               {{3, 0}, {3, 2}, {4, 2}, {4, 6}, {5, 1}, {5, 6}})},
-      SparsityToFactorizeLink{makeEmptySparsity<dim_link, dim_tridiag>(),
-                              makeEmptySparsity<dim_link, dim_link>(),
-                              makeEmptySparsity<dim_outer, dim_link>()},
-      SparsityToFactorizeOuter{makeEmptySparsity<dim_outer, dim_tridiag>(),
-                               makeEmptySparsity<dim_outer, dim_outer>()}};
+      SparsityToFactorizeLink{makeEmptySparsityStatic<dim_link, dim_tridiag>(),
+                              makeEmptySparsityStatic<dim_link, dim_link>(),
+                              makeEmptySparsityStatic<dim_outer, dim_link>()},
+      SparsityToFactorizeOuter{
+          makeEmptySparsityStatic<dim_outer, dim_tridiag>(),
+          makeEmptySparsityStatic<dim_outer, dim_outer>()}};
 
   using Factorization =
       FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity, double>;
 
-  constexpr auto diag_correct = makeSparsity<dim_tridiag, dim_tridiag>(
+  constexpr auto diag_correct = makeSparsityStatic<dim_tridiag, dim_tridiag>(
       {{3, 0}, {3, 2}, {4, 2}, {4, 3}, {5, 1}, {5, 3}, {5, 4}, {6, 4}, {6, 5}});
   CTLDL_TEST_STATIC(isSparsityEqual(Factorization::FactorTridiagDiag::sparsity,
                                     diag_correct));
-  constexpr auto subdiag_correct = makeSparsity<dim_tridiag, dim_tridiag>(
+  constexpr auto subdiag_correct = makeSparsityStatic<dim_tridiag, dim_tridiag>(
     {{3, 0},         {3, 2}, {3, 3}, {3, 4}, {3, 5}, {3, 6},
                      {4, 2}, {4, 3}, {4, 4}, {4, 5}, {4, 6},
              {5, 1},                         {5, 5}, {5, 6}});
@@ -63,33 +64,34 @@ BOOST_AUTO_TEST_CASE(Spline) {
 
   constexpr auto sparsity = SparsityToFactorizeTridiagonalArrowheadLinked{
       SparsityToFactorizeStart{
-          makeEmptySparsity<dim_start, dim_start>(),
-          makeSparsity<dim_tridiag, dim_start>(
+          makeEmptySparsityStatic<dim_start, dim_start>(),
+          makeSparsityStatic<dim_tridiag, dim_start>(
               {{0, 0}, {0, 1}, {1, 1}, {1, 3}, {2, 2}, {2, 3}}),
-          makeEmptySparsity<dim_outer, dim_start>(),
+          makeEmptySparsityStatic<dim_outer, dim_start>(),
           permutation_start,
       },
       SparsityToFactorizeTridiagonal{
-          makeSparsity<dim_tridiag, dim_tridiag>(
+          makeSparsityStatic<dim_tridiag, dim_tridiag>(
               {{3, 0}, {4, 0}, {4, 1}, {5, 2}, {6, 1}, {6, 2}}),
-          makeSparsity<dim_tridiag, dim_tridiag>(
+          makeSparsityStatic<dim_tridiag, dim_tridiag>(
               {{0, 3}, {0, 4}, {1, 4}, {1, 6}, {2, 5}, {2, 6}}),
           permutation_tridiag,
       },
-      SparsityToFactorizeLink{makeEmptySparsity<dim_link, dim_tridiag>(),
-                              makeEmptySparsity<dim_link, dim_link>(),
-                              makeEmptySparsity<dim_outer, dim_link>()},
-      SparsityToFactorizeOuter{makeEmptySparsity<dim_outer, dim_tridiag>(),
-                               makeEmptySparsity<dim_outer, dim_outer>()}};
+      SparsityToFactorizeLink{makeEmptySparsityStatic<dim_link, dim_tridiag>(),
+                              makeEmptySparsityStatic<dim_link, dim_link>(),
+                              makeEmptySparsityStatic<dim_outer, dim_link>()},
+      SparsityToFactorizeOuter{
+          makeEmptySparsityStatic<dim_outer, dim_tridiag>(),
+          makeEmptySparsityStatic<dim_outer, dim_outer>()}};
 
   using Factorization =
       FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity, double>;
 
-  constexpr auto diag_correct = makeSparsity<dim_tridiag, dim_tridiag>(
+  constexpr auto diag_correct = makeSparsityStatic<dim_tridiag, dim_tridiag>(
       {{3, 0}, {3, 2}, {4, 2}, {4, 3}, {5, 1}, {5, 3}, {5, 4}, {6, 4}, {6, 5}});
   CTLDL_TEST_STATIC(isSparsityEqual(Factorization::FactorTridiagDiag::sparsity,
                                     diag_correct));
-  constexpr auto subdiag_correct = makeSparsity<dim_tridiag, dim_tridiag>(
+  constexpr auto subdiag_correct = makeSparsityStatic<dim_tridiag, dim_tridiag>(
     {{3, 0},         {3, 2}, {3, 3}, {3, 4}, {3, 5}, {3, 6},
                      {4, 2}, {4, 3}, {4, 4}, {4, 5}, {4, 6},
              {5, 1},                         {5, 5}, {5, 6}});

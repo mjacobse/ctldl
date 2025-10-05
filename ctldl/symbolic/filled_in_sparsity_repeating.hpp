@@ -17,8 +17,8 @@ constexpr auto getFilledInSparsityRepeating() {
   constexpr auto dim = std::size_t{sparsity_in_A.numRows()};
 
   const auto sparsity_filled = getFilledInSparsityRepeatingArrowhead<
-      sparsity_in_A, sparsity_in_B, makeEmptySparsity<0, dim>(), permutation,
-      PermutationStatic<0>{}>();
+      sparsity_in_A, sparsity_in_B, makeEmptySparsityStatic<0, dim>(),
+      permutation, PermutationStatic<0>{}>();
   return RepeatingBlockTridiagonal{sparsity_filled.diag,
                                    sparsity_filled.subdiag};
 };

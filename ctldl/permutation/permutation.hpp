@@ -49,6 +49,13 @@ class PermutationDynamic {
       const std::span<const std::size_t> indices)
       : m_indices(indices.begin(), indices.end()) {}
 
+  constexpr explicit PermutationDynamic(const std::size_t dim)
+      : m_indices([dim] {
+          std::vector<std::size_t> permutation(dim);
+          std::iota(permutation.begin(), permutation.end(), std::size_t{0});
+          return permutation;
+        }()) {}
+
   constexpr const std::vector<std::size_t>& indices() const {
     return m_indices;
   }

@@ -237,11 +237,12 @@ void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
                         const Regularization auto& regularization) {
   static_assert(isChordalBlocked(FactorData11::sparsity, FactorData21::sparsity,
                                  FactorData22::sparsity));
-  static_assert(isSparsitySubsetLowerTriangle<Init22::sparsity>(
-      FactorData22::sparsity, FactorData22::permutation));
-  static_assert(isSparsitySubset(Init21::sparsity, FactorData21::sparsity,
-                                 FactorData21::permutation_row,
-                                 FactorData21::permutation_col));
+  static_assert(isSparsitySubsetLowerTriangle(SparsityStatic(Init22::sparsity),
+                                              FactorData22::sparsity,
+                                              FactorData22::permutation));
+  static_assert(isSparsitySubset(
+      SparsityStatic(Init21::sparsity), FactorData21::sparsity,
+      FactorData21::permutation_row, FactorData21::permutation_col));
   constexpr auto num_rows = std::size_t{FactorData22::sparsity.numRows()};
   factorizeUpLookingImpl(factor11, init21, init22, factor21, factor22,
                          regularization, std::make_index_sequence<num_rows>());
