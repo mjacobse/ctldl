@@ -29,11 +29,11 @@ struct TestMatrixTridiagonal {
         std::array<Entry, std::size_t{nnz()}> ret;
         fixInitIfZeroLengthArray(ret);
         std::size_t entry_index = 0;
-        for (std::size_t i = 0; i < numRows(); ++i) {
+        for (std::size_t i = 0; i < std::size_t{numRows()}; ++i) {
           ret[entry_index] = {i, i, 2.0};
           entry_index += 1;
         }
-        for (std::size_t i = 1; i < numRows(); ++i) {
+        for (std::size_t i = 1; i < std::size_t{numRows()}; ++i) {
           ret[entry_index] = {i, i - 1, -1.0};
           entry_index += 1;
         }
