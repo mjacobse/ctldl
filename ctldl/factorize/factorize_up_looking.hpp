@@ -11,7 +11,7 @@
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/is_sparsity_subset.hpp>
 #include <ctldl/symbolic/is_chordal_blocked.hpp>
-#include <ctldl/utility/make_index_sequence.hpp>
+#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
 #include <utility>
@@ -44,13 +44,6 @@ template <std::size_t entry_index, class FactorData>
   const auto Lij = Lij_scaled / fact.D[j];
   fact.L[entry_index] = Lij;
   return Lij_scaled * Lij;
-}
-
-template <std::size_t... EntryIndices, class FactorData>
-[[gnu::always_inline]] inline auto factorizeUpLookingInnerSelf(
-    FactorData& fact, typename FactorData::Value Di_init,
-    std::index_sequence<EntryIndices...>) {
-  return (Di_init - ... - factorizeUpLookingInnerSelf<EntryIndices>(fact));
 }
 
 /**
@@ -151,29 +144,6 @@ template <std::size_t entry_index, class FactorData11, class FactorData21,
   return Lij_scaled * Lij;
 }
 
-template <std::size_t... EntryIndices, class FactorData11, class FactorData21,
-          class FactorData31, class FactorData32, class FactorData33>
-[[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
-    const FactorData11& factor11, const FactorData21& factor21,
-    FactorData31& factor31, FactorData32& factor32, FactorData33& factor33,
-    typename FactorData33::Value Di_init,
-    std::index_sequence<EntryIndices...>) {
-  return (Di_init - ... -
-          factorizeUpLookingInnerLeft<EntryIndices>(
-              factor11, factor21, factor31, factor32, factor33));
-}
-
-template <std::size_t... EntryIndices, class FactorData11, class FactorData21,
-          class FactorData22>
-[[gnu::always_inline]] inline auto factorizeUpLookingInnerLeft(
-    const FactorData11& factor11, FactorData21& factor21,
-    FactorData22& factor22, typename FactorData22::Value Di_init,
-    std::index_sequence<EntryIndices...>) {
-  return (
-      Di_init - ... -
-      factorizeUpLookingInnerLeft<EntryIndices>(factor11, factor21, factor22));
-}
-
 template <std::size_t i, class FactorData11, class Init21, class Init22,
           class FactorData21, class FactorData22>
 [[gnu::always_inline]] inline void factorizeUpLookingImpl(
@@ -191,26 +161,16 @@ template <std::size_t i, class FactorData11, class Init21, class Init22,
 
   constexpr auto row_begin21 = sparsity21.rowBeginIndices()[i];
   constexpr auto row_end21 = sparsity21.rowBeginIndices()[i + 1];
-  Di = factorizeUpLookingInnerLeft(factor11, factor21, factor22, Di,
-                                   makeIndexSequence<row_begin21, row_end21>());
+  unroll<row_begin21, row_end21>([&](const auto entry_index) {
+    Di -= factorizeUpLookingInnerLeft<entry_index>(factor11, factor21, factor22);
+  });
   constexpr auto row_begin22 = sparsity22.rowBeginIndices()[i];
   constexpr auto row_end22 = sparsity22.rowBeginIndices()[i + 1];
-  Di = factorizeUpLookingInnerSelf(factor22, Di,
-                                   makeIndexSequence<row_begin22, row_end22>());
+  unroll<row_begin22, row_end22>([&](const auto entry_index) {
+    Di -= factorizeUpLookingInnerSelf<entry_index>(factor22);
+  });
   Di = regularization.regularize(Di, i);
   factor22.D[i] = Di;
-}
-
-template <std::size_t... RowIndices, class FactorData11, class Init21,
-          class Init22, class FactorData21, class FactorData22>
-void factorizeUpLookingImpl(const FactorData11& factor11, const Init21& init21,
-                            const Init22& init22, FactorData21& factor21,
-                            FactorData22& factor22,
-                            const Regularization auto& regularization,
-                            std::index_sequence<RowIndices...>) {
-  (factorizeUpLookingImpl<RowIndices>(factor11, init21, init22, factor21,
-                                      factor22, regularization),
-   ...);
 }
 
 /**
@@ -244,8 +204,10 @@ void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
       SparsityStatic(Init21::sparsity), FactorData21::sparsity,
       FactorData21::permutation_row, FactorData21::permutation_col));
   constexpr auto num_rows = std::size_t{FactorData22::sparsity.numRows()};
-  factorizeUpLookingImpl(factor11, init21, init22, factor21, factor22,
-                         regularization, std::make_index_sequence<num_rows>());
+  unroll<0, num_rows>([&](const auto i) {
+    factorizeUpLookingImpl<i>(factor11, init21, init22, factor21, factor22,
+                              regularization);
+  });
 }
 
 /**
@@ -302,26 +264,11 @@ void factorizePartialUpLookingImpl(const FactorData11& factor11,
   auto Di = factor33.D[i];
   constexpr auto row_begin31 = sparsity31.rowBeginIndices()[i];
   constexpr auto row_end31 = sparsity31.rowBeginIndices()[i + 1];
-  Di = factorizeUpLookingInnerLeft(factor11, factor21, factor31, factor32,
-                                   factor33, Di,
-                                   makeIndexSequence<row_begin31, row_end31>());
+  unroll<row_begin31, row_end31>([&](const auto entry_index) {
+    Di -= factorizeUpLookingInnerLeft<entry_index>(factor11, factor21, factor31,
+                                                   factor32, factor33);
+  });
   factor33.D[i] = Di;
-}
-
-template <std::size_t... RowIndices, class FactorData11, class FactorData21,
-          class Init31, class Init32, class Init33, class FactorData31,
-          class FactorData32, class FactorData33>
-void factorizePartialUpLookingImpl(const FactorData11& factor11,
-                                   const FactorData21& factor21,
-                                   const Init31& init31, const Init32& init32,
-                                   const Init33& init33, FactorData31& factor31,
-                                   FactorData32& factor32,
-                                   FactorData33& factor33,
-                                   std::index_sequence<RowIndices...>) {
-  (factorizePartialUpLookingImpl<RowIndices>(factor11, factor21, init31, init32,
-                                             init33, factor31, factor32,
-                                             factor33),
-   ...);
 }
 
 /**
@@ -351,9 +298,10 @@ void factorizePartialUpLooking(const FactorData11& factor11,
                                const Init33& init33, FactorData31& factor31,
                                FactorData32& factor32, FactorData33& factor33) {
   constexpr auto num_rows = std::size_t{FactorData31::sparsity.numRows()};
-  factorizePartialUpLookingImpl(factor11, factor21, init31, init32, init33,
-                                factor31, factor32, factor33,
-                                std::make_index_sequence<num_rows>());
+  unroll<0, num_rows>([&](const auto i) {
+    factorizePartialUpLookingImpl<i>(factor11, factor21, init31, init32, init33,
+                                     factor31, factor32, factor33);
+  });
 }
 
 }  // namespace ctldl

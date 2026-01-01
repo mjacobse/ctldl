@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ctldl/factor_data/empty_factor_data_left.hpp>
-#include <ctldl/utility/make_index_sequence.hpp>
+#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
 
@@ -23,27 +23,6 @@ template <std::size_t i, class FactorData, class ValueSolution, class Vector>
     partial_solution[j_orig] -= static_cast<ValueOut>(fact.L[entry_index_ij]) *
                                 static_cast<ValueOut>(solution_i);
   }
-}
-
-template <std::size_t i, class FactorData, class VectorSolution,
-          class VectorPartialSolution>
-[[gnu::always_inline]] inline void solveBackwardSubstitutionImpl(
-    const FactorData& factor_block, const VectorSolution& solution,
-    VectorPartialSolution&& partial_solution) {
-  constexpr auto i_orig = FactorData::origRowIndex(i);
-  solveBackwardSubstitutionRow<i>(factor_block, solution[i_orig],
-                                  partial_solution);
-}
-
-template <std::size_t... RowIndices, class FactorData, class VectorSolution,
-          class VectorPartialSolution>
-void solveBackwardSubstitutionImpl(const FactorData& factor_block,
-                                   const VectorSolution& solution,
-                                   VectorPartialSolution&& partial_solution,
-                                   std::index_sequence<RowIndices...>) {
-  (solveBackwardSubstitutionImpl<RowIndices>(factor_block, solution,
-                                             partial_solution),
-   ...);
 }
 
 /**
@@ -74,8 +53,11 @@ void solveBackwardSubstitution(const FactorData& factor_block,
                                const VectorSolution& solution,
                                VectorPartialSolution&& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  solveBackwardSubstitutionImpl(factor_block, solution, partial_solution,
-                                makeIndexSequenceReversed<0, num_rows>());
+  unrollReversed<0, num_rows>([&](const auto i) {
+    constexpr auto i_orig = FactorData::origRowIndex(i);
+    solveBackwardSubstitutionRow<i>(factor_block, solution[i_orig],
+                                    partial_solution);
+  });
 }
 
 /**

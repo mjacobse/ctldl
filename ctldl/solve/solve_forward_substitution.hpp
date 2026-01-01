@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctldl/factor_data/empty_factor_data_left.hpp>
+#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
 #include <utility>
@@ -23,28 +24,6 @@ template <std::size_t i, class FactorData, class Vector, class ValueOut>
              static_cast<ValueOut>(solution[j_orig]);
   }
   return value;
-}
-
-template <std::size_t i, class FactorData, class VectorSolution,
-          class VectorPartialSolution>
-[[gnu::always_inline]] inline auto solveForwardSubstitutionImpl(
-    const FactorData& factor_block, const VectorSolution& solution,
-    const VectorPartialSolution& partial_solution) {
-  constexpr auto i_orig = FactorData::origRowIndex(i);
-  return solveForwardSubstitutionRow<i>(factor_block, solution,
-                                        partial_solution[i_orig]);
-}
-
-template <std::size_t... RowIndices, class FactorData, class VectorSolution,
-          class VectorPartialSolution>
-void solveForwardSubstitutionImpl(const FactorData& factor_block,
-                                  const VectorSolution& solution,
-                                  VectorPartialSolution&& partial_solution,
-                                  std::index_sequence<RowIndices...>) {
-  ((partial_solution[FactorData::origRowIndex(RowIndices)] =
-        solveForwardSubstitutionImpl<RowIndices>(factor_block, solution,
-                                                 partial_solution)),
-   ...);
 }
 
 /**
@@ -74,37 +53,11 @@ void solveForwardSubstitution(const FactorData& factor_block,
                               const VectorSolution& solution,
                               VectorPartialSolution&& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  solveForwardSubstitutionImpl(factor_block, solution, partial_solution,
-                               std::make_index_sequence<num_rows>());
-}
-
-template <std::size_t i, class FactorData, class Vector, class FactorDataLeft,
-          class VectorLeft>
-[[gnu::always_inline]] inline auto solveForwardSubstitutionImpl(
-    const FactorData& diag, const Vector& rhs_in_solution_out,
-    const FactorDataLeft& left, const VectorLeft& solution_left) {
-  static_assert(FactorData::sparsity.numRows() ==
-                FactorDataLeft::sparsity.numRows());
-  static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
-
-  constexpr auto i_orig = FactorData::origRowIndex(i);
-  auto solution_i = rhs_in_solution_out[i_orig];
-  solution_i = solveForwardSubstitutionRow<i>(left, solution_left, solution_i);
-  solution_i = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, solution_i);
-  return solution_i;
-}
-
-template <std::size_t... RowIndices, class FactorData, class Vector,
-          class FactorDataLeft, class VectorLeft>
-void solveForwardSubstitutionImpl(const FactorData& diag,
-                                  Vector& rhs_in_solution_out,
-                                  const FactorDataLeft& left,
-                                  const VectorLeft& solution_left,
-                                  std::index_sequence<RowIndices...>) {
-  ((rhs_in_solution_out[FactorData::origRowIndex(RowIndices)] =
-        solveForwardSubstitutionImpl<RowIndices>(diag, rhs_in_solution_out,
-                                                 left, solution_left)),
-   ...);
+  unroll<0, num_rows>([&](const auto i) {
+    constexpr auto i_orig = FactorData::origRowIndex(i);
+    partial_solution[i_orig] = solveForwardSubstitutionRow<i>(
+        factor_block, solution, partial_solution[i_orig]);
+  });
 }
 
 /**
@@ -136,9 +89,18 @@ void solveForwardSubstitution(const FactorData& diag,
                               Vector&& rhs_in_solution_out,
                               const FactorDataLeft& left,
                               const VectorLeft& solution_left) {
+  static_assert(FactorData::sparsity.numRows() ==
+                FactorDataLeft::sparsity.numRows());
+  static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
+
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  solveForwardSubstitutionImpl(diag, rhs_in_solution_out, left, solution_left,
-                               std::make_index_sequence<num_rows>());
+  unroll<0, num_rows>([&](const auto i) {
+    constexpr auto i_orig = FactorData::origRowIndex(i);
+    auto solution_i = rhs_in_solution_out[i_orig];
+    solution_i = solveForwardSubstitutionRow<i>(left, solution_left, solution_i);
+    solution_i = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, solution_i);
+    rhs_in_solution_out[i_orig] = solution_i;
+  });
 }
 
 template <class FactorData, class Vector>
