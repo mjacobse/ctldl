@@ -8,7 +8,6 @@
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
-#include <ctldl/utility/make_index_sequence.hpp>
 
 #include <array>
 #include <cstddef>
