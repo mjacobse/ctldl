@@ -11,8 +11,8 @@
 #include <ctldl/sparsity/get_contributions.hpp>
 #include <ctldl/sparsity/is_sparsity_subset.hpp>
 #include <ctldl/symbolic/is_chordal_blocked.hpp>
-#include <ctldl/utility/make_index_sequence.hpp>
 #include <ctldl/utility/square.hpp>
+#include <ctldl/utility/unroll.hpp>
 
 #include <array>
 #include <cstddef>
@@ -21,7 +21,7 @@
 namespace ctldl {
 
 /**
- * Factorize the entry given by \p entry_index in block \p factor21 (L21) using
+ * Compute the entry given by \p entry_index in block \p factor21 (L21) using
  * the initial values for that block given by \p init21 and the already
  * finished block \p factor11 (L11).
  *
@@ -52,33 +52,29 @@ template <std::size_t entry_index_ij, class FactorData21, class Init21,
   factor21.L[entry_index_ij] = Lij / factor11.D[j];
 }
 
-template <std::size_t... EntryIndices, class FactorData21, class Init21,
-          class FactorData11>
-[[gnu::always_inline]] inline void factorEntryWiseSubdiagonalImplRow(
-    FactorData21& factor21, const Init21& init21, const FactorData11& factor11,
-    std::index_sequence<EntryIndices...>) {
-  (factorEntryWiseSubdiagonalImplRow<EntryIndices>(factor21, init21, factor11),
-   ...);
-}
-
-template <std::size_t i, class FactorData21, class Init21, class FactorData11>
-[[gnu::always_inline]] inline void factorizeEntryWiseSubdiagonalImpl(
-    FactorData21& factor21, const Init21& init21, const FactorData11& factor11) {
+/**
+ * Factorize block \p factor21 (L21) using the initial values for that block
+ * given by \p init21 and the already finished block \p factor11 (L11).
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 *  *   ]
+ * [*  *  *  *  *]
+ */
+template <class FactorData21, class Init21, class FactorData11>
+void factorizeEntryWiseSubdiagonal(FactorData21& factor21, const Init21& init21,
+                                   const FactorData11& factor11) {
   constexpr auto& sparsity21 = FactorData21::sparsity;
-  constexpr auto row_begin = std::size_t{sparsity21.rowBeginIndices()[i]};
-  constexpr auto row_end = std::size_t{sparsity21.rowBeginIndices()[i + 1]};
-  factorEntryWiseSubdiagonalImplRow(factor21, init21, factor11,
-                                    makeIndexSequence<row_begin, row_end>());
-}
-
-template <std::size_t... RowIndices, class FactorData21, class Init21,
-          class FactorData11>
-void factorizeEntryWiseSubdiagonalImpl(FactorData21& factor21,
-                                       const Init21& init21,
-                                       const FactorData11& factor11,
-                                       std::index_sequence<RowIndices...>) {
-  (factorizeEntryWiseSubdiagonalImpl<RowIndices>(factor21, init21, factor11),
-   ...);
+  constexpr auto num_rows = std::size_t{sparsity21.numRows()};
+  unroll<0, num_rows>([&](const auto i) {
+    constexpr auto row_begin = std::size_t{sparsity21.rowBeginIndices()[i]};
+    constexpr auto row_end = std::size_t{sparsity21.rowBeginIndices()[i + 1]};
+    unroll<row_begin, row_end>([&](const auto entry_index_ij) {
+      factorEntryWiseSubdiagonalImplRow<entry_index_ij>(factor21, init21,
+                                                        factor11);
+    });
+  });
 }
 
 template <std::size_t i, class FactorData, class FactorDataDiag>
@@ -111,7 +107,7 @@ template <class FactorData, class FactorDataDiag, std::size_t num_contributions>
 }
 
 /**
- * Factorize the entry given by \p entry_index in block \p factor22 (L22) using
+ * Compute the entry given by \p entry_index in block \p factor22 (L22) using
  * the initial values for that block given by \p init22 and the already finished
  * blocks \p factor11 (L11) and \p factor21 (L21).
  *
@@ -150,47 +146,40 @@ template <std::size_t entry_index_ij, class FactorData22, class Init22,
   return square(Lij) * factor22.D[j];
 }
 
-template <std::size_t... EntryIndices, class FactorData22, class Init22,
-          class FactorData21, class FactorData11>
-[[gnu::always_inline]] inline auto factorizeEntryWiseImplRow(
-    FactorData22& factor22, const Init22& init22, const FactorData21& factor21,
-    const FactorData11& factor11, const typename FactorData22::Value Di_init,
-    std::index_sequence<EntryIndices...>) {
-  return (Di_init - ... -
-          factorizeEntryWiseImplRow<EntryIndices>(factor22, init22, factor21,
-                                                  factor11));
-}
-
-template <std::size_t i, class FactorData22, class Init22, class FactorData21,
+/**
+ * Factorize block \p factor22 (L22) using the initial values for that block
+ * given by \p init22 and the already finished blocks \p factor11 (L11) and
+ * \p factor21 (L21).
+ *
+ * [*            ]
+ * [* L11        ]
+ * [*  *  *      ]
+ * [* L21 * L22  ]
+ * [*  *  *  *  *]
+ */
+template <class FactorData22, class Init22, class FactorData21,
           class FactorData11>
-[[gnu::always_inline]] inline void factorizeEntryWiseImpl(
+[[gnu::always_inline]] inline void factorizeEntryWise(
     FactorData22& factor22, const Init22& init22, const FactorData21& factor21,
     const FactorData11& factor11, const Regularization auto& regularization) {
   constexpr auto& sparsity21 = FactorData21::sparsity;
   constexpr auto& sparsity22 = FactorData22::sparsity;
   static_assert(sparsity22.numRows() == sparsity21.numRows());
+  constexpr auto num_rows = std::size_t{sparsity21.numRows()};
 
-  constexpr auto row_begin = std::size_t{sparsity22.rowBeginIndices()[i]};
-  constexpr auto row_end = std::size_t{sparsity22.rowBeginIndices()[i + 1]};
+  unroll<0, num_rows>([&](const auto i) {
+    constexpr auto row_begin = std::size_t{sparsity22.rowBeginIndices()[i]};
+    constexpr auto row_end = std::size_t{sparsity22.rowBeginIndices()[i + 1]};
 
-  auto Di = getInitialFactorValueD<i>(init22, factor22);
-  Di = applyContributionsRowDiagonal<i>(factor21, factor11, Di);
-  Di = factorizeEntryWiseImplRow(factor22, init22, factor21, factor11, Di,
-                                 makeIndexSequence<row_begin, row_end>());
-  Di = regularization.regularize(Di, i);
-  factor22.D[i] = Di;
-}
-
-template <std::size_t... RowIndices, class FactorData22, class Init22,
-          class FactorData21, class FactorData11>
-void factorizeEntryWiseImpl(FactorData22& factor22, const Init22& init22,
-                            const FactorData21& factor21,
-                            const FactorData11& factor11,
-                            const Regularization auto& regularization,
-                            std::index_sequence<RowIndices...>) {
-  (factorizeEntryWiseImpl<RowIndices>(factor22, init22, factor21, factor11,
-                                      regularization),
-   ...);
+    auto Di = getInitialFactorValueD<i>(init22, factor22);
+    Di = applyContributionsRowDiagonal<i>(factor21, factor11, Di);
+    unroll<row_begin, row_end>([&](auto entry_index_ij) {
+      Di -= factorizeEntryWiseImplRow<entry_index_ij>(factor22, init22,
+                                                      factor21, factor11);
+    });
+    Di = regularization.regularize(Di, i);
+    factor22.D[i] = Di;
+  });
 }
 
 /**
@@ -223,11 +212,8 @@ void factorizeEntryWise(const FactorData11& factor11, const Init21& init21,
   static_assert(isSparsitySubset(
       SparsityStatic(Init21::sparsity), FactorData21::sparsity,
       FactorData21::permutation_row, FactorData21::permutation_col));
-  constexpr auto num_rows = std::size_t{FactorData22::sparsity.numRows()};
-  factorizeEntryWiseSubdiagonalImpl(factor21, init21, factor11,
-                                    std::make_index_sequence<num_rows>());
-  factorizeEntryWiseImpl(factor22, init22, factor21, factor11, regularization,
-                         std::make_index_sequence<num_rows>());
+  factorizeEntryWiseSubdiagonal(factor21, init21, factor11);
+  factorizeEntryWise(factor22, init22, factor21, factor11, regularization);
 }
 
 /**

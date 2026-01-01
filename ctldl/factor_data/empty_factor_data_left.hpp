@@ -1,6 +1,8 @@
 #pragma once
 
 #include <ctldl/permutation/permutation.hpp>
+#include <ctldl/permutation/permuted_entry.hpp>
+#include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/sparsity_csr.hpp>
 
 #include <array>
@@ -22,6 +24,9 @@ struct EmptyFactorDataLeft {
   static constexpr auto origColIndex(const std::size_t factor_col_index) {
     return std::size_t{permutation_col[factor_col_index]};
   }
+  static constexpr Entry origEntry(const Entry factor_entry) {
+    return permutedEntry(factor_entry, permutation_row, permutation_col);
+  };
 };
 
 }  // namespace ctldl
