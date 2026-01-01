@@ -196,7 +196,7 @@ void factorizeEntryWiseImpl(FactorData22& factor22, const Init22& init22,
 /**
  * Factorize blocks \p factor21 (L21) and \p factor22 (L22) using inital values
  * given by \p init21 and \p init22 for those blocks and the already finished
- * block \p factor22 (L11) in an entry-wise way.
+ * block \p factor11 (L11) in an entry-wise way.
  *
  * [*            ]
  * [* L11        ]
