@@ -13,9 +13,10 @@
 #include <ctldl/symbolic/is_chordal_blocked.hpp>
 #include <ctldl/utility/square.hpp>
 
-#include <array>
 #include <cstddef>
+#include <meta>
 #include <ranges>
+#include <span>
 
 namespace ctldl {
 
@@ -42,8 +43,8 @@ template <std::size_t entry_index_ij, class FactorData21, class Init21,
 
   auto Lij = getInitialFactorValueL<entry_index_ij>(init21, factor21);
 
-  static constexpr auto contributions =
-      getContributionsMixed<sparsity11, sparsity21, i, j>();
+  static constexpr auto contributions = std::define_static_array(
+      getContributionsMixed(sparsity11, sparsity21, i, j));
   for (const auto c : contributions) {
     Lij -= factor21.L[c.entry_index_ik] * factor11.L[c.entry_index_jk] *
            factor11.D[c.k];
@@ -92,10 +93,10 @@ template <std::size_t i, class FactorData, class FactorDataDiag>
   return value;
 }
 
-template <class FactorData, class FactorDataDiag, std::size_t num_contributions>
+template <class FactorData, class FactorDataDiag>
 [[gnu::always_inline]] inline auto applyContributions(
     const FactorData& fact, const FactorDataDiag& diag,
-    const std::array<Contribution, num_contributions>& contributions,
+    const std::span<const Contribution> contributions,
     const typename FactorData::Value value_init) {
   auto value = value_init;
   for (const auto c : contributions) {
@@ -132,9 +133,9 @@ template <std::size_t entry_index_ij, class FactorData22, class Init22,
   auto Lij = getInitialFactorValueL<entry_index_ij>(init22, factor22);
 
   static constexpr auto contributions21 =
-      getContributionsRectangular<sparsity21, i, j>();
+      std::define_static_array(getContributionsRectangular(sparsity21, i, j));
   static constexpr auto contributions22 =
-      getContributionsLowerTriangle<sparsity22, i, j>();
+      std::define_static_array(getContributionsLowerTriangle(sparsity22, i, j));
 
   Lij = applyContributions(factor21, factor11, contributions21, Lij);
   Lij = applyContributions(factor22, factor22, contributions22, Lij);

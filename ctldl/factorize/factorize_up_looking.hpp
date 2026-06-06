@@ -13,6 +13,7 @@
 #include <ctldl/symbolic/is_chordal_blocked.hpp>
 
 #include <cstddef>
+#include <meta>
 #include <ranges>
 
 namespace ctldl {
@@ -33,8 +34,8 @@ template <std::size_t entry_index, class FactorData>
   const auto Lij_scaled = fact.L[entry_index];
 
   static constexpr auto influenced_list =
-      getInfluencedListLowerTriangle<i, j, FactorData::sparsity,
-                                     FactorData::sparsity>();
+      std::define_static_array(getInfluencedListLowerTriangle(
+          i, j, FactorData::sparsity, FactorData::sparsity));
   for (const auto influenced : influenced_list) {
     fact.L[influenced.entry_index_target] -=
         fact.L[influenced.entry_index_source] * Lij_scaled;
@@ -69,15 +70,15 @@ template <std::size_t entry_index, class FactorData11, class FactorData21,
 
   const auto Lij_scaled = factor21.L[entry_index];
 
-  static constexpr auto influenced_list21 =
-      getInfluencedList<i, j, FactorData11::sparsity, FactorData21::sparsity>();
+  static constexpr auto influenced_list21 = std::define_static_array(
+      getInfluencedList(i, j, FactorData11::sparsity, FactorData21::sparsity));
   for (const auto influenced : influenced_list21) {
     factor21.L[influenced.entry_index_target] -=
         factor11.L[influenced.entry_index_source] * Lij_scaled;
   }
   static constexpr auto influenced_list22 =
-      getInfluencedListLowerTriangle<i, j, FactorData21::sparsity,
-                                     FactorData22::sparsity>();
+      std::define_static_array(getInfluencedListLowerTriangle(
+          i, j, FactorData21::sparsity, FactorData22::sparsity));
   for (const auto influenced : influenced_list22) {
     factor22.L[influenced.entry_index_target] -=
         factor21.L[influenced.entry_index_source] * Lij_scaled;
@@ -118,21 +119,21 @@ template <std::size_t entry_index, class FactorData11, class FactorData21,
   const auto Lij_scaled = factor31.L[entry_index];
 
   static constexpr auto influenced_list31 =
-      getInfluencedList<i, j, sparsity11, sparsity31>();
+      std::define_static_array(getInfluencedList(i, j, sparsity11, sparsity31));
   for (const auto influenced : influenced_list31) {
     factor31.L[influenced.entry_index_target] -=
         factor11.L[influenced.entry_index_source] * Lij_scaled;
   }
 
   static constexpr auto influenced_list32 =
-      getInfluencedList<i, j, sparsity21, sparsity32>();
+      std::define_static_array(getInfluencedList(i, j, sparsity21, sparsity32));
   for (const auto influenced : influenced_list32) {
     factor32.L[influenced.entry_index_target] -=
         factor21.L[influenced.entry_index_source] * Lij_scaled;
   }
 
-  static constexpr auto influenced_list33 =
-      getInfluencedListLowerTriangle<i, j, sparsity31, sparsity33>();
+  static constexpr auto influenced_list33 = std::define_static_array(
+      getInfluencedListLowerTriangle(i, j, sparsity31, sparsity33));
   for (const auto influenced : influenced_list33) {
     factor33.L[influenced.entry_index_target] -=
         factor31.L[influenced.entry_index_source] * Lij_scaled;

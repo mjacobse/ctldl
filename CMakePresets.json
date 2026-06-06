@@ -6,7 +6,7 @@
             "cacheVariables": {
                 "CMAKE_CXX_STANDARD": "26",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wdouble-promotion -Wformat=2 -Wmissing-declarations -Wnon-virtual-dtor -Wnull-dereference -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Wunused -Wno-c2y-extensions"
+                "CMAKE_CXX_FLAGS": "-freflection -Wall -Wextra -Wpedantic -Wcast-align -Wcast-qual -Wconversion -Wdouble-promotion -Wformat=2 -Wmissing-declarations -Wnon-virtual-dtor -Wnull-dereference -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Wunused -Wno-c2y-extensions"
             }
         }
     ]

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ctldl/sparsity/sparsity.hpp>
-#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <array>
 #include <cstddef>
@@ -42,51 +41,40 @@ constexpr void foreachContributingEntry(const SparsityViewCSR& sparsity,
   }
 }
 
-constexpr auto getNumContributionsMixed(const SparsityViewCSR sparsity,
-                                        const SparsityViewCSR sparsity_below,
-                                        const std::size_t i,
-                                        const std::size_t j,
-                                        const std::size_t column_limit) {
-  std::size_t num = 0;
-  const auto count_contribution = [&num](const std::size_t /*entry_index_ik*/,
-                                         const std::size_t /*entry_index_jk*/,
-                                         const std::size_t /*col_index*/) {
-    num += 1;
-  };
-  foreachContributingEntry(sparsity, sparsity_below, i, j, column_limit,
-                           count_contribution);
-  return num;
-}
-
-template <auto sparsity, auto sparsity_below, std::size_t i, std::size_t j,
-          std::size_t column_limit = std::min(sparsity.numCols(),
-                                              sparsity_below.numCols())>
-constexpr auto getContributionsMixed() {
-  constexpr auto num_contrib =
-      getNumContributionsMixed(sparsity, sparsity_below, i, j, column_limit);
-  std::array<Contribution, num_contrib> contributions;
-  fixInitIfZeroLengthArray(contributions);
-  std::size_t contrib_index = 0;
-  const auto add_contribution = [&contributions, &contrib_index](
+constexpr auto getContributionsMixed(const SparsityViewCSR sparsity,
+                                     const SparsityViewCSR sparsity_below,
+                                     const std::size_t i, const std::size_t j,
+                                     const std::size_t column_limit) {
+  std::vector<Contribution> contributions;
+  const auto add_contribution = [&contributions](
                                     const std::size_t entry_index_ik,
                                     const std::size_t entry_index_jk,
                                     const std::size_t col_index) {
-    contributions[contrib_index] = {entry_index_ik, entry_index_jk, col_index};
-    contrib_index += 1;
+    contributions.push_back({entry_index_ik, entry_index_jk, col_index});
   };
   foreachContributingEntry(sparsity, sparsity_below, i, j, column_limit,
                            add_contribution);
   return contributions;
 }
 
-template <auto sparsity, std::size_t i, std::size_t j>
-constexpr auto getContributionsLowerTriangle() {
-  return getContributionsMixed<sparsity, sparsity, i, j, j>();
+constexpr auto getContributionsMixed(const SparsityViewCSR sparsity,
+                                     const SparsityViewCSR sparsity_below,
+                                     const std::size_t i, const std::size_t j) {
+  return getContributionsMixed(
+      sparsity, sparsity_below, i, j,
+      std::min(sparsity.numCols(), sparsity_below.numCols()));
 }
 
-template <auto sparsity, std::size_t i, std::size_t j>
-constexpr auto getContributionsRectangular() {
-  return getContributionsMixed<sparsity, sparsity, i, j>();
+constexpr auto getContributionsLowerTriangle(const SparsityViewCSR sparsity,
+                                             const std::size_t i,
+                                             const std::size_t j) {
+  return getContributionsMixed(sparsity, sparsity, i, j, j);
+}
+
+constexpr auto getContributionsRectangular(const SparsityViewCSR sparsity,
+                                           const std::size_t i,
+                                           const std::size_t j) {
+  return getContributionsMixed(sparsity, sparsity, i, j);
 }
 
 }  // namespace ctldl
