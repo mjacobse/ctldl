@@ -1,10 +1,9 @@
 #pragma once
 
 #include <ctldl/factor_data/empty_factor_data_left.hpp>
-#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
-#include <utility>
+#include <ranges>
 
 namespace ctldl {
 
@@ -53,11 +52,11 @@ void solveForwardSubstitution(const FactorData& factor_block,
                               const VectorSolution& solution,
                               VectorPartialSolution&& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  unroll<0, num_rows>([&](const auto i) {
+  template for (constexpr auto i : std::views::iota(0uz, num_rows)) {
     constexpr auto i_orig = FactorData::origRowIndex(i);
     partial_solution[i_orig] = solveForwardSubstitutionRow<i>(
         factor_block, solution, partial_solution[i_orig]);
-  });
+  }
 }
 
 /**
@@ -94,13 +93,13 @@ void solveForwardSubstitution(const FactorData& diag,
   static_assert(FactorData::permutation == FactorDataLeft::permutation_row);
 
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  unroll<0, num_rows>([&](const auto i) {
+  template for (constexpr auto i : std::views::iota(0uz, num_rows)) {
     constexpr auto i_orig = FactorData::origRowIndex(i);
     auto solution_i = rhs_in_solution_out[i_orig];
     solution_i = solveForwardSubstitutionRow<i>(left, solution_left, solution_i);
     solution_i = solveForwardSubstitutionRow<i>(diag, rhs_in_solution_out, solution_i);
     rhs_in_solution_out[i_orig] = solution_i;
-  });
+  }
 }
 
 template <class FactorData, class Vector>
