@@ -3,6 +3,7 @@
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/utility/contracts.hpp>
 #include <ctldl/utility/fix_init_if_zero_length_array.hpp>
+#include <ctldl/utility/static_sized_range.hpp>
 
 #include <algorithm>
 #include <array>
@@ -52,10 +53,10 @@ SparsityStatic(const SparsityIn& sparsity_in)
     -> SparsityStatic<std::tuple_size_v<decltype(SparsityIn::entries())>,
                       SparsityIn::numRows(), SparsityIn::numCols()>;
 
-template <std::size_t num_rows, std::size_t num_cols, class Entries>
+template <std::size_t num_rows, std::size_t num_cols,
+          static_sized_range Entries>
 constexpr auto makeSparsityStatic(const Entries& entries) {
-  using std::size;
-  constexpr auto nnz = std::size_t{size(Entries{})};
+  constexpr auto nnz = range_static_size_v<Entries>;
   return SparsityStatic<nnz, num_rows, num_cols>(entries);
 }
 

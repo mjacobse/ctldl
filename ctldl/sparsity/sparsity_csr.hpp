@@ -2,6 +2,7 @@
 
 #include <ctldl/sparsity/get_entries_csr.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
+#include <ctldl/utility/static_sized_range.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -63,7 +64,8 @@ constexpr auto makeSparsityStaticCSR(const SparsityIn& sparsity) {
   return SparsityStaticCSR{makeSparsityStatic(sparsity)};
 }
 
-template <std::size_t num_rows, std::size_t num_cols, class Entries>
+template <std::size_t num_rows, std::size_t num_cols,
+          static_sized_range Entries>
 constexpr auto makeSparsityStaticCSR(const Entries& entries) {
   return SparsityStaticCSR{makeSparsityStatic<num_rows, num_cols>(entries)};
 }
