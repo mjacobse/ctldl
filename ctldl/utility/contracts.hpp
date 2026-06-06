@@ -24,7 +24,7 @@ constexpr void post(bool condition, const std::source_location source_location =
   contractHandlePostconditionViolation(source_location);
 }
 
-constexpr void contract_assert(
+constexpr void contract_assert_(
     bool condition,
     const std::source_location source_location = std::source_location{}) {
   if (condition) {

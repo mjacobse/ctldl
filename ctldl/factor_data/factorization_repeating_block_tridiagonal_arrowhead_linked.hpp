@@ -143,14 +143,14 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
   void checkNumRepetitionsClassInvariant(
       std::source_location source_location =
           std::source_location::current()) const {
-    contract_assert(numRepetitions() < std::numeric_limits<std::size_t>::max(),
-                    source_location);
-    contract_assert(m_data.tridiag.diag.size() == numRepetitions() + 1,
-                    source_location);
-    contract_assert(m_data.tridiag.subdiag.size() == numRepetitions(),
-                    source_location);
-    contract_assert(m_data.outer.subdiag.size() == numRepetitions() + 1,
-                    source_location);
+    contract_assert_(numRepetitions() < std::numeric_limits<std::size_t>::max(),
+                     source_location);
+    contract_assert_(m_data.tridiag.diag.size() == numRepetitions() + 1,
+                     source_location);
+    contract_assert_(m_data.tridiag.subdiag.size() == numRepetitions(),
+                     source_location);
+    contract_assert_(m_data.outer.subdiag.size() == numRepetitions() + 1,
+                     source_location);
   }
 
   auto numRepetitions() const noexcept { return m_data.tridiag.subdiag.size(); }

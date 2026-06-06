@@ -26,7 +26,7 @@ constexpr auto getRowBeginIndices(
   pre(row_counts.size() < std::numeric_limits<std::size_t>::max());
 
   std::vector<std::size_t> row_begin_indices(row_counts.size() + 1);
-  contract_assert(!row_begin_indices.empty());
+  contract_assert_(!row_begin_indices.empty());
   row_begin_indices[0] = 0;
   std::partial_sum(row_counts.begin(), row_counts.end(),
                    row_begin_indices.begin() + 1);
