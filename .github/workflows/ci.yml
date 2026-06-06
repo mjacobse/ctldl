@@ -9,12 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: gcc:16.1
+
     strategy:
       fail-fast: false
       matrix:
-        compiler:
-          - llvm-22
-          - gcc-16
         build_type:
           - Release
           - Debug
@@ -24,20 +24,17 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Setup Cpp
-      uses: aminya/setup-cpp@v1
-      with:
-        compiler: ${{ matrix.compiler }}
+    - name: Verify compiler
+      run: g++ --version
 
     - name: Install dependencies
-      run: sudo apt-get install libbenchmark-dev libboost-test-dev
+      run: apt-get -y update && apt-get -y install cmake libbenchmark-dev libboost-test-dev
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build --preset default -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+      run: cmake -B ./build --preset default -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
+      run: cmake --build ./build --config ${{matrix.build_type}}
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{matrix.build_type}}
+      run: ctest --test-dir ./build -C ${{matrix.build_type}}

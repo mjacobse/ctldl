@@ -1,10 +1,9 @@
 #pragma once
 
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
-#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
-#include <utility>
+#include <ranges>
 
 namespace ctldl {
 
@@ -21,30 +20,32 @@ template <std::size_t i, class Matrix, class FactorData>
     const Matrix& input, FactorData& fact) {
   constexpr auto row_begin = FactorData::sparsity.rowBeginIndices()[i];
   constexpr auto row_end = FactorData::sparsity.rowBeginIndices()[i + 1];
-  unroll<row_begin, row_end>([&](const auto entry_index) {
+  template for (constexpr auto entry_index :
+                std::views::iota(row_begin, row_end)) {
     using Value = typename FactorData::Value;
     constexpr auto entry_orig =
         FactorData::origEntry(FactorData::sparsity.entries()[entry_index]);
     fact.L[entry_index] = static_cast<Value>(
         getMatrixValueAt<entry_orig.row_index, entry_orig.col_index>(input));
-  });
+  }
 }
 
 template <class Matrix, class FactorData>
 void fillWithOriginalMatrixValues(const Matrix& input, FactorData& fact) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  unroll<0, num_rows>(
-      [&](const auto i) { fillRowWithOriginalMatrixValues<i>(input, fact); });
+  template for (constexpr auto i : std::views::iota(0uz, num_rows)) {
+    fillRowWithOriginalMatrixValues<i>(input, fact);
+  }
 }
 
 template <class Matrix, class FactorData>
 void fillWithOriginalMatrixValuesIncludingDiagonal(const Matrix& input,
                                                    FactorData& fact) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  unroll<0, num_rows>([&](const auto i) {
+  template for (constexpr auto i : std::views::iota(0uz, num_rows)) {
     fillRowWithOriginalMatrixValues<i>(input, fact);
     fillDiagonalWithOriginalMatrixValue<i>(input, fact);
-  });
+  }
 }
 
 }  // namespace ctldl

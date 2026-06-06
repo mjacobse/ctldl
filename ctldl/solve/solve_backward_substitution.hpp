@@ -1,9 +1,9 @@
 #pragma once
 
 #include <ctldl/factor_data/empty_factor_data_left.hpp>
-#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
+#include <ranges>
 
 namespace ctldl {
 
@@ -53,11 +53,12 @@ void solveBackwardSubstitution(const FactorData& factor_block,
                                const VectorSolution& solution,
                                VectorPartialSolution&& partial_solution) {
   constexpr auto num_rows = std::size_t{FactorData::sparsity.numRows()};
-  unrollReversed<0, num_rows>([&](const auto i) {
+  template for (constexpr auto i :
+                std::views::iota(0uz, num_rows) | std::views::reverse) {
     constexpr auto i_orig = FactorData::origRowIndex(i);
     solveBackwardSubstitutionRow<i>(factor_block, solution[i_orig],
                                     partial_solution);
-  });
+  }
 }
 
 /**

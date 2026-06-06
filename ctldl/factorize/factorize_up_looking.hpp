@@ -11,10 +11,9 @@
 #include <ctldl/sparsity/get_matrix_value_at.hpp>
 #include <ctldl/sparsity/is_sparsity_subset.hpp>
 #include <ctldl/symbolic/is_chordal_blocked.hpp>
-#include <ctldl/utility/unroll.hpp>
 
 #include <cstddef>
-#include <utility>
+#include <ranges>
 
 namespace ctldl {
 
@@ -161,14 +160,16 @@ template <std::size_t i, class FactorData11, class Init21, class Init22,
 
   constexpr auto row_begin21 = sparsity21.rowBeginIndices()[i];
   constexpr auto row_end21 = sparsity21.rowBeginIndices()[i + 1];
-  unroll<row_begin21, row_end21>([&](const auto entry_index) {
+  template for (constexpr auto entry_index :
+                std::views::iota(row_begin21, row_end21)) {
     Di -= factorizeUpLookingInnerLeft<entry_index>(factor11, factor21, factor22);
-  });
+  }
   constexpr auto row_begin22 = sparsity22.rowBeginIndices()[i];
   constexpr auto row_end22 = sparsity22.rowBeginIndices()[i + 1];
-  unroll<row_begin22, row_end22>([&](const auto entry_index) {
+  template for (constexpr auto entry_index :
+                std::views::iota(row_begin22, row_end22)) {
     Di -= factorizeUpLookingInnerSelf<entry_index>(factor22);
-  });
+  }
   Di = regularization.regularize(Di, i);
   factor22.D[i] = Di;
 }
@@ -204,10 +205,10 @@ void factorizeUpLooking(const FactorData11& factor11, const Init21& init21,
       SparsityStatic(Init21::sparsity), FactorData21::sparsity,
       FactorData21::permutation_row, FactorData21::permutation_col));
   constexpr auto num_rows = std::size_t{FactorData22::sparsity.numRows()};
-  unroll<0, num_rows>([&](const auto i) {
+  template for (constexpr auto i : std::views::iota(0uz, num_rows)) {
     factorizeUpLookingImpl<i>(factor11, init21, init22, factor21, factor22,
                               regularization);
-  });
+  }
 }
 
 /**
@@ -264,10 +265,11 @@ void factorizePartialUpLookingImpl(const FactorData11& factor11,
   auto Di = factor33.D[i];
   constexpr auto row_begin31 = sparsity31.rowBeginIndices()[i];
   constexpr auto row_end31 = sparsity31.rowBeginIndices()[i + 1];
-  unroll<row_begin31, row_end31>([&](const auto entry_index) {
+  template for (constexpr auto entry_index :
+                std::views::iota(row_begin31, row_end31)) {
     Di -= factorizeUpLookingInnerLeft<entry_index>(factor11, factor21, factor31,
                                                    factor32, factor33);
-  });
+  }
   factor33.D[i] = Di;
 }
 
@@ -298,10 +300,10 @@ void factorizePartialUpLooking(const FactorData11& factor11,
                                const Init33& init33, FactorData31& factor31,
                                FactorData32& factor32, FactorData33& factor33) {
   constexpr auto num_rows = std::size_t{FactorData31::sparsity.numRows()};
-  unroll<0, num_rows>([&](const auto i) {
+  template for (constexpr auto i : std::views::iota(0uz, num_rows)) {
     factorizePartialUpLookingImpl<i>(factor11, factor21, init31, init32, init33,
                                      factor31, factor32, factor33);
-  });
+  }
 }
 
 }  // namespace ctldl
