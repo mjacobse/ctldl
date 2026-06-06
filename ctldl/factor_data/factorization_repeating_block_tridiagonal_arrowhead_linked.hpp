@@ -18,7 +18,7 @@
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 #include <ctldl/sparsity/sparsity_permuted.hpp>
 #include <ctldl/symbolic/filled_in_sparsity_blocked.hpp>
-#include <ctldl/symbolic/filled_in_sparsity_repeating.hpp>
+#include <ctldl/symbolic/filled_in_sparsity_repeating_arrowhead.hpp>
 #include <ctldl/utility/contracts.hpp>
 
 #include <cstddef>
