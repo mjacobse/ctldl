@@ -13,8 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         compiler:
-          - llvm
-          - gcc
+          - llvm-22
+          - gcc-16
         build_type:
           - Release
           - Debug
