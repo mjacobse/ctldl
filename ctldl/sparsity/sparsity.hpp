@@ -11,8 +11,8 @@
 #include <concepts>
 #include <cstddef>
 #include <ranges>
-#include <vector>
 #include <span>
+#include <vector>
 
 namespace ctldl {
 
@@ -41,9 +41,10 @@ struct SparsityStatic {
   }
 
   template <class SparsityIn>
-    requires(std::ranges::input_range<decltype(SparsityIn::entries())> &&
-             std::convertible_to<decltype(SparsityIn::numRows()), std::size_t> &&
-             std::convertible_to<decltype(SparsityIn::numCols()), std::size_t>)
+    requires(
+        std::ranges::input_range<decltype(SparsityIn::entries())> &&
+        std::convertible_to<decltype(SparsityIn::numRows()), std::size_t> &&
+        std::convertible_to<decltype(SparsityIn::numCols()), std::size_t>)
   constexpr SparsityStatic(const SparsityIn& sparsity_in)
       : SparsityStatic(sparsity_in.entries()) {}
 };
@@ -99,21 +100,10 @@ class SparsityDynamic {
   std::size_t m_num_cols;
 
  public:
-  constexpr const std::vector<Entry>& entries() const {
-    return m_entries;
-  }
-
-  constexpr std::size_t numRows() const {
-    return m_num_rows;
-  }
-
-  constexpr std::size_t numCols() const {
-    return m_num_cols;
-  }
-
-  constexpr std::size_t nnz() const {
-    return m_entries.size();
-  }
+  constexpr const std::vector<Entry>& entries() const { return m_entries; }
+  constexpr std::size_t numRows() const { return m_num_rows; }
+  constexpr std::size_t numCols() const { return m_num_cols; }
+  constexpr std::size_t nnz() const { return m_entries.size(); }
 
   constexpr explicit SparsityDynamic(
       const std::size_t num_rows_, const std::size_t num_cols_,
@@ -140,7 +130,7 @@ constexpr auto makeEmptySparsityDynamic(const std::size_t num_rows,
 }
 
 class SparsityView {
-public:
+ public:
   constexpr SparsityView(const SparsityDynamic& sparsity)
       : m_entries(sparsity.entries()),
         m_num_rows(sparsity.numRows()),
@@ -153,23 +143,12 @@ public:
         m_num_rows(sparsity.numRows()),
         m_num_cols(sparsity.numCols()) {}
 
-  constexpr const std::span<const Entry> entries() const {
-    return m_entries;
-  }
+  constexpr const std::span<const Entry> entries() const { return m_entries; }
+  constexpr std::size_t numRows() const { return m_num_rows; }
+  constexpr std::size_t numCols() const { return m_num_cols; }
+  constexpr std::size_t nnz() const { return m_entries.size(); }
 
-  constexpr std::size_t numRows() const {
-    return m_num_rows;
-  }
-
-  constexpr std::size_t numCols() const {
-    return m_num_cols;
-  }
-
-  constexpr std::size_t nnz() const {
-    return m_entries.size();
-  }
-
-private:
+ private:
   std::span<const Entry> m_entries;
   std::size_t m_num_rows;
   std::size_t m_num_cols;
