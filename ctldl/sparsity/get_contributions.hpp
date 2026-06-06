@@ -2,8 +2,8 @@
 
 #include <ctldl/sparsity/sparsity.hpp>
 
-#include <array>
 #include <cstddef>
+#include <vector>
 
 namespace ctldl {
 
