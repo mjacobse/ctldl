@@ -1,24 +1,11 @@
 #pragma once
 
 #include <ctldl/sparsity/sparsity_csr.hpp>
-#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
-#include <array>
 #include <cstddef>
+#include <vector>
 
 namespace ctldl {
-
-constexpr std::size_t getNumInfluenced(const SparsityViewCSR sparsity_source,
-                                       const std::size_t j,
-                                       const std::size_t k_end) {
-  std::size_t num = 0;
-  for (std::size_t k = 0; k < k_end; ++k) {
-    if (sparsity_source.isNonZero(k, j)) {
-      num += 1;
-    }
-  }
-  return num;
-};
 
 struct Influenced {
   std::size_t entry_index_source;
@@ -49,33 +36,36 @@ struct Influenced {
  * Only considers entries in the target sparsity that are in a column earlier
  * than \p target_column_limit.
  */
-template <std::size_t i, std::size_t j, auto sparsity_source,
-          auto sparsity_target,
-          std::size_t target_column_limit = sparsity_target.numCols()>
-constexpr auto getInfluencedList() {
-  constexpr auto num_influenced =
-      getNumInfluenced(sparsity_source, j, target_column_limit);
-  std::array<Influenced, num_influenced> influenced_list;
-  fixInitIfZeroLengthArray(influenced_list);
-  std::size_t influenced_index = 0;
+constexpr auto getInfluencedList(const std::size_t i, const std::size_t j,
+                                 const SparsityViewCSR sparsity_source,
+                                 const SparsityViewCSR sparsity_target,
+                                 const std::size_t target_column_limit) {
+  std::vector<Influenced> influenced_list;
   for (std::size_t k = 0; k < target_column_limit; ++k) {
     if (sparsity_source.isNonZero(k, j)) {
-      influenced_list[influenced_index] = Influenced{
-          sparsity_source.entryIndex(k, j), sparsity_target.entryIndex(i, k)};
-      influenced_index += 1;
+      influenced_list.push_back(Influenced{sparsity_source.entryIndex(k, j),
+                                           sparsity_target.entryIndex(i, k)});
     }
   }
   return influenced_list;
+}
+
+constexpr auto getInfluencedList(const std::size_t i, const std::size_t j,
+                                 const SparsityViewCSR sparsity_source,
+                                 const SparsityViewCSR sparsity_target) {
+  return getInfluencedList(i, j, sparsity_source, sparsity_target,
+                           sparsity_target.numCols());
 }
 
 /**
  * Same as getInfluencedList(), but limits the influences to those that end up
  * in the lower triangle of the target sparsity.
  */
-template <std::size_t i, std::size_t j, auto sparsity_source,
-          auto sparsity_target>
-constexpr auto getInfluencedListLowerTriangle() {
-  return getInfluencedList<i, j, sparsity_source, sparsity_target, i>();
+constexpr auto getInfluencedListLowerTriangle(
+    const std::size_t i, const std::size_t j,
+    const SparsityViewCSR sparsity_source,
+    const SparsityViewCSR sparsity_target) {
+  return getInfluencedList(i, j, sparsity_source, sparsity_target, i);
 }
 
 }  // namespace ctldl
