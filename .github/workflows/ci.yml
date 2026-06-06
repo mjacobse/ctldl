@@ -9,11 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: gcc:16.1
+
     strategy:
       fail-fast: false
       matrix:
-        compiler:
-          - gcc-16.1
         build_type:
           - Release
           - Debug
@@ -23,10 +24,8 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Setup Cpp
-      uses: aminya/setup-cpp@v1
-      with:
-        compiler: ${{ matrix.compiler }}
+    - name: Verify compiler
+      run: g++ --version
 
     - name: Install dependencies
       run: sudo apt-get install libbenchmark-dev libboost-test-dev
