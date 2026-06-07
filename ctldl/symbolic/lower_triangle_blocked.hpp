@@ -1,31 +1,45 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity.hpp>
+
 namespace ctldl {
 
-template <class T11, class T21, class T22, class T31, class T32, class T33>
+template <class T>
 struct LowerTriangleBlocked3x3 {
-  using Block11 = T11;
-  using Block21 = T21;
-  using Block22 = T22;
-  using Block31 = T31;
-  using Block32 = T32;
-  using Block33 = T33;
-  Block11 block11;
-  Block21 block21;
-  Block22 block22;
-  Block31 block31;
-  Block32 block32;
-  Block33 block33;
+  T block11;
+  T block21;
+  T block22;
+  T block31;
+  T block32;
+  T block33;
 };
 
-template <class T11, class T21, class T22>
+consteval auto defineStaticSparsity(
+    const LowerTriangleBlocked3x3<SparsityDynamic>& sparsity) {
+  return LowerTriangleBlocked3x3{
+      defineStaticSparsity(sparsity.block11),
+      defineStaticSparsity(sparsity.block21),
+      defineStaticSparsity(sparsity.block22),
+      defineStaticSparsity(sparsity.block31),
+      defineStaticSparsity(sparsity.block32),
+      defineStaticSparsity(sparsity.block33),
+  };
+}
+
+template <class T>
 struct LowerTriangleBlocked {
-  using Block11 = T11;
-  using Block21 = T21;
-  using Block22 = T22;
-  Block11 block11;
-  Block21 block21;
-  Block22 block22;
+  T block11;
+  T block21;
+  T block22;
 };
+
+consteval auto defineStaticSparsity(
+    const LowerTriangleBlocked<SparsityDynamic>& sparsity) {
+  return LowerTriangleBlocked{
+      defineStaticSparsity(sparsity.block11),
+      defineStaticSparsity(sparsity.block21),
+      defineStaticSparsity(sparsity.block22),
+  };
+}
 
 }  // namespace ctldl

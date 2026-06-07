@@ -5,19 +5,21 @@
 #include <ctldl/sparsity/sparsity_csr.hpp>
 #include <ctldl/sparsity/sparsity_lower_triangle.hpp>
 #include <ctldl/symbolic/get_entries_with_fill.hpp>
+#include <ctldl/utility/contracts.hpp>
 
 #include <cstddef>
 
 namespace ctldl {
 
-template <auto sparsity,
-          auto permutation = PermutationStatic<sparsity.numRows()>{}>
-constexpr auto getFilledInSparsity() {
-  static_assert(isSquare(sparsity));
-  constexpr auto dim = std::size_t{sparsity.numRows()};
-  return makeSparsityStatic<dim, dim>(
-      getEntriesWithFill<SparsityStaticCSR(
-          getSparsityStaticLowerTriangle<sparsity>(permutation))>());
+constexpr auto getFilledInSparsity(const SparsityView sparsity,
+                                   const PermutationView permutation) {
+  pre(isSquare(sparsity));
+  pre(permutation.size() == sparsity.numRows());
+  const auto dim = std::size_t{sparsity.numRows()};
+  return SparsityDynamic(
+      dim, dim,
+      getEntriesWithFill(SparsityDynamicCSR(
+          getSparsityDynamicLowerTriangle(sparsity, permutation))));
 }
 
 }  // namespace ctldl
