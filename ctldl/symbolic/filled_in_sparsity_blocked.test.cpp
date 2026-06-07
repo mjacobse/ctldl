@@ -13,7 +13,7 @@ namespace {
 
 BOOST_AUTO_TEST_CASE(FilledInSparsityBlockedEmptyTest) {
   constexpr auto empty = makeEmptySparsityStatic<1, 1>();
-  constexpr auto filled = getFilledInSparsityBlocked<empty, empty, empty>();
+  constexpr auto filled = getFilledInSparsityBlocked(empty, empty, empty);
   CTLDL_TEST_SPARSITY_EQUAL(filled.block11, empty);
   CTLDL_TEST_SPARSITY_EQUAL(filled.block21, empty);
   CTLDL_TEST_SPARSITY_EQUAL(filled.block22, empty);
@@ -25,14 +25,15 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityBlockedNos2Test) {
       makeSparsityStatic<3, 3>({{0, 0}, {1, 1}, {1, 2}, {2, 1}, {2, 2}});
   constexpr auto sparsity22 = sparsity11;
 
-  constexpr auto filled =
-      getFilledInSparsityBlocked<sparsity11, sparsity21, sparsity22>();
+  constexpr auto filled = defineStaticSparsity(
+      getFilledInSparsityBlocked(sparsity11, sparsity21, sparsity22));
 
-  constexpr auto expected = LowerTriangleBlocked{
-      sparsity11, sparsity21, makeSparsityStatic<3, 3>({{2, 1}})};
-  CTLDL_TEST_SPARSITY_EQUAL(filled.block11, expected.block11);
-  CTLDL_TEST_SPARSITY_EQUAL(filled.block21, expected.block21);
-  CTLDL_TEST_SPARSITY_EQUAL(filled.block22, expected.block22);
+  constexpr auto expected11 = sparsity11;
+  constexpr auto expected21 = sparsity21;
+  constexpr auto expected22 = makeSparsityStatic<3, 3>({{2, 1}});
+  CTLDL_TEST_SPARSITY_EQUAL(filled.block11, expected11);
+  CTLDL_TEST_SPARSITY_EQUAL(filled.block21, expected21);
+  CTLDL_TEST_SPARSITY_EQUAL(filled.block22, expected22);
 }
 
 }  // anonymous namespace

@@ -15,8 +15,9 @@ namespace ctldl {
 // remember the correct permutation within Factorization.
 template <SparsityStatic sparsity, class Value, PermutationStatic permutation>
 using FactorizationAlreadyPermuted =
-    Factorization<getSparsityStaticLowerTriangle<sparsity>(
-                      invertPermutation(permutation)),
+    Factorization<([:reflectSparsityStatic(
+                         defineStaticSparsity(getSparsityDynamicLowerTriangle(
+                             sparsity, invertPermutation(permutation)))):]),
                   Value, permutation>;
 
 }  // namespace ctldl

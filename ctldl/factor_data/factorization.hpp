@@ -59,7 +59,7 @@ class Factorization {
   }
 
   static constexpr auto sparsity =
-      SparsityStaticCSR(getFilledInSparsity<sparsity_orig, permutation>());
+      defineStaticSparsityCSR(getFilledInSparsity(sparsity_orig, permutation));
   static constexpr auto nnz = std::size_t{sparsity.nnz()};
   static constexpr auto permutation_row = permutation;
   static constexpr auto permutation_col = permutation;
