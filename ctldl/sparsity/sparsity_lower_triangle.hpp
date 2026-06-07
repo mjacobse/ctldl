@@ -4,10 +4,8 @@
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/is_square.hpp>
-#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 #include <ctldl/utility/contracts.hpp>
 
-#include <array>
 #include <cstddef>
 #include <vector>
 
@@ -45,17 +43,6 @@ constexpr auto getSparsityDynamicLowerTriangle(
   pre(isSquare(sparsity));
   return SparsityDynamic(sparsity.numRows(), sparsity.numCols(),
                          getEntriesLowerTriangle(sparsity, permutation));
-}
-
-template <SparsityStatic sparsity>
-constexpr auto getSparsityStaticLowerTriangle(
-    const PermutationView permutation) {
-  constexpr auto nnz = getNnzLowerTriangle(sparsity);
-  std::array<Entry, nnz> entries;
-  fixInitIfZeroLengthArray(entries);
-  std::ranges::copy(getEntriesLowerTriangle(sparsity, permutation),
-                    entries.begin());
-  return SparsityStatic<nnz, sparsity.numRows(), sparsity.numCols()>(entries);
 }
 
 }  // namespace ctldl

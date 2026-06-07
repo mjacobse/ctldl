@@ -1,16 +1,23 @@
 #pragma once
 
+#include <ctldl/sparsity/sparsity.hpp>
+
 namespace ctldl {
 
-template <class Diagonal, class Subdiagonal, class Outer>
+template <class T>
 struct RepeatingBlockTridiagonalArrowhead {
-  Diagonal diag;
-  Subdiagonal subdiag;
-  Outer outer;
+  T diag;
+  T subdiag;
+  T outer;
 };
 
-template <class Diagonal, class Subdiagonal, class Outer>
-RepeatingBlockTridiagonalArrowhead(Diagonal, Subdiagonal, Outer)
-    -> RepeatingBlockTridiagonalArrowhead<Diagonal, Subdiagonal, Outer>;
+consteval auto defineStaticSparsity(
+    const RepeatingBlockTridiagonalArrowhead<SparsityDynamic>& sparsity) {
+  return RepeatingBlockTridiagonalArrowhead{
+      defineStaticSparsity(sparsity.diag),
+      defineStaticSparsity(sparsity.subdiag),
+      defineStaticSparsity(sparsity.outer),
+  };
+}
 
 }  // namespace ctldl

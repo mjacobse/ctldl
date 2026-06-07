@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <meta>
 #include <span>
 
 namespace ctldl {
@@ -142,6 +143,18 @@ class SparsityViewCSR : public SparsityView {
  private:
   std::span<const std::size_t> m_row_begin_indices;
 
+  constexpr SparsityViewCSR(
+      const std::size_t num_rows, const std::size_t num_cols,
+      const std::span<const Entry> entries,
+      const std::span<const std::size_t> row_begin_indices)
+      : SparsityView(num_rows, num_cols, entries),
+        m_row_begin_indices(row_begin_indices) {
+    // TODO: even if we trust our friends, check invariants
+  }
+
+  friend consteval auto defineStaticSparsityCSR(
+      const SparsityDynamicCSR& sparsity);
+
  public:
   constexpr SparsityViewCSR(const SparsityDynamicCSR& sparsity)
       : SparsityView(sparsity),
@@ -177,5 +190,17 @@ class SparsityViewCSR : public SparsityView {
     return static_cast<std::size_t>(find(i, j) - std::cbegin(rowView(0)));
   }
 };
+
+consteval auto defineStaticSparsityCSR(const SparsityDynamicCSR& sparsity) {
+  const auto entries = std::define_static_array(sparsity.entries());
+  const auto row_begin_indices =
+      std::define_static_array(sparsity.rowBeginIndices());
+  return SparsityViewCSR(sparsity.numRows(), sparsity.numCols(), entries,
+                         row_begin_indices);
+}
+
+consteval auto defineStaticSparsityCSR(const SparsityDynamic& sparsity) {
+  return defineStaticSparsityCSR(SparsityDynamicCSR(sparsity));
+}
 
 }  // namespace ctldl

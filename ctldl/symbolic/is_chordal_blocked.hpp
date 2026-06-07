@@ -19,11 +19,11 @@ constexpr bool isChordalBlocked(const SparsityViewCSR sparsity11,
   if (!isLowerTriangle(sparsity11) || !isLowerTriangle(sparsity22)) {
     return false;
   }
-  const auto nnz_filled =
-      getFilledInNumNonZerosBlocked(sparsity11, sparsity21, sparsity22);
-  return nnz_filled.block11 == sparsity11.nnz() &&
-         nnz_filled.block21 == sparsity21.nnz() &&
-         nnz_filled.block22 == sparsity22.nnz();
+  const auto filled =
+      getFilledInSparsityBlocked(sparsity11, sparsity21, sparsity22);
+  return filled.block11.nnz() == sparsity11.nnz() &&
+         filled.block21.nnz() == sparsity21.nnz() &&
+         filled.block22.nnz() == sparsity22.nnz();
 };
 
 }  // namespace ctldl

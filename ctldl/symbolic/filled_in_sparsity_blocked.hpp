@@ -11,121 +11,64 @@
 #include <ctldl/symbolic/foreach_nonzero_with_fill_blocked.hpp>
 #include <ctldl/symbolic/lower_triangle_blocked.hpp>
 
-#include <array>
 #include <cstddef>
+#include <vector>
 
 namespace ctldl {
 
-constexpr auto getFilledInNumNonZerosBlocked3x3(
-    const SparsityViewCSR sparsity11, const SparsityViewCSR sparsity21,
-    const SparsityViewCSR sparsity22, const SparsityViewCSR sparsity31,
-    const SparsityViewCSR sparsity32, const SparsityViewCSR sparsity33) {
-  LowerTriangleBlocked3x3 nnz{std::size_t{0}, std::size_t{0}, std::size_t{0},
-                              std::size_t{0}, std::size_t{0}, std::size_t{0}};
-  const auto count_nonzero = [&](const std::size_t i, const std::size_t j) {
-    if (j < sparsity11.numCols()) {
-      if (i < sparsity11.numRows()) {
-        nnz.block11 += 1;
-      } else if (i < sparsity11.numRows() + sparsity22.numRows()) {
-        nnz.block21 += 1;
-      } else {
-        nnz.block31 += 1;
-      }
-    } else if (j < sparsity11.numCols() + sparsity22.numCols()) {
-      if (i < sparsity11.numRows() + sparsity22.numRows()) {
-        nnz.block22 += 1;
-      } else {
-        nnz.block32 += 1;
-      }
-    } else {
-      nnz.block33 += 1;
-    }
-  };
-  foreachNonZeroWithFillBlocked3x3(sparsity11, sparsity21, sparsity22,
-                                   sparsity31, sparsity32, sparsity33,
-                                   count_nonzero);
-  return nnz;
-}
+constexpr auto getFilledInSparsityBlocked3x3(
+    const SparsityView sparsity11_in, const SparsityView sparsity21_in,
+    const SparsityView sparsity22_in, const SparsityView sparsity31_in,
+    const SparsityView sparsity32_in, const SparsityView sparsity33_in,
+    const PermutationView permutation1, const PermutationView permutation2,
+    const PermutationView permutation3) {
+  pre(isSquare(sparsity11_in));
+  pre(isSquare(sparsity22_in));
+  pre(sparsity21_in.numCols() == sparsity11_in.numCols());
+  pre(sparsity22_in.numRows() == sparsity21_in.numRows());
 
-constexpr auto getFilledInNumNonZerosBlocked(const SparsityViewCSR sparsity11,
-                                             const SparsityViewCSR sparsity21,
-                                             const SparsityViewCSR sparsity22) {
-  const auto sparsity31_dummy =
-      makeEmptySparsityDynamicCSR(0, sparsity11.numCols());
-  const auto sparsity32_dummy =
-      makeEmptySparsityDynamicCSR(0, sparsity22.numCols());
-  const auto sparsity33_dummy = makeEmptySparsityDynamicCSR(0, 0);
-  const auto nnz = getFilledInNumNonZerosBlocked3x3(
-      sparsity11, sparsity21, sparsity22, sparsity31_dummy, sparsity32_dummy,
-      sparsity33_dummy);
-  return LowerTriangleBlocked{nnz.block11, nnz.block21, nnz.block22};
-}
+  const auto sparsity11 = SparsityDynamicCSR(
+      getSparsityDynamicLowerTriangle(sparsity11_in, permutation1));
+  const auto sparsity21 = SparsityDynamicCSR(
+      getSparsityDynamicPermuted(sparsity21_in, permutation2, permutation1));
+  const auto sparsity22 = SparsityDynamicCSR(
+      getSparsityDynamicLowerTriangle(sparsity22_in, permutation2));
+  const auto sparsity31 = SparsityDynamicCSR(
+      getSparsityDynamicPermuted(sparsity31_in, permutation3, permutation1));
+  const auto sparsity32 = SparsityDynamicCSR(
+      getSparsityDynamicPermuted(sparsity32_in, permutation3, permutation2));
+  const auto sparsity33 = SparsityDynamicCSR(
+      getSparsityDynamicLowerTriangle(sparsity33_in, permutation3));
 
-template <auto sparsity11_in, auto sparsity21_in, auto sparsity22_in,
-          auto sparsity31_in, auto sparsity32_in, auto sparsity33_in,
-          auto permutation1 = PermutationStatic<sparsity11_in.numRows()>(),
-          auto permutation2 = PermutationStatic<sparsity22_in.numRows()>(),
-          auto permutation3 = PermutationStatic<sparsity33_in.numRows()>()>
-constexpr auto getFilledInSparsityBlocked3x3() {
-  static_assert(isSquare(sparsity11_in));
-  static_assert(isSquare(sparsity22_in));
-  static_assert(sparsity21_in.numCols() == sparsity11_in.numCols());
-  static_assert(sparsity22_in.numRows() == sparsity21_in.numRows());
-
-  constexpr auto sparsity11 = SparsityStaticCSR(
-      getSparsityStaticLowerTriangle<sparsity11_in>(permutation1));
-  constexpr auto sparsity21 = SparsityStaticCSR(
-      getSparsityStaticPermuted(sparsity21_in, permutation2, permutation1));
-  constexpr auto sparsity22 = SparsityStaticCSR(
-      getSparsityStaticLowerTriangle<sparsity22_in>(permutation2));
-  constexpr auto sparsity31 = SparsityStaticCSR(
-      getSparsityStaticPermuted(sparsity31_in, permutation3, permutation1));
-  constexpr auto sparsity32 = SparsityStaticCSR(
-      getSparsityStaticPermuted(sparsity32_in, permutation3, permutation2));
-  constexpr auto sparsity33 = SparsityStaticCSR(
-      getSparsityStaticLowerTriangle<sparsity33_in>(permutation3));
-
-  constexpr auto nnz = getFilledInNumNonZerosBlocked3x3(
-      sparsity11, sparsity21, sparsity22, sparsity31, sparsity32, sparsity33);
-
-  std::array<Entry, nnz.block11> entries11;
-  std::array<Entry, nnz.block21> entries21;
-  std::array<Entry, nnz.block22> entries22;
-  std::array<Entry, nnz.block31> entries31;
-  std::array<Entry, nnz.block32> entries32;
-  std::array<Entry, nnz.block33> entries33;
-  LowerTriangleBlocked3x3 entry_index{std::size_t{0}, std::size_t{0},
-                                      std::size_t{0}, std::size_t{0},
-                                      std::size_t{0}, std::size_t{0}};
+  std::vector<Entry> entries11;
+  std::vector<Entry> entries21;
+  std::vector<Entry> entries22;
+  std::vector<Entry> entries31;
+  std::vector<Entry> entries32;
+  std::vector<Entry> entries33;
   const auto add_nonzero = [&](const std::size_t i, const std::size_t j) {
     if (j < sparsity11.numCols()) {
       if (i < sparsity11.numRows()) {
-        entries11[entry_index.block11] = Entry{i, j};
-        entry_index.block11 += 1;
+        entries11.push_back(Entry{i, j});
       } else if (i < sparsity11.numRows() + sparsity22.numRows()) {
-        entries21[entry_index.block21] = Entry{i - sparsity11.numRows(), j};
-        entry_index.block21 += 1;
+        entries21.push_back(Entry{i - sparsity11.numRows(), j});
       } else {
-        entries31[entry_index.block31] =
-            Entry{i - sparsity11.numRows() - sparsity22.numRows(), j};
-        entry_index.block31 += 1;
+        entries31.push_back(
+            Entry{i - sparsity11.numRows() - sparsity22.numRows(), j});
       }
     } else if (j < sparsity11.numCols() + sparsity22.numCols()) {
       if (i < sparsity11.numRows() + sparsity22.numRows()) {
-        entries22[entry_index.block22] =
-            Entry{i - sparsity11.numRows(), j - sparsity11.numCols()};
-        entry_index.block22 += 1;
+        entries22.push_back(
+            Entry{i - sparsity11.numRows(), j - sparsity11.numCols()});
       } else {
-        entries32[entry_index.block32] =
+        entries32.push_back(
             Entry{i - sparsity11.numRows() - sparsity22.numRows(),
-                  j - sparsity11.numCols()};
-        entry_index.block32 += 1;
+                  j - sparsity11.numCols()});
       }
     } else {
-      entries33[entry_index.block33] =
+      entries33.push_back(
           Entry{i - sparsity11.numRows() - sparsity22.numRows(),
-                j - sparsity11.numCols() - sparsity22.numCols()};
-      entry_index.block33 += 1;
+                j - sparsity11.numCols() - sparsity22.numCols()});
     }
   };
 
@@ -141,30 +84,38 @@ constexpr auto getFilledInSparsityBlocked3x3() {
   sortEntriesRowMajorSorted(entries33);
 
   return LowerTriangleBlocked3x3{
-      makeSparsityStatic<sparsity11.numRows(), sparsity11.numCols()>(entries11),
-      makeSparsityStatic<sparsity21.numRows(), sparsity21.numCols()>(entries21),
-      makeSparsityStatic<sparsity22.numRows(), sparsity22.numCols()>(entries22),
-      makeSparsityStatic<sparsity31.numRows(), sparsity31.numCols()>(entries31),
-      makeSparsityStatic<sparsity32.numRows(), sparsity32.numCols()>(entries32),
-      makeSparsityStatic<sparsity33.numRows(), sparsity33.numCols()>(
-          entries33)};
+      SparsityDynamic(sparsity11.numRows(), sparsity11.numCols(), entries11),
+      SparsityDynamic(sparsity21.numRows(), sparsity21.numCols(), entries21),
+      SparsityDynamic(sparsity22.numRows(), sparsity22.numCols(), entries22),
+      SparsityDynamic(sparsity31.numRows(), sparsity31.numCols(), entries31),
+      SparsityDynamic(sparsity32.numRows(), sparsity32.numCols(), entries32),
+      SparsityDynamic(sparsity33.numRows(), sparsity33.numCols(), entries33)};
 }
 
-template <auto sparsity11, auto sparsity21, auto sparsity22,
-          auto permutation1 = PermutationStatic<sparsity11.numRows()>(),
-          auto permutation2 = PermutationStatic<sparsity22.numRows()>()>
-constexpr auto getFilledInSparsityBlocked() {
-  constexpr auto sparsity31_dummy =
-      makeEmptySparsityStatic<0, sparsity11.numCols()>();
-  constexpr auto sparsity32_dummy =
-      makeEmptySparsityStatic<0, sparsity22.numCols()>();
-  constexpr auto sparsity33_dummy = makeEmptySparsityStatic<0, 0>();
-  constexpr auto permutation3_dummy = PermutationStatic<0>{};
-  const auto sparsity = getFilledInSparsityBlocked3x3<
+constexpr auto getFilledInSparsityBlocked(const SparsityView sparsity11,
+                                          const SparsityView sparsity21,
+                                          const SparsityView sparsity22,
+                                          const PermutationView permutation1,
+                                          const PermutationView permutation2) {
+  const auto sparsity31_dummy =
+      makeEmptySparsityDynamic(0, sparsity11.numCols());
+  const auto sparsity32_dummy =
+      makeEmptySparsityDynamic(0, sparsity22.numCols());
+  const auto sparsity33_dummy = makeEmptySparsityDynamic(0, 0);
+  const auto permutation3_dummy = PermutationDynamic(0);
+  const auto sparsity = getFilledInSparsityBlocked3x3(
       sparsity11, sparsity21, sparsity22, sparsity31_dummy, sparsity32_dummy,
-      sparsity33_dummy, permutation1, permutation2, permutation3_dummy>();
+      sparsity33_dummy, permutation1, permutation2, permutation3_dummy);
   return LowerTriangleBlocked{sparsity.block11, sparsity.block21,
                               sparsity.block22};
+}
+
+constexpr auto getFilledInSparsityBlocked(const SparsityView sparsity11,
+                                          const SparsityView sparsity21,
+                                          const SparsityView sparsity22) {
+  return getFilledInSparsityBlocked(sparsity11, sparsity21, sparsity22,
+                                    PermutationDynamic(sparsity11.numRows()),
+                                    PermutationDynamic(sparsity22.numRows()));
 }
 
 }  // namespace ctldl

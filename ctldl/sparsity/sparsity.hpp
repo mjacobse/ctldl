@@ -10,6 +10,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <meta>
 #include <ranges>
 #include <span>
 #include <vector>
@@ -148,10 +149,48 @@ class SparsityView {
   constexpr std::size_t numCols() const { return m_num_cols; }
   constexpr std::size_t nnz() const { return m_entries.size(); }
 
+ protected:
+  constexpr SparsityView(const std::size_t num_rows, const std::size_t num_cols,
+                         const std::span<const Entry> entries)
+      : m_entries(entries), m_num_rows(num_rows), m_num_cols(num_cols) {
+    pre(std::ranges::all_of(entries, [num_rows, num_cols](const auto entry) {
+      return entry.row_index < num_rows && entry.col_index < num_cols;
+    }));
+  }
+
+  friend consteval auto defineStaticSparsity(const SparsityDynamic& sparsity);
+
  private:
   std::span<const Entry> m_entries;
   std::size_t m_num_rows;
   std::size_t m_num_cols;
 };
+
+consteval auto defineStaticSparsity(const SparsityDynamic& sparsity) {
+  const auto entries = std::define_static_array(sparsity.entries());
+  return SparsityView(sparsity.numRows(), sparsity.numCols(), entries);
+}
+
+namespace detail {
+
+template <std::size_t num_rows, std::size_t num_cols, std::size_t nnz,
+          const Entry* data>
+inline constexpr auto sparsity_static_helper_to_reflect_on =
+    makeSparsityStatic<num_rows, num_cols>(
+        std::span<const Entry, nnz>(data, nnz));
+
+}  // namespace detail
+
+consteval auto reflectSparsityStatic(const SparsityView sparsity) {
+  const std::meta::info num_rows =
+      std::meta::reflect_constant(sparsity.numRows());
+  const std::meta::info num_cols =
+      std::meta::reflect_constant(sparsity.numCols());
+  const std::meta::info nnz = std::meta::reflect_constant(sparsity.nnz());
+  const std::meta::info data =
+      std::meta::reflect_constant(sparsity.entries().data());
+  return std::meta::substitute(^^detail::sparsity_static_helper_to_reflect_on,
+                               {num_rows, num_cols, nnz, data});
+}
 
 }  // namespace ctldl
