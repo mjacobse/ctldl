@@ -7,10 +7,15 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <meta>
+#include <ranges>
+#include <vector>
+
 #define CTLDL_TEST_SPARSITY_EQUAL(sparsity_lhs, sparsity_rhs)         \
   CTLDL_TEST_STATIC(isSparsityEqual((sparsity_lhs), (sparsity_rhs))); \
   {                                                                   \
-    const auto sortedEntries = [](auto entries) {                     \
+    const auto sortedEntries = [](auto entries_init) {                \
+      auto entries = entries_init | std::ranges::to<std::vector>();   \
       sortEntriesRowMajorSorted(entries);                             \
       return entries;                                                 \
     };                                                                \

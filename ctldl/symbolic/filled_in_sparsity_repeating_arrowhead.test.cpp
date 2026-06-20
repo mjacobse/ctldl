@@ -14,9 +14,8 @@ namespace {
 BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadEmptyTest) {
   constexpr auto empty = makeEmptySparsityStatic<1, 1>();
   constexpr PermutationStatic<1> permutation{};
-  constexpr auto filled =
-      getFilledInSparsityRepeatingArrowhead<empty, empty, empty, permutation,
-                                            permutation>();
+  constexpr auto filled = getFilledInSparsityRepeatingArrowhead(
+      empty, empty, empty, permutation, permutation);
   CTLDL_TEST_SPARSITY_EQUAL(filled.outer, empty);
 }
 
@@ -27,8 +26,8 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadFromDiagonalTest) {
   constexpr PermutationStatic<3> permutation{};
   constexpr PermutationStatic<1> permutation_outer{};
   constexpr auto filled =
-      getFilledInSparsityRepeatingArrowhead<sparsity_A, sparsity_B, sparsity_C,
-                                            permutation, permutation_outer>();
+      defineStaticSparsity(getFilledInSparsityRepeatingArrowhead(
+          sparsity_A, sparsity_B, sparsity_C, permutation, permutation_outer));
 
   constexpr auto filled_correct =
       makeSparsityStatic<1, 3>({{0, 0}, {0, 1}, {0, 2}});
@@ -42,8 +41,8 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadFromBothTest) {
   constexpr PermutationStatic<3> permutation{};
   constexpr PermutationStatic<1> permutation_outer{};
   constexpr auto filled =
-      getFilledInSparsityRepeatingArrowhead<sparsity_A, sparsity_B, sparsity_C,
-                                            permutation, permutation_outer>();
+      defineStaticSparsity(getFilledInSparsityRepeatingArrowhead(
+          sparsity_A, sparsity_B, sparsity_C, permutation, permutation_outer));
 
   constexpr auto filled_correct =
       makeSparsityStatic<1, 3>({{0, 0}, {0, 1}, {0, 2}});
@@ -58,8 +57,8 @@ BOOST_AUTO_TEST_CASE(FilledInSparsityRepeatingArrowheadBackwardsTest) {
   constexpr PermutationStatic<4> permutation{};
   constexpr PermutationStatic<1> permutation_outer{};
   constexpr auto filled =
-      getFilledInSparsityRepeatingArrowhead<sparsity_A, sparsity_B, sparsity_C,
-                                            permutation, permutation_outer>();
+      defineStaticSparsity(getFilledInSparsityRepeatingArrowhead(
+          sparsity_A, sparsity_B, sparsity_C, permutation, permutation_outer));
 
   constexpr auto filled_correct =
       makeSparsityStatic<1, 4>({{0, 0}, {0, 1}, {0, 2}, {0, 3}});
