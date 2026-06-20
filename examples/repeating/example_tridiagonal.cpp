@@ -57,8 +57,9 @@ struct MatrixB {
 int main() {
   const int num_repetitions = 20 - 1;
 
-  ctldl::FactorizationRepeatingBlockTridiagonal<MatrixA::sparsity,
-                                                MatrixB::sparsity, double>
+  constexpr ctldl::PermutationStatic<dim> permutation;
+  ctldl::FactorizationRepeatingBlockTridiagonal<
+      MatrixA::sparsity, MatrixB::sparsity, double, permutation>
       factorization(num_repetitions);
 
   const std::vector<MatrixA> matrix_values_A(num_repetitions + 1);

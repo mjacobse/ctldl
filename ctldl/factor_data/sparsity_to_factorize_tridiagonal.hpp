@@ -1,9 +1,9 @@
 #pragma once
 
 #include <ctldl/permutation/permutation.hpp>
-#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
-#include <ctldl/utility/ctad.hpp>
+#include <ctldl/utility/all_equal.hpp>
+#include <ctldl/utility/contracts.hpp>
 
 #include <cstddef>
 
@@ -25,22 +25,20 @@ namespace ctldl {
  * Additionally, a freely choosable symmetric permutation (identical for each
  * block) for efficient factorization is included as well.
  */
-template <std::size_t dim_, std::size_t nnz_diagonal,
-          std::size_t nnz_subdiagonal>
 struct SparsityToFactorizeTridiagonal {
-  static constexpr auto dim = dim_;
-  SparsityStatic<nnz_diagonal, dim, dim> diag;
-  SparsityStatic<nnz_subdiagonal, dim, dim> subdiag;
-  PermutationStatic<dim> permutation = PermutationIdentity{};
-};
+  SparsityViewStructural diag;
+  SparsityViewStructural subdiag;
+  PermutationViewStructural permutation;
 
-template <class SparsityDiag, class SparsitySubdiag,
-          class PermutationIn = PermutationIdentity>
-SparsityToFactorizeTridiagonal(SparsityDiag, SparsitySubdiag,
-                               PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeTridiagonal<
-        ctad_t<SparsityStatic, SparsityDiag>::numRows(),
-        ctad_t<SparsityStatic, SparsityDiag>::nnz(),
-        ctad_t<SparsityStatic, SparsitySubdiag>::nnz()>;
+  constexpr bool has_consistent_dim() const {
+    return all_equal({diag.numRows(), diag.numCols(), subdiag.numRows(),
+                      subdiag.numCols(), permutation.size()});
+  }
+
+  constexpr std::size_t dim() const {
+    pre(has_consistent_dim());
+    return diag.numRows();
+  }
+};
 
 }  // namespace ctldl

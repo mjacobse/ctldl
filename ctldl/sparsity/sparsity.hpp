@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <meta>
@@ -16,6 +15,32 @@
 #include <vector>
 
 namespace ctldl {
+
+namespace detail {
+
+constexpr auto makeEntries(std::ranges::input_range auto&& entries_init) {
+  const auto convert_entry = [](const auto& entry) {
+    return Entry{entry.row_index, entry.col_index};
+  };
+  return entries_init | std::views::transform(convert_entry);
+}
+
+class InBounds {
+ public:
+  constexpr explicit InBounds(const std::size_t num_rows,
+                              const std::size_t num_cols)
+      : m_num_rows(num_rows), m_num_cols(num_cols) {}
+
+  constexpr bool operator()(const auto& entry) {
+    return entry.row_index < m_num_rows && entry.col_index < m_num_cols;
+  }
+
+ private:
+  std::size_t m_num_rows;
+  std::size_t m_num_cols;
+};
+
+}  // namespace detail
 
 template <std::size_t nnz_, std::size_t num_rows_, std::size_t num_cols_>
 struct SparsityStatic {
@@ -32,13 +57,9 @@ struct SparsityStatic {
   constexpr explicit SparsityStatic(
       std::ranges::input_range auto&& entries_init) {
     fixInitIfZeroLengthArray(m_entries_do_not_touch);
-    std::ranges::transform(entries_init, std::begin(m_entries_do_not_touch),
-                           [](const auto& entry) {
-                             return Entry{entry.row_index, entry.col_index};
-                           });
-    assert(std::ranges::all_of(entries(), [](const auto entry) {
-      return entry.row_index < numRows() && entry.col_index < numCols();
-    }));
+    std::ranges::copy(detail::makeEntries(entries_init),
+                      std::begin(m_entries_do_not_touch));
+    pre(std::ranges::all_of(entries(), detail::InBounds{numRows(), numCols()}));
   }
 
   template <class SparsityIn>
@@ -86,16 +107,6 @@ constexpr auto makeEmptySparsityStatic() {
 
 class SparsityDynamic {
  private:
-  static constexpr std::vector<Entry> makeEntries(
-      std::ranges::input_range auto&& entries_init) {
-    const auto entries_transformed =
-        std::views::transform(entries_init, [](const auto& entry) {
-          return Entry{entry.row_index, entry.col_index};
-        });
-    return std::vector<Entry>(entries_transformed.begin(),
-                              entries_transformed.end());
-  }
-
   std::vector<Entry> m_entries;
   std::size_t m_num_rows;
   std::size_t m_num_cols;
@@ -109,7 +120,8 @@ class SparsityDynamic {
   constexpr explicit SparsityDynamic(
       const std::size_t num_rows_, const std::size_t num_cols_,
       std::ranges::input_range auto&& entries_init)
-      : m_entries(makeEntries(entries_init)),
+      : m_entries(detail::makeEntries(entries_init) |
+                  std::ranges::to<std::vector>()),
         m_num_rows(num_rows_),
         m_num_cols(num_cols_) {
     pre(std::ranges::all_of(
@@ -153,12 +165,11 @@ class SparsityView {
   constexpr SparsityView(const std::size_t num_rows, const std::size_t num_cols,
                          const std::span<const Entry> entries)
       : m_entries(entries), m_num_rows(num_rows), m_num_cols(num_cols) {
-    pre(std::ranges::all_of(entries, [num_rows, num_cols](const auto entry) {
-      return entry.row_index < num_rows && entry.col_index < num_cols;
-    }));
+    pre(std::ranges::all_of(entries, detail::InBounds{num_rows, num_cols}));
   }
 
   friend consteval auto defineStaticSparsity(const SparsityView sparsity);
+  friend class SparsityViewStructural;
 
  private:
   std::span<const Entry> m_entries;
@@ -181,16 +192,37 @@ inline constexpr auto sparsity_static_helper_to_reflect_on =
 
 }  // namespace detail
 
-consteval auto reflectSparsityStatic(const SparsityView sparsity) {
-  const std::meta::info num_rows =
-      std::meta::reflect_constant(sparsity.numRows());
-  const std::meta::info num_cols =
-      std::meta::reflect_constant(sparsity.numCols());
-  const std::meta::info nnz = std::meta::reflect_constant(sparsity.nnz());
-  const std::meta::info data =
-      std::meta::reflect_constant(sparsity.entries().data());
-  return std::meta::substitute(^^detail::sparsity_static_helper_to_reflect_on,
-                               {num_rows, num_cols, nnz, data});
-}
+class SparsityViewStructural {
+ public:
+  const Entry* m_entries_data_do_not_touch;
+  std::size_t m_nnz_do_not_touch;
+  std::size_t m_num_rows_do_not_touch;
+  std::size_t m_num_cols_do_not_touch;
+
+  template <class Sparsity>
+  consteval explicit(false) SparsityViewStructural(const Sparsity& sparsity)
+      : m_entries_data_do_not_touch(
+            std::define_static_array(detail::makeEntries(sparsity.entries()))
+                .data()),
+        m_nnz_do_not_touch(std::ranges::size(sparsity.entries())),
+        m_num_rows_do_not_touch(sparsity.numRows()),
+        m_num_cols_do_not_touch(sparsity.numCols()) {
+    pre(std::ranges::all_of(
+        sparsity.entries(),
+        detail::InBounds{sparsity.numRows(), sparsity.numCols()}));
+  }
+
+  constexpr const std::span<const Entry> entries() const {
+    return {m_entries_data_do_not_touch, nnz()};
+  }
+
+  constexpr std::size_t numRows() const { return m_num_rows_do_not_touch; }
+  constexpr std::size_t numCols() const { return m_num_cols_do_not_touch; }
+  constexpr std::size_t nnz() const { return m_nnz_do_not_touch; }
+
+  constexpr operator SparsityView() const {
+    return SparsityView(numRows(), numCols(), entries());
+  }
+};
 
 }  // namespace ctldl

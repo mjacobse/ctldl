@@ -4,6 +4,8 @@
 #include <ctldl/factor_data/sparsity_to_factorize_outer.hpp>
 #include <ctldl/factor_data/sparsity_to_factorize_start.hpp>
 #include <ctldl/factor_data/sparsity_to_factorize_tridiagonal.hpp>
+#include <ctldl/utility/all_equal.hpp>
+#include <ctldl/utility/contracts.hpp>
 
 #include <cstddef>
 
@@ -25,30 +27,36 @@ namespace ctldl {
  * by storing the sparsity of its repeating tridiagonal blocks A and B, its
  * linking blocks C, D and F and its outer blocks E and G.
  */
-template <std::size_t dim_start_, std::size_t dim_tridiag_,
-          std::size_t dim_link_, std::size_t dim_outer_,
-          std::size_t nnz_start_diag, std::size_t nnz_start_tridiag,
-          std::size_t nnz_start_outer, std::size_t nnz_tridiag_diag,
-          std::size_t nnz_tridiag_subdiag, std::size_t nnz_link_tridiag,
-          std::size_t nnz_link_diag, std::size_t nnz_link_outer,
-          std::size_t nnz_outer_subdiagonal, std::size_t nnz_outer_diagonal>
 struct SparsityToFactorizeTridiagonalArrowheadLinked {
-  static constexpr auto dim_start = dim_start_;
-  static constexpr auto dim_tridiag = dim_tridiag_;
-  static constexpr auto dim_link = dim_link_;
-  static constexpr auto dim_outer = dim_outer_;
-  SparsityToFactorizeStart<dim_start_, dim_tridiag_, dim_outer_, nnz_start_diag,
-                           nnz_start_tridiag, nnz_start_outer>
-      start;
-  SparsityToFactorizeTridiagonal<dim_tridiag_, nnz_tridiag_diag,
-                                 nnz_tridiag_subdiag>
-      tridiag;
-  SparsityToFactorizeLink<dim_tridiag_, dim_link_, dim_outer_, nnz_link_tridiag,
-                          nnz_link_diag, nnz_link_outer>
-      link;
-  SparsityToFactorizeOuter<dim_tridiag_, dim_outer_, nnz_outer_subdiagonal,
-                           nnz_outer_diagonal>
-      outer;
+  SparsityToFactorizeStart start;
+  SparsityToFactorizeTridiagonal tridiag;
+  SparsityToFactorizeLink link;
+  SparsityToFactorizeOuter outer;
+
+  constexpr bool has_consistent_dim_tridiag() const {
+    return tridiag.has_consistent_dim() &&
+           all_equal({start.dim_next(), tridiag.dim(), link.dim_prev(),
+                      outer.dim_inner()});
+  }
+
+  constexpr bool has_consistent_dim_outer() const {
+    return outer.has_consistent_dim() &&
+           all_equal({start.dim_outer(), link.dim_next(), outer.dim()});
+  }
+
+  constexpr std::size_t dim_start() const { return start.dim(); }
+
+  constexpr std::size_t dim_tridiag() const {
+    pre(has_consistent_dim_tridiag());
+    return tridiag.dim();
+  }
+
+  constexpr std::size_t dim_link() const { return link.dim(); }
+
+  constexpr std::size_t dim_outer() const {
+    pre(has_consistent_dim_outer());
+    return outer.dim();
+  }
 };
 
 }  // namespace ctldl

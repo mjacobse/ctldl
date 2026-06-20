@@ -4,7 +4,6 @@
 #include <ctldl/factorize/factorize_method.hpp>
 #include <ctldl/factorize/regularization.hpp>
 #include <ctldl/permutation/permutation.hpp>
-#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/permutation/permuted_entry_lower_triangle.hpp>
 #include <ctldl/solve/solve_backward_substitution.hpp>
 #include <ctldl/solve/solve_forward_substitution.hpp>
@@ -20,9 +19,8 @@
 
 namespace ctldl {
 
-template <SparsityStatic sparsity_orig, class Value_,
-          PermutationStatic<sparsity_orig.numRows()> permutation_in =
-              PermutationIdentity{}>
+template <SparsityViewStructural sparsity_orig, class Value_,
+          PermutationViewStructural permutation_in>
 class Factorization {
  public:
   static_assert(isSquare(sparsity_orig));

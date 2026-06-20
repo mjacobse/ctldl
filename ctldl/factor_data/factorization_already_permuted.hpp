@@ -13,11 +13,11 @@ namespace ctldl {
 // We implement that by unpermuting the sparsity and letting the Factorization
 // permute it back again. That way we factorize the correct sparsity and also
 // remember the correct permutation within Factorization.
-template <SparsityStatic sparsity, class Value, PermutationStatic permutation>
+template <SparsityViewStructural sparsity, class Value,
+          PermutationViewStructural permutation>
 using FactorizationAlreadyPermuted =
-    Factorization<([:reflectSparsityStatic(
-                         defineStaticSparsity(getSparsityDynamicLowerTriangle(
-                             sparsity, invertPermutation(permutation)))):]),
+    Factorization<getSparsityDynamicLowerTriangle(
+                      sparsity, invertPermutation(permutation)),
                   Value, permutation>;
 
 }  // namespace ctldl

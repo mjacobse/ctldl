@@ -2,6 +2,8 @@
 
 #include "tests/utility/test_static.hpp"
 
+#include <ctldl/permutation/permutation.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 #include <array>
@@ -23,18 +25,22 @@ BOOST_AUTO_TEST_CASE(SplinePrepermuted) {
           makeEmptySparsityStatic<dim_start, dim_start>(),
           makeSparsityStatic<dim_tridiag, dim_start>(
               {{3, 0}, {3, 1}, {4, 1}, {4, 3}, {5, 2}, {5, 3}}),
-          makeEmptySparsityStatic<dim_outer, dim_start>()},
+          makeEmptySparsityStatic<dim_outer, dim_start>(),
+          PermutationDynamic(dim_start)},
       SparsityToFactorizeTridiagonal{
           makeSparsityStatic<dim_tridiag, dim_tridiag>(
               {{3, 0}, {3, 2}, {4, 2}, {5, 1}, {6, 4}, {6, 5}}),
           makeSparsityStatic<dim_tridiag, dim_tridiag>(
-              {{3, 0}, {3, 2}, {4, 2}, {4, 6}, {5, 1}, {5, 6}})},
+              {{3, 0}, {3, 2}, {4, 2}, {4, 6}, {5, 1}, {5, 6}}),
+          PermutationDynamic(dim_tridiag)},
       SparsityToFactorizeLink{makeEmptySparsityStatic<dim_link, dim_tridiag>(),
                               makeEmptySparsityStatic<dim_link, dim_link>(),
-                              makeEmptySparsityStatic<dim_outer, dim_link>()},
+                              makeEmptySparsityStatic<dim_outer, dim_link>(),
+                              PermutationDynamic(dim_link)},
       SparsityToFactorizeOuter{
           makeEmptySparsityStatic<dim_outer, dim_tridiag>(),
-          makeEmptySparsityStatic<dim_outer, dim_outer>()}};
+          makeEmptySparsityStatic<dim_outer, dim_outer>(),
+          PermutationDynamic(dim_outer)}};
 
   using Factorization =
       FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity, double>;
@@ -79,10 +85,12 @@ BOOST_AUTO_TEST_CASE(Spline) {
       },
       SparsityToFactorizeLink{makeEmptySparsityStatic<dim_link, dim_tridiag>(),
                               makeEmptySparsityStatic<dim_link, dim_link>(),
-                              makeEmptySparsityStatic<dim_outer, dim_link>()},
+                              makeEmptySparsityStatic<dim_outer, dim_link>(),
+                              PermutationDynamic(dim_link)},
       SparsityToFactorizeOuter{
           makeEmptySparsityStatic<dim_outer, dim_tridiag>(),
-          makeEmptySparsityStatic<dim_outer, dim_outer>()}};
+          makeEmptySparsityStatic<dim_outer, dim_outer>(),
+          PermutationDynamic(dim_outer)}};
 
   using Factorization =
       FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity, double>;

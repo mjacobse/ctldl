@@ -27,23 +27,24 @@ void mtxAddEntry(const MtxEntry entry, Matrix& matrix) {
 
 template <auto sparsity, class Matrix>
 void mtxAddEntryStart(const MtxEntry entry, Matrix& matrix) {
-  if (entry.row_index < sparsity.dim) {
+  if (entry.row_index < sparsity.dim()) {
     mtxAddEntry(entry, matrix.diag);
   } else {
-    mtxAddEntry({entry.row_index - sparsity.dim, entry.col_index, entry.value},
-                matrix.next);
+    mtxAddEntry(
+        {entry.row_index - sparsity.dim(), entry.col_index, entry.value},
+        matrix.next);
   }
 }
 
 template <auto sparsity, class Matrix>
 void mtxAddEntryTridiag(const MtxEntry entry, Matrix& matrix) {
-  const std::size_t repetition_index = (entry.col_index / sparsity.dim);
+  const std::size_t repetition_index = (entry.col_index / sparsity.dim());
   const bool is_diagonal_block =
-      (entry.row_index / sparsity.dim == entry.col_index / sparsity.dim);
+      (entry.row_index / sparsity.dim() == entry.col_index / sparsity.dim());
 
   const auto block_entry =
-      MtxEntry{entry.row_index % sparsity.dim, entry.col_index % sparsity.dim,
-               entry.value};
+      MtxEntry{entry.row_index % sparsity.dim(),
+               entry.col_index % sparsity.dim(), entry.value};
   if (is_diagonal_block) {
     mtxAddEntry(block_entry, matrix.diag[repetition_index]);
   } else {
@@ -53,36 +54,36 @@ void mtxAddEntryTridiag(const MtxEntry entry, Matrix& matrix) {
 
 template <auto sparsity, class Matrix>
 void mtxAddEntryOuterSubdiag(const MtxEntry entry, Matrix& matrix) {
-  const std::size_t repetition_index = (entry.col_index / sparsity.dim_inner);
+  const std::size_t repetition_index = (entry.col_index / sparsity.dim_inner());
 
   const auto block_entry =
-      MtxEntry{entry.row_index % sparsity.dim_inner,
-               entry.col_index % sparsity.dim_inner, entry.value};
+      MtxEntry{entry.row_index % sparsity.dim_inner(),
+               entry.col_index % sparsity.dim_inner(), entry.value};
   mtxAddEntry(block_entry, matrix.subdiag[repetition_index]);
 }
 
 template <auto sparsity, class Matrix>
 void mtxAddEntryLink(const MtxEntry entry, Matrix& matrix) {
-  if (entry.col_index < sparsity.dim_prev) {
+  if (entry.col_index < sparsity.dim_prev()) {
     mtxAddEntry(entry, matrix.prev);
     return;
   }
 
-  if (entry.row_index >= sparsity.dim) {
-    mtxAddEntry({entry.row_index - sparsity.dim,
-                 entry.col_index - sparsity.dim_prev, entry.value},
+  if (entry.row_index >= sparsity.dim()) {
+    mtxAddEntry({entry.row_index - sparsity.dim(),
+                 entry.col_index - sparsity.dim_prev(), entry.value},
                 matrix.next);
     return;
   }
 
   mtxAddEntry(
-      {entry.row_index, entry.col_index - sparsity.dim_prev, entry.value},
+      {entry.row_index, entry.col_index - sparsity.dim_prev(), entry.value},
       matrix.diag);
 }
 
 template <auto sparsity_in>
 struct MtxInputMatrix {
-  static constexpr auto sparsity = SparsityStaticCSR(sparsity_in);
+  static constexpr auto sparsity = defineStaticSparsityCSR(sparsity_in);
   std::array<double, sparsity.nnz()> values = {};
   double valueAt(const std::size_t entry_index) const {
     return values[entry_index];
@@ -95,15 +96,15 @@ auto mtxFileReadRepeatingBlockTridiagonalArrowheadLinked(const char* filepath) {
     const auto header = mtxReadHeader(filepath);
     mtxCheck(header.num_rows == header.num_cols, "Matrix must be square");
     const auto num_rows_nonrepeating =
-        sparsity.dim_start + sparsity.dim_link + sparsity.dim_outer;
+        sparsity.dim_start() + sparsity.dim_link() + sparsity.dim_outer();
     mtxCheck(header.num_rows > num_rows_nonrepeating,
              "Matrix dimension must be greater than sum of dimensions of "
              "non-repeating blocks.");
     const auto num_rows_tridiag = header.num_rows - num_rows_nonrepeating;
-    mtxCheck(num_rows_tridiag % sparsity.dim_tridiag == 0,
+    mtxCheck(num_rows_tridiag % sparsity.dim_tridiag() == 0,
              "Dimension of repeating part of matrix must be multiple of "
              "expected repeating block dimension");
-    return (num_rows_tridiag / sparsity.dim_tridiag) - 1;
+    return (num_rows_tridiag / sparsity.dim_tridiag()) - 1;
   }();
 
   MatrixStart start = {
@@ -125,10 +126,10 @@ auto mtxFileReadRepeatingBlockTridiagonalArrowheadLinked(const char* filepath) {
       MtxInputMatrix<sparsity.outer.diag>{},
   };
 
-  constexpr auto tridiag_begin = sparsity.dim_start;
+  constexpr auto tridiag_begin = sparsity.dim_start();
   const auto tridiag_end =
-      tridiag_begin + ((num_repetitions + 1) * sparsity.dim_tridiag);
-  const auto outer_begin = tridiag_end + sparsity.dim_link;
+      tridiag_begin + ((num_repetitions + 1) * sparsity.dim_tridiag());
+  const auto outer_begin = tridiag_end + sparsity.dim_link();
 
   mtxForeachEntry(filepath, [tridiag_end, outer_begin, &start, &tridiag, &link,
                              &outer](const MtxEntry entry) {
@@ -168,7 +169,7 @@ auto mtxFileReadRepeatingBlockTridiagonalArrowheadLinked(const char* filepath) {
       return;
     }
 
-    const auto tridiag_last_block_begin = tridiag_end - sparsity.dim_tridiag;
+    const auto tridiag_last_block_begin = tridiag_end - sparsity.dim_tridiag();
     mtxCheck(entry.col_index >= tridiag_last_block_begin,
              "Entry is not covered by compiled sparsity");
     mtxAddEntryLink<sparsity.link>(

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <ctldl/permutation/permutation.hpp>
-#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
-#include <ctldl/utility/ctad.hpp>
+#include <ctldl/utility/all_equal.hpp>
+#include <ctldl/utility/contracts.hpp>
 
 #include <cstddef>
 
@@ -33,28 +33,30 @@ namespace ctldl {
  *
  * with repeating A.
  */
-template <std::size_t dim_inner_, std::size_t dim_outer,
-          std::size_t nnz_subdiag, std::size_t nnz_diag>
 struct SparsityToFactorizeOuter {
-  static constexpr auto dim = dim_outer;
-  static constexpr auto dim_inner = dim_inner_;
-  SparsityStatic<nnz_subdiag, dim_outer, dim_inner_> subdiag;
-  SparsityStatic<nnz_diag, dim_outer, dim_outer> diag;
-  PermutationStatic<dim_outer> permutation = PermutationIdentity{};
-};
+  SparsityViewStructural subdiag;
+  SparsityViewStructural diag;
+  PermutationViewStructural permutation;
 
-template <class Subdiag, class Diag, class PermutationIn = PermutationIdentity>
-SparsityToFactorizeOuter(Subdiag, Diag, PermutationIn = PermutationIdentity{})
-    -> SparsityToFactorizeOuter<ctad_t<SparsityStatic, Subdiag>::numCols(),
-                                ctad_t<SparsityStatic, Diag>::numRows(),
-                                ctad_t<SparsityStatic, Subdiag>::nnz(),
-                                ctad_t<SparsityStatic, Diag>::nnz()>;
+  constexpr bool has_consistent_dim() const {
+    return all_equal({diag.numRows(), diag.numCols(), subdiag.numRows(),
+                      permutation.size()});
+  }
+
+  constexpr std::size_t dim() const {
+    pre(has_consistent_dim());
+    return diag.numRows();
+  }
+
+  constexpr std::size_t dim_inner() const { return subdiag.numCols(); }
+};
 
 template <std::size_t dim_inner, std::size_t dim_outer>
 constexpr auto makeEmptySparsityToFactorizeOuter() {
   return SparsityToFactorizeOuter{
       makeEmptySparsityStatic<dim_outer, dim_inner>(),
-      makeEmptySparsityStatic<dim_outer, dim_outer>()};
+      makeEmptySparsityStatic<dim_outer, dim_outer>(),
+      PermutationDynamic(dim_outer)};
 }
 
 }  // namespace ctldl

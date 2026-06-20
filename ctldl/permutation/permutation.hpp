@@ -1,11 +1,11 @@
 #pragma once
 
-#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <meta>
 #include <numeric>
 #include <span>
 #include <vector>
@@ -27,9 +27,6 @@ struct PermutationStatic {
   constexpr explicit PermutationStatic(
       const std::array<std::size_t, dim>& permutation)
       : m_indices_do_not_touch(permutation) {}
-
-  constexpr PermutationStatic(const PermutationIdentity)
-      : PermutationStatic() {}
 
   constexpr auto operator[](const std::size_t i) const { return indices()[i]; }
 
@@ -89,11 +86,51 @@ class PermutationView {
 
  private:
   std::span<const std::size_t> m_indices;
+
+  constexpr explicit PermutationView(const std::span<const std::size_t> indices)
+      : m_indices(indices) {
+    // TODO: check invariant
+  }
+
+  friend class PermutationViewStructural;
 };
 
 constexpr bool operator==(const PermutationView lhs,
                           const PermutationView rhs) {
   return std::ranges::equal(lhs, rhs);
 }
+
+class PermutationViewStructural {
+ public:
+  const std::size_t* m_indices_do_not_touch;
+  std::size_t m_size_do_not_touch;
+
+  consteval explicit(false)
+      PermutationViewStructural(const PermutationView permutation)
+      : m_indices_do_not_touch(std::define_static_array(permutation).data()),
+        m_size_do_not_touch(permutation.size()) {}
+
+  consteval explicit(false)
+      PermutationViewStructural(const PermutationDynamic& permutation)
+      : PermutationViewStructural(PermutationView(permutation)) {}
+
+  template <std::size_t dim>
+  consteval explicit(false)
+      PermutationViewStructural(const PermutationStatic<dim>& permutation)
+      : PermutationViewStructural(PermutationView(permutation)) {}
+
+  constexpr std::size_t size() const { return m_size_do_not_touch; }
+
+  constexpr auto operator[](const std::size_t i) const {
+    return m_indices_do_not_touch[i];
+  }
+
+  constexpr auto begin() const { return m_indices_do_not_touch; }
+  constexpr auto end() const { return m_indices_do_not_touch + size(); }
+
+  constexpr operator PermutationView() const {
+    return PermutationView(std::span<const std::size_t>(begin(), end()));
+  }
+};
 
 }  // namespace ctldl

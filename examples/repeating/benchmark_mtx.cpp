@@ -28,10 +28,10 @@ using Factorization =
     ctldl::FactorizationRepeatingBlockTridiagonalArrowheadLinked<sparsity,
                                                                  double>;
 using RightHandSide = ctldl::VectorTridiagonalArrowheadLinked<
-    std::array<double, sparsity.dim_start>,
-    std::vector<std::array<double, sparsity.dim_tridiag>>,
-    std::array<double, sparsity.dim_link>,
-    std::array<double, sparsity.dim_outer>>;
+    std::array<double, sparsity.dim_start()>,
+    std::vector<std::array<double, sparsity.dim_tridiag()>>,
+    std::array<double, sparsity.dim_link()>,
+    std::array<double, sparsity.dim_outer()>>;
 using Matrix =
     decltype(ctldl::mtxFileReadRepeatingBlockTridiagonalArrowheadLinked<
              sparsity>(""));
@@ -91,10 +91,10 @@ void benchmarkSolve(benchmark::State& state, const Matrix& matrix) {
                           factorize_method);
 
   const RightHandSide rhs{
-      getArrayOfOnes<sparsity.dim_start>(),
-      {num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag>()},
-      getArrayOfOnes<sparsity.dim_link>(),
-      getArrayOfOnes<sparsity.dim_outer>()};
+      getArrayOfOnes<sparsity.dim_start()>(),
+      {num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag()>()},
+      getArrayOfOnes<sparsity.dim_link()>(),
+      getArrayOfOnes<sparsity.dim_outer()>()};
   auto rhs_in_solution_out = rhs;
 
   auto factorization_A_data = factorization.data().tridiag.diag.data();
@@ -124,10 +124,10 @@ void benchmarkCombined(benchmark::State& state, const Matrix& matrix) {
   Factorization factorization(num_repetitions);
 
   const RightHandSide rhs{
-      getArrayOfOnes<sparsity.dim_start>(),
-      {num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag>()},
-      getArrayOfOnes<sparsity.dim_link>(),
-      getArrayOfOnes<sparsity.dim_outer>()};
+      getArrayOfOnes<sparsity.dim_start()>(),
+      {num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag()>()},
+      getArrayOfOnes<sparsity.dim_link()>(),
+      getArrayOfOnes<sparsity.dim_outer()>()};
   auto rhs_in_solution_out = rhs;
 
   auto matrix_values_A_data = matrix.tridiag.diag.data();
