@@ -60,11 +60,6 @@ SparsityStaticCSR(const SparsityIn&)
     -> SparsityStaticCSR<SparsityIn::nnz(), SparsityIn::numRows(),
                          SparsityIn::numCols()>;
 
-template <class SparsityIn>
-constexpr auto makeSparsityStaticCSR(const SparsityIn& sparsity) {
-  return SparsityStaticCSR{makeSparsityStatic(sparsity)};
-}
-
 template <std::size_t num_rows, std::size_t num_cols,
           static_sized_range Entries>
 constexpr auto makeSparsityStaticCSR(const Entries& entries) {

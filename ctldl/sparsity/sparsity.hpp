@@ -94,12 +94,6 @@ constexpr auto makeSparsityStatic(const Entry (&entries)[nnz]) {
   return SparsityStatic<nnz, num_rows, num_cols>(entries);
 }
 
-template <class SparsityIn>
-constexpr auto makeSparsityStatic(const SparsityIn& sparsity) {
-  return makeSparsityStatic<SparsityIn::numRows(), SparsityIn::numCols()>(
-      sparsity.entries());
-}
-
 template <std::size_t num_rows, std::size_t num_cols>
 constexpr auto makeEmptySparsityStatic() {
   return makeSparsityStatic<num_rows, num_cols>(std::array<Entry, 0>{});
@@ -181,16 +175,6 @@ consteval auto defineStaticSparsity(const SparsityView sparsity) {
   const auto entries = std::define_static_array(sparsity.entries());
   return SparsityView(sparsity.numRows(), sparsity.numCols(), entries);
 }
-
-namespace detail {
-
-template <std::size_t num_rows, std::size_t num_cols, std::size_t nnz,
-          const Entry* data>
-inline constexpr auto sparsity_static_helper_to_reflect_on =
-    makeSparsityStatic<num_rows, num_cols>(
-        std::span<const Entry, nnz>(data, nnz));
-
-}  // namespace detail
 
 class SparsityViewStructural {
  public:
