@@ -7,6 +7,7 @@
 #include <ctldl/matrix/matrix_start.hpp>
 #include <ctldl/matrix/matrix_tridiagonal.hpp>
 #include <ctldl/matrix/matrix_tridiagonal_arrowhead_linked.hpp>
+#include <ctldl/permutation/permutation.hpp>
 #include <ctldl/sparsity/sparsity.hpp>
 #include <ctldl/vector/vector_tridiagonal_arrowhead_linked.hpp>
 
@@ -23,9 +24,8 @@ namespace ctldl {
 // [   :  :  :    ]
 // [      B  A  B']
 // [         B  A ]
-template <SparsityStatic sparsity_A, SparsityStatic sparsity_B, class Value_,
-          PermutationStatic<sparsity_A.numRows()> permutation_in =
-              PermutationIdentity{}>
+template <SparsityViewStructural sparsity_A, SparsityViewStructural sparsity_B,
+          class Value_, PermutationViewStructural permutation_in>
 class FactorizationRepeatingBlockTridiagonal {
  private:
   static_assert(isSquare(sparsity_A));

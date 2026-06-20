@@ -39,10 +39,10 @@ template <SparsityToFactorizeTridiagonalArrowheadLinked sparsity,
           class Value_>
 class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
  private:
-  static constexpr auto dim_start = std::size_t{sparsity.dim_start};
-  static constexpr auto dim_tridiag = std::size_t{sparsity.dim_tridiag};
-  static constexpr auto dim_link = std::size_t{sparsity.dim_link};
-  static constexpr auto dim_outer = std::size_t{sparsity.dim_outer};
+  static constexpr auto dim_start = std::size_t{sparsity.dim_start()};
+  static constexpr auto dim_tridiag = std::size_t{sparsity.dim_tridiag()};
+  static constexpr auto dim_link = std::size_t{sparsity.dim_link()};
+  static constexpr auto dim_outer = std::size_t{sparsity.dim_outer()};
   static constexpr auto permutation_start = sparsity.start.permutation;
   static constexpr auto permutation_tridiag = sparsity.tridiag.permutation;
   static constexpr auto permutation_link = sparsity.link.permutation;
@@ -88,36 +88,35 @@ class FactorizationRepeatingBlockTridiagonalArrowheadLinked {
 
  public:
   using Value = Value_;
-  using FactorStartDiag = FactorizationAlreadyPermuted<
-      ([:reflectSparsityStatic(sparsity_factor_start_diag):]), Value,
-      permutation_start>;
-  using FactorStartTridiag = FactorizationSubdiagonalBlock<
-      ([:reflectSparsityStatic(sparsity_factor_start_tridiag):]), Value,
-      permutation_tridiag, permutation_start>;
-  using FactorStartOuter = FactorizationSubdiagonalBlock<
-      ([:reflectSparsityStatic(sparsity_factor_start_outer):]), Value,
-      permutation_outer, permutation_start>;
-  using FactorTridiagDiag = FactorizationAlreadyPermuted<
-      ([:reflectSparsityStatic(sparsity_factor.diag):]), Value,
-      permutation_tridiag>;
-  using FactorTridiagSubdiag = FactorizationSubdiagonalBlock<
-      ([:reflectSparsityStatic(sparsity_factor.subdiag):]), Value,
-      permutation_tridiag, permutation_tridiag>;
-  using FactorLinkTridiag = FactorizationSubdiagonalBlock<
-      ([:reflectSparsityStatic(sparsity_factor_link_tridiag):]), Value,
-      permutation_link, permutation_tridiag>;
-  using FactorLinkDiag = FactorizationAlreadyPermuted<
-      ([:reflectSparsityStatic(sparsity_factor_link_diag):]), Value,
-      permutation_link>;
-  using FactorLinkOuter = FactorizationSubdiagonalBlock<
-      ([:reflectSparsityStatic(sparsity_factor_link_outer):]), Value,
-      permutation_outer, permutation_link>;
-  using FactorOuterSubdiag = FactorizationSubdiagonalBlock<
-      ([:reflectSparsityStatic(sparsity_factor.outer):]), Value,
-      permutation_outer, permutation_tridiag>;
-  using FactorOuterDiag = FactorizationAlreadyPermuted<
-      ([:reflectSparsityStatic(sparsity_factor_outer_diag):]), Value,
-      permutation_outer>;
+  using FactorStartDiag =
+      FactorizationAlreadyPermuted<sparsity_factor_start_diag, Value,
+                                   permutation_start>;
+  using FactorStartTridiag =
+      FactorizationSubdiagonalBlock<sparsity_factor_start_tridiag, Value,
+                                    permutation_tridiag, permutation_start>;
+  using FactorStartOuter =
+      FactorizationSubdiagonalBlock<sparsity_factor_start_outer, Value,
+                                    permutation_outer, permutation_start>;
+  using FactorTridiagDiag =
+      FactorizationAlreadyPermuted<sparsity_factor.diag, Value,
+                                   permutation_tridiag>;
+  using FactorTridiagSubdiag =
+      FactorizationSubdiagonalBlock<sparsity_factor.subdiag, Value,
+                                    permutation_tridiag, permutation_tridiag>;
+  using FactorLinkTridiag =
+      FactorizationSubdiagonalBlock<sparsity_factor_link_tridiag, Value,
+                                    permutation_link, permutation_tridiag>;
+  using FactorLinkDiag = FactorizationAlreadyPermuted<sparsity_factor_link_diag,
+                                                      Value, permutation_link>;
+  using FactorLinkOuter =
+      FactorizationSubdiagonalBlock<sparsity_factor_link_outer, Value,
+                                    permutation_outer, permutation_link>;
+  using FactorOuterSubdiag =
+      FactorizationSubdiagonalBlock<sparsity_factor.outer, Value,
+                                    permutation_outer, permutation_tridiag>;
+  using FactorOuterDiag =
+      FactorizationAlreadyPermuted<sparsity_factor_outer_diag, Value,
+                                   permutation_outer>;
 
   using FactorStart =
       MatrixStart<FactorStartDiag, FactorStartTridiag, FactorStartOuter>;

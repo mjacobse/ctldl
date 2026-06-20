@@ -52,10 +52,11 @@ int main(const int argc, const char** argv) {
   Factorization factorization(num_repetitions);
 
   const ctldl::VectorTridiagonalArrowheadLinked rhs{
-      getArrayOfOnes<sparsity.dim_start>(),
-      std::vector{num_repetitions + 1, getArrayOfOnes<sparsity.dim_tridiag>()},
-      getArrayOfOnes<sparsity.dim_link>(),
-      getArrayOfOnes<sparsity.dim_outer>()};
+      getArrayOfOnes<sparsity.dim_start()>(),
+      std::vector{num_repetitions + 1,
+                  getArrayOfOnes<sparsity.dim_tridiag()>()},
+      getArrayOfOnes<sparsity.dim_link()>(),
+      getArrayOfOnes<sparsity.dim_outer()>()};
   auto rhs_in_solution_out = rhs;
 
   for (std::size_t i = 0; i < num_iterations; ++i) {
@@ -70,7 +71,7 @@ int main(const int argc, const char** argv) {
     factorization.solveInPlace(rhs_in_solution_out);
   }
 
-  if (sparsity.dim_start > 0) {
+  if (sparsity.dim_start() > 0) {
     std::printf("------ start ------\n");
     for (const auto v : rhs_in_solution_out.start) {
       std::printf("%f\n", v);
@@ -82,13 +83,13 @@ int main(const int argc, const char** argv) {
       std::printf("%f\n", v);
     }
   }
-  if (sparsity.dim_link > 0) {
+  if (sparsity.dim_link() > 0) {
     std::printf("------ link -------\n");
     for (const auto v : rhs_in_solution_out.link) {
       std::printf("%f\n", v);
     }
   }
-  if (sparsity.dim_outer > 0) {
+  if (sparsity.dim_outer() > 0) {
     std::printf("------ outer ------\n");
     for (const auto v : rhs_in_solution_out.outer) {
       std::printf("%f\n", v);

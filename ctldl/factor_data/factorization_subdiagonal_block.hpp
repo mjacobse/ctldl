@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ctldl/permutation/permutation.hpp>
-#include <ctldl/permutation/permutation_identity.hpp>
 #include <ctldl/permutation/permuted_entry.hpp>
 #include <ctldl/sparsity/entry.hpp>
 #include <ctldl/sparsity/get_contributions.hpp>
@@ -15,14 +14,12 @@
 
 namespace ctldl {
 
-template <SparsityStatic sparsity_in, class Value_,
-          PermutationStatic<sparsity_in.numRows()> permutation_row_in =
-              PermutationIdentity{},
-          PermutationStatic<sparsity_in.numCols()> permutation_col_in =
-              PermutationIdentity{}>
+template <SparsityViewStructural sparsity_in, class Value_,
+          PermutationViewStructural permutation_row_in,
+          PermutationViewStructural permutation_col_in>
 class FactorizationSubdiagonalBlock {
  public:
-  static constexpr auto sparsity = makeSparsityStaticCSR(sparsity_in);
+  static constexpr auto sparsity = defineStaticSparsityCSR(sparsity_in);
   static constexpr auto nnz = std::size_t{sparsity.nnz()};
   static constexpr auto num_rows = std::size_t{sparsity.numRows()};
   static constexpr auto num_cols = std::size_t{sparsity.numCols()};
