@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <random>
+#include <vector>
 
 namespace ctldl {
 namespace {
@@ -18,7 +19,7 @@ BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
       (makeTemplateArgument<TestMatrixNos4A<double>, TestMatrixNos4A<float>>() ^
        makeTemplateArgument<TestMatrixNos4B<double>,
                             TestMatrixNos4B<float>>()) *
-      makeTemplateArgument<TestPermutationNos4>();
+      makeTemplateArgument(std::vector{test_permutation_nos4});
 
   static constexpr auto factorize_value_types =
       makeTemplateArgument<double, float>();

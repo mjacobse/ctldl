@@ -10,6 +10,7 @@
 
 #include <functional>
 #include <random>
+#include <vector>
 
 namespace ctldl {
 namespace {
@@ -19,7 +20,7 @@ BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectSingle)
 BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
   static constexpr auto matrix_permutation_pairs =
       makeTemplateArgument<TestMatrixLFAT5<double>, TestMatrixLFAT5<float>>() *
-      makeTemplateArgument<TestPermutationLFAT5>();
+      makeTemplateArgument(std::vector{test_permutation_lfat5});
 
   static constexpr auto factorize_value_types =
       makeTemplateArgument<double, float>();

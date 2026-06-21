@@ -24,8 +24,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingRandom {
     using PermutationTridiag = ProceduralTestPermutation<seed2, dim>;
 
     TesterMultiplyFactorizeSolveCorrectRepeating<MatrixDiag, MatrixSubdiag,
-                                                 PermutationTridiag, Value,
-                                                 FactorizeMethod>{}(
+                                                 PermutationTridiag::value,
+                                                 Value, FactorizeMethod>{}(
         solution_generator, num_repetitions, value_generator);
   }
 };

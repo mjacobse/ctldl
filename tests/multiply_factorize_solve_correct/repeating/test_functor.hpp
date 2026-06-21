@@ -23,7 +23,8 @@
 namespace ctldl {
 
 template <class TestMatrixA, class TestMatrixB,
-          class PermutationIn, class Value, class FactorizeMethod>
+          PermutationViewStructural permutation, class Value,
+          class FactorizeMethod>
 struct TesterMultiplyFactorizeSolveCorrectRepeating {
   void operator()(const SolutionGenerator& solution_generator,
                   const std::size_t num_repetitions,
@@ -35,7 +36,7 @@ struct TesterMultiplyFactorizeSolveCorrectRepeating {
     static_assert(isSquare(sparsity_B));
     static_assert(sparsity_B.numRows() == sparsity_A.numRows());
     constexpr auto block_dim = std::size_t{sparsity_A.numRows()};
-    constexpr PermutationStatic<block_dim> permutation(PermutationIn::value);
+    static_assert(permutation.size() == block_dim);
 
     const auto matrices_A =
         generateMatrices(TestMatrixA{}, value_generator, num_repetitions + 1);

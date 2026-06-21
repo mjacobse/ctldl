@@ -28,11 +28,11 @@ BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
                            TestMatrixTridiagonal<3, float>,
                            TestMatrixNos2A<double>, TestMatrixNos2A<float>>();
   static constexpr auto permutations_1x1 =
-      makeTemplateArgumentFromTuple(PermutationEnumeration<1>{});
+      makeTemplateArgument(enumeratePermutationsStatic(1));
   static constexpr auto permutations_2x2 =
-      makeTemplateArgumentFromTuple(PermutationEnumeration<2>{});
+      makeTemplateArgument(enumeratePermutationsStatic(2));
   static constexpr auto permutations_3x3 =
-      makeTemplateArgumentFromTuple(PermutationEnumeration<3>{});
+      makeTemplateArgument(enumeratePermutationsStatic(3));
   static constexpr auto matrix_permutation_pairs =
       (matrices_1x1 * permutations_1x1) + (matrices_2x2 * permutations_2x2) +
       (matrices_3x3 * permutations_3x3);

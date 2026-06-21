@@ -118,9 +118,7 @@ struct TestMatrixNos4B {
   }
 };
 
-struct TestPermutationNos4 {
-  static constexpr std::array<std::size_t, TestMatrixNos4A<double>::block_dim>
-      value = {7, 8, 0, 4, 3, 2, 6, 5, 9, 1};
-};
+inline constexpr PermutationViewStructural test_permutation_nos4(
+    PermutationDynamic(std::vector<std::size_t>{7, 8, 0, 4, 3, 2, 6, 5, 9, 1}));
 
 }  // namespace ctldl

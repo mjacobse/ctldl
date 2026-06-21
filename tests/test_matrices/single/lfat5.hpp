@@ -50,9 +50,8 @@ struct TestMatrixLFAT5 {
   }
 };
 
-struct TestPermutationLFAT5 {
-  static constexpr std::array<std::size_t, TestMatrixLFAT5<double>::dim> value =
-      {13, 11, 12, 8, 7, 0, 4, 3, 9, 1, 5, 10, 2, 6};
-};
+inline constexpr PermutationViewStructural test_permutation_lfat5(
+    PermutationDynamic(std::vector<std::size_t>{13, 11, 12, 8, 7, 0, 4, 3, 9, 1,
+                                                5, 10, 2, 6}));
 
 }  // namespace ctldl

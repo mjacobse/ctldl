@@ -2,39 +2,24 @@
 
 #include <ctldl/permutation/factorial.hpp>
 #include <ctldl/permutation/permutation.hpp>
-#include <ctldl/utility/fix_init_if_zero_length_array.hpp>
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
-#include <numeric>
-#include <tuple>
+#include <ranges>
 #include <utility>
+#include <vector>
 
 namespace ctldl {
 
-template <std::size_t dim, std::size_t i>
-struct EnumeratePermutationsHelper {
-  static constexpr std::array<std::size_t, dim> value = [] {
-    std::array<std::size_t, dim> ret;
-    fixInitIfZeroLengthArray(ret);
-    if constexpr (i == 0) {
-      std::iota(ret.begin(), ret.end(), 0);
-    } else {
-      ret = EnumeratePermutationsHelper<dim, i - 1>::value;
-      std::ranges::next_permutation(ret);
-    }
-    return ret;
-  }();
-};
-
-template <std::size_t dim, std::size_t... Is>
-constexpr auto enumeratePermutations(std::index_sequence<Is...>) {
-  return std::make_tuple(EnumeratePermutationsHelper<dim, Is>{}...);
+consteval std::vector<PermutationViewStructural> enumeratePermutationsStatic(
+    const std::size_t dim) {
+  auto current = std::views::iota(0uz, dim) | std::ranges::to<std::vector>();
+  std::vector<PermutationViewStructural> ret;
+  for (std::size_t i = 0; i < factorial(dim); ++i) {
+    ret.push_back(PermutationDynamic(current));
+    std::ranges::next_permutation(current);
+  }
+  return ret;
 }
-
-template <std::size_t dim>
-using PermutationEnumeration = decltype(enumeratePermutations<dim>(
-    std::make_index_sequence<factorial(dim)>()));
 
 }  // namespace ctldl
