@@ -10,14 +10,12 @@
 
 namespace ctldl {
 
-template <class Seed, class Dim, class Value, class FactorizeMethod>
+template <std::size_t seed, std::size_t dim, class Value, class FactorizeMethod>
 struct TesterMultiplyFactorizeSolveCorrectRepeatingRandom {
   void operator()(const SolutionGenerator& solution_generator,
                   const std::size_t num_repetitions,
                   std::mt19937& value_generator) const {
-    constexpr auto dim = Dim::value;
-
-    constexpr auto seed0 = Seed::value;
+    constexpr auto seed0 = seed;
     using MatrixDiag = ProceduralTestMatrixSymmetricT<seed0, dim>;
     constexpr auto seed1 = MatrixDiag::next_generator.state;
     using MatrixSubdiag = ProceduralTestMatrixT<seed1, dim, dim>;
@@ -26,8 +24,8 @@ struct TesterMultiplyFactorizeSolveCorrectRepeatingRandom {
     using PermutationTridiag = ProceduralTestPermutation<seed2, dim>;
 
     TesterMultiplyFactorizeSolveCorrectRepeating<MatrixDiag, MatrixSubdiag,
-                                                 PermutationTridiag, Value,
-                                                 FactorizeMethod>{}(
+                                                 PermutationTridiag::value,
+                                                 Value, FactorizeMethod>{}(
         solution_generator, num_repetitions, value_generator);
   }
 };

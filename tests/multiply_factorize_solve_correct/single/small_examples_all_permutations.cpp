@@ -19,34 +19,41 @@ namespace {
 BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectSingle)
 
 BOOST_AUTO_TEST_CASE(SmallExamplesAllPermutations) {
-  const auto matrices_1x1 =
-      makeTypeArgument<TestMatrixTridiagonal<1, double>>();
-  const auto matrices_2x2 =
-      makeTypeArgument<TestMatrixTridiagonal<2, double>>();
-  const auto matrices_3x3 =
-      makeTypeArgument<TestMatrixTridiagonal<3, double>,
-                       TestMatrixTridiagonal<3, float>,
-                       TestMatrixNos2A<double>,
-                       TestMatrixNos2A<float>>();
-  const auto permutations_1x1 = TypeArgument<PermutationEnumeration<1>>{};
-  const auto permutations_2x2 = TypeArgument<PermutationEnumeration<2>>{};
-  const auto permutations_3x3 = TypeArgument<PermutationEnumeration<3>>{};
-  const auto matrix_permutation_pairs = (matrices_1x1 * permutations_1x1) +
-                                        (matrices_2x2 * permutations_2x2) +
-                                        (matrices_3x3 * permutations_3x3);
+  static constexpr auto matrices_1x1 =
+      makeTemplateArgument<TestMatrixTridiagonal<1, double>>();
+  static constexpr auto matrices_2x2 =
+      makeTemplateArgument<TestMatrixTridiagonal<2, double>>();
+  static constexpr auto matrices_3x3 =
+      makeTemplateArgument<TestMatrixTridiagonal<3, double>,
+                           TestMatrixTridiagonal<3, float>,
+                           TestMatrixNos2A<double>, TestMatrixNos2A<float>>();
+  static constexpr auto permutations_1x1 =
+      makeTemplateArgument(enumeratePermutationsStatic(1));
+  static constexpr auto permutations_2x2 =
+      makeTemplateArgument(enumeratePermutationsStatic(2));
+  static constexpr auto permutations_3x3 =
+      makeTemplateArgument(enumeratePermutationsStatic(3));
+  static constexpr auto matrix_permutation_pairs =
+      (matrices_1x1 * permutations_1x1) + (matrices_2x2 * permutations_2x2) +
+      (matrices_3x3 * permutations_3x3);
 
-  const auto factorize_value_types = makeTypeArgument<double, float>();
-  const auto factorize_method =
-      makeTypeArgument<FactorizeMethodUpLooking, FactorizeMethodEntryWise>();
-  const auto solution_generators = makeValueArgument(
+  static constexpr auto factorize_value_types =
+      makeTemplateArgument<double, float>();
+  static constexpr auto factorize_method =
+      makeTemplateArgument<FactorizeMethodUpLooking,
+                           FactorizeMethodEntryWise>();
+  const auto solution_generators = makeFunctionArgument(
       {getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
        getSolutionGeneratorNormallyDistributed(1000.0)});
 
   std::mt19937 value_generator{0};
-  const auto test_set = matrix_permutation_pairs * factorize_value_types *
-                        factorize_method * solution_generators *
-                        makeValueArgument({std::ref(value_generator)});
-  foreach<TesterMultiplyFactorizeSolveCorrectSingle>(test_set);
+  static constexpr auto test_set_template =
+      matrix_permutation_pairs * factorize_value_types * factorize_method;
+  const auto test_set_function =
+      solution_generators * makeFunctionArgument({std::ref(value_generator)});
+  foreach
+    <^^TesterMultiplyFactorizeSolveCorrectSingle, ^^test_set_template>(
+        test_set_function);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

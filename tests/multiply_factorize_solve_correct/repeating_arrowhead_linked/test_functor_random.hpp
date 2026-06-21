@@ -10,18 +10,15 @@
 
 namespace ctldl {
 
-template <class Seed, class DimStart, class DimTridiag, class DimLink,
-          class DimOuter, class Value, class FactorizeMethod>
-struct TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLinkedRandom {
+template <std::size_t seed, std::size_t dim_start, std::size_t dim_tridiag,
+          std::size_t dim_link, std::size_t dim_outer, class Value,
+          class FactorizeMethod>
+struct
+    TesterMultiplyFactorizeSolveCorrectRepeatingBlockTridiagonalArrowheadLinkedRandom {
   void operator()(const SolutionGenerator& solution_generator,
                   const std::size_t num_repetitions,
                   std::mt19937& value_generator) const {
-    constexpr auto dim_start = DimStart::value;
-    constexpr auto dim_tridiag = DimTridiag::value;
-    constexpr auto dim_link = DimLink::value;
-    constexpr auto dim_outer = DimOuter::value;
-
-    constexpr auto seed0 = Seed::value;
+    constexpr auto seed0 = seed;
     using MatrixStartDiag = ProceduralTestMatrixSymmetricT<seed0, dim_start>;
     constexpr auto seed1 = MatrixStartDiag::next_generator.state;
     using MatrixStartTridiag = ProceduralTestMatrixT<seed1, dim_tridiag, dim_start>;
