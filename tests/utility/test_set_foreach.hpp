@@ -7,15 +7,15 @@
 
 namespace ctldl {
 
-template <template <class...> class Callable, std::meta::info test_set_types,
+template <std::meta::info CallableTemplate, std::meta::info test_set_template,
           typename... Args>
-void foreach (const TestSetValues<Args...>& values_set) {
-  template for (constexpr auto& types : [:test_set_types:]) {
-    for (const auto& values : values_set) {
-      constexpr std::meta::info callable_type =
-          std::meta::substitute(^^Callable, types);
-      using CallableType = [:callable_type:];
-      std::apply(CallableType{}, values);
+void foreach (const TestSetFunction<Args...>& test_set_function) {
+  template for (constexpr auto& args_template : [:test_set_template:]) {
+    for (const auto& args_function : test_set_function) {
+      constexpr std::meta::info callable =
+          std::meta::substitute(CallableTemplate, args_template);
+      using Callable = [:callable:];
+      std::apply(Callable{}, args_function);
     }
   }
 }

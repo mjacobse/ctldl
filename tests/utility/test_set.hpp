@@ -24,9 +24,9 @@ struct SpanConstMetaInfo {
   std::size_t m_size;
 };
 
-class TestSetTypes {
+class TestSetTemplate {
  public:
-  consteval explicit TestSetTypes(const std::ranges::range auto& init)
+  consteval explicit TestSetTemplate(const std::ranges::range auto& init)
       : m_instances(std::define_static_array(init)) {}
 
   consteval auto begin() const { return m_instances.begin(); }
@@ -37,34 +37,43 @@ class TestSetTypes {
 };
 
 template <class... Types>
-consteval auto makeTypeArgument() {
-  return TestSetTypes{std::views::transform(
+consteval auto makeTemplateArgument() {
+  return TestSetTemplate{std::views::transform(
       std::vector{^^Types...}, [](const std::meta::info& type) {
         return SpanConstMetaInfo{std::define_static_array(std::vector{type})};
       })};
 }
 
+consteval auto makeTemplateArgument(const std::ranges::range auto& r) {
+  return TestSetTemplate{std::views::transform(r, [](const auto& value) {
+    return SpanConstMetaInfo{std::define_static_array(
+        std::vector{std::meta::reflect_constant(value)})};
+  })};
+}
+
 template <class... Types>
-consteval auto makeTypeArgumentFromTuple(std::tuple<Types...>) {
-  return makeTypeArgument<Types...>();
+consteval auto makeTemplateArgumentFromTuple(std::tuple<Types...>) {
+  return makeTemplateArgument<Types...>();
 }
 
-consteval auto cartesianProductTestSets(const TestSetTypes& lhs,
-                                        const TestSetTypes& rhs) {
-  return TestSetTypes{std::views::cartesian_product(lhs, rhs) |
-                      std::views::transform([](const auto& tuple) {
-                        const auto& [... parts] = tuple;
-                        return SpanConstMetaInfo{std::define_static_array(
-                            std::views::concat(parts...))};
-                      })};
+consteval auto cartesianProductTestSets(const TestSetTemplate& lhs,
+                                        const TestSetTemplate& rhs) {
+  return TestSetTemplate{std::views::cartesian_product(lhs, rhs) |
+                         std::views::transform([](const auto& tuple) {
+                           const auto& [... parts] = tuple;
+                           return SpanConstMetaInfo{std::define_static_array(
+                               std::views::concat(parts...))};
+                         })};
 }
 
-consteval auto joinTestSets(const TestSetTypes& lhs, const TestSetTypes& rhs) {
-  return TestSetTypes{std::views::concat(lhs, rhs)};
+consteval auto joinTestSets(const TestSetTemplate& lhs,
+                            const TestSetTemplate& rhs) {
+  return TestSetTemplate{std::views::concat(lhs, rhs)};
 }
 
-consteval auto zipTestSets(const TestSetTypes& lhs, const TestSetTypes& rhs) {
-  return TestSetTypes{
+consteval auto zipTestSets(const TestSetTemplate& lhs,
+                           const TestSetTemplate& rhs) {
+  return TestSetTemplate{
       std::views::zip(lhs, rhs) | std::views::transform([](const auto& tuple) {
         const auto& [... parts] = tuple;
         return SpanConstMetaInfo{
@@ -72,22 +81,25 @@ consteval auto zipTestSets(const TestSetTypes& lhs, const TestSetTypes& rhs) {
       })};
 }
 
-consteval auto operator*(const TestSetTypes& lhs, const TestSetTypes& rhs) {
+consteval auto operator*(const TestSetTemplate& lhs,
+                         const TestSetTemplate& rhs) {
   return cartesianProductTestSets(lhs, rhs);
 }
 
-consteval auto operator+(const TestSetTypes& lhs, const TestSetTypes& rhs) {
+consteval auto operator+(const TestSetTemplate& lhs,
+                         const TestSetTemplate& rhs) {
   return joinTestSets(lhs, rhs);
 }
 
-consteval auto operator^(const TestSetTypes& lhs, const TestSetTypes& rhs) {
+consteval auto operator^(const TestSetTemplate& lhs,
+                         const TestSetTemplate& rhs) {
   return zipTestSets(lhs, rhs);
 }
 
 template <typename... Args>
-class TestSetValues {
+class TestSetFunction {
  public:
-  TestSetValues(const std::ranges::range auto& init)
+  TestSetFunction(const std::ranges::range auto& init)
       : m_instances(init | std::ranges::to<std::vector>()) {}
 
   auto begin() const { return m_instances.begin(); }
@@ -98,15 +110,15 @@ class TestSetValues {
 };
 
 template <class T>
-auto makeValueArgument(const std::initializer_list<T>& ts) {
-  return TestSetValues<T>{
+auto makeFunctionArgument(const std::initializer_list<T>& ts) {
+  return TestSetFunction<T>{
       std::views::transform(ts, [](const T& t) { return std::tuple<T>(t); })};
 }
 
 template <typename... ArgsLhs, typename... ArgsRhs>
-auto cartesianProductTestSets(const TestSetValues<ArgsLhs...>& lhs,
-                              const TestSetValues<ArgsRhs...>& rhs) {
-  return TestSetValues<ArgsLhs..., ArgsRhs...>{
+auto cartesianProductTestSets(const TestSetFunction<ArgsLhs...>& lhs,
+                              const TestSetFunction<ArgsRhs...>& rhs) {
+  return TestSetFunction<ArgsLhs..., ArgsRhs...>{
       std::views::cartesian_product(lhs, rhs) |
       std::views::transform([](const auto& tuple) {
         const auto& [... parts] = tuple;
@@ -115,36 +127,36 @@ auto cartesianProductTestSets(const TestSetValues<ArgsLhs...>& lhs,
 }
 
 template <typename... Args>
-auto joinTestSets(const TestSetValues<Args...>& lhs,
-                  const TestSetValues<Args...>& rhs) {
-  return TestSetValues{std::views::concat(lhs, rhs)};
+auto joinTestSets(const TestSetFunction<Args...>& lhs,
+                  const TestSetFunction<Args...>& rhs) {
+  return TestSetFunction{std::views::concat(lhs, rhs)};
 }
 
 template <typename... ArgsLhs, typename... ArgsRhs>
-auto zipTestSets(const TestSetValues<ArgsLhs...>& lhs,
-                 const TestSetValues<ArgsRhs...>& rhs) {
-  return TestSetValues{std::views::zip(lhs, rhs) |
-                       std::views::transform([](const auto& tuple) {
-                         const auto& [... parts] = tuple;
-                         return std::tuple_cat(parts...);
-                       })};
+auto zipTestSets(const TestSetFunction<ArgsLhs...>& lhs,
+                 const TestSetFunction<ArgsRhs...>& rhs) {
+  return TestSetFunction{std::views::zip(lhs, rhs) |
+                         std::views::transform([](const auto& tuple) {
+                           const auto& [... parts] = tuple;
+                           return std::tuple_cat(parts...);
+                         })};
 }
 
 template <typename... ArgsLhs, typename... ArgsRhs>
-auto operator*(const TestSetValues<ArgsLhs...>& lhs,
-               const TestSetValues<ArgsRhs...>& rhs) {
+auto operator*(const TestSetFunction<ArgsLhs...>& lhs,
+               const TestSetFunction<ArgsRhs...>& rhs) {
   return cartesianProductTestSets(lhs, rhs);
 }
 
 template <typename... Args>
-auto operator+(const TestSetValues<Args...>& lhs,
-               const TestSetValues<Args...>& rhs) {
+auto operator+(const TestSetFunction<Args...>& lhs,
+               const TestSetFunction<Args...>& rhs) {
   return joinTestSets(lhs, rhs);
 }
 
 template <typename... ArgsLhs, typename... ArgsRhs>
-auto operator^(const TestSetValues<ArgsLhs...>& lhs,
-               const TestSetValues<ArgsRhs...>& rhs) {
+auto operator^(const TestSetFunction<ArgsLhs...>& lhs,
+               const TestSetFunction<ArgsRhs...>& rhs) {
   return zipTestSets(lhs, rhs);
 }
 

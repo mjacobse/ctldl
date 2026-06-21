@@ -18,25 +18,26 @@ BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectSingle)
 
 BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
   static constexpr auto matrix_permutation_pairs =
-      makeTypeArgument<TestMatrixLFAT5<double>, TestMatrixLFAT5<float>>() *
-      makeTypeArgument<TestPermutationLFAT5>();
+      makeTemplateArgument<TestMatrixLFAT5<double>, TestMatrixLFAT5<float>>() *
+      makeTemplateArgument<TestPermutationLFAT5>();
 
   static constexpr auto factorize_value_types =
-      makeTypeArgument<double, float>();
+      makeTemplateArgument<double, float>();
   static constexpr auto factorize_method =
-      makeTypeArgument<FactorizeMethodUpLooking, FactorizeMethodEntryWise>();
-  const auto solution_generators = makeValueArgument(
+      makeTemplateArgument<FactorizeMethodUpLooking,
+                           FactorizeMethodEntryWise>();
+  const auto solution_generators = makeFunctionArgument(
       {getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
        getSolutionGeneratorNormallyDistributed(1000.0)});
 
   std::mt19937 value_generator{0};
-  static constexpr auto test_set_types =
+  static constexpr auto test_set_template =
       matrix_permutation_pairs * factorize_value_types * factorize_method;
-  const auto test_set_values =
-      solution_generators * makeValueArgument({std::ref(value_generator)});
+  const auto test_set_function =
+      solution_generators * makeFunctionArgument({std::ref(value_generator)});
   foreach
-    <TesterMultiplyFactorizeSolveCorrectSingle, ^^test_set_types>(
-        test_set_values);
+    <^^TesterMultiplyFactorizeSolveCorrectSingle, ^^test_set_template>(
+        test_set_function);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

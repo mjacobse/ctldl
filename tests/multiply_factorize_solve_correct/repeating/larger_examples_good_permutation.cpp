@@ -15,28 +15,32 @@ namespace {
 BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectRepeating)
 BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
   static constexpr auto matrix_permutation_pairs =
-      (makeTypeArgument<TestMatrixNos4A<double>, TestMatrixNos4A<float>>() ^
-       makeTypeArgument<TestMatrixNos4B<double>, TestMatrixNos4B<float>>()) *
-      makeTypeArgument<TestPermutationNos4>();
+      (makeTemplateArgument<TestMatrixNos4A<double>, TestMatrixNos4A<float>>() ^
+       makeTemplateArgument<TestMatrixNos4B<double>,
+                            TestMatrixNos4B<float>>()) *
+      makeTemplateArgument<TestPermutationNos4>();
 
   static constexpr auto factorize_value_types =
-      makeTypeArgument<double, float>();
+      makeTemplateArgument<double, float>();
   static constexpr auto factorize_method =
-      makeTypeArgument<FactorizeMethodUpLooking, FactorizeMethodEntryWise>();
-  const auto solution_generators = makeValueArgument(
+      makeTemplateArgument<FactorizeMethodUpLooking,
+                           FactorizeMethodEntryWise>();
+  const auto solution_generators = makeFunctionArgument(
       {getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
        getSolutionGeneratorNormallyDistributed(1000.0)});
-  const auto repetition_counts = makeValueArgument<std::size_t>({0, 1, 2, 9});
+  const auto repetition_counts =
+      makeFunctionArgument<std::size_t>({0, 1, 2, 9});
 
   std::mt19937 value_generator{0};
-  static constexpr auto test_set_types =
+  static constexpr auto test_set_template =
       matrix_permutation_pairs * factorize_value_types * factorize_method;
-  const auto test_set_values = solution_generators * repetition_counts *
-                               makeValueArgument({std::ref(value_generator)});
+  const auto test_set_function =
+      solution_generators * repetition_counts *
+      makeFunctionArgument({std::ref(value_generator)});
 
   foreach
-    <TesterMultiplyFactorizeSolveCorrectRepeating, ^^test_set_types>(
-        test_set_values);
+    <^^TesterMultiplyFactorizeSolveCorrectRepeating, ^^test_set_template>(
+        test_set_function);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
