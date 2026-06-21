@@ -14,13 +14,14 @@ namespace {
 
 BOOST_AUTO_TEST_SUITE(TestMultiplyFactorizeSolveCorrectRepeating)
 BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
-  const auto matrix_permutation_pairs =
+  static constexpr auto matrix_permutation_pairs =
       (makeTypeArgument<TestMatrixNos4A<double>, TestMatrixNos4A<float>>() ^
        makeTypeArgument<TestMatrixNos4B<double>, TestMatrixNos4B<float>>()) *
       makeTypeArgument<TestPermutationNos4>();
 
-  const auto factorize_value_types = makeTypeArgument<double, float>();
-  const auto factorize_method =
+  static constexpr auto factorize_value_types =
+      makeTypeArgument<double, float>();
+  static constexpr auto factorize_method =
       makeTypeArgument<FactorizeMethodUpLooking, FactorizeMethodEntryWise>();
   const auto solution_generators = makeValueArgument(
       {getSolutionGeneratorAllOnes(), getSolutionGeneratorIota(),
@@ -28,11 +29,14 @@ BOOST_AUTO_TEST_CASE(LargerExamplesGoodPermutation) {
   const auto repetition_counts = makeValueArgument<std::size_t>({0, 1, 2, 9});
 
   std::mt19937 value_generator{0};
-  const auto test_set = matrix_permutation_pairs * factorize_value_types *
-                        factorize_method * solution_generators *
-                        repetition_counts *
-                        makeValueArgument({std::ref(value_generator)});
-  foreach<TesterMultiplyFactorizeSolveCorrectRepeating>(test_set);
+  static constexpr auto test_set_types =
+      matrix_permutation_pairs * factorize_value_types * factorize_method;
+  const auto test_set_values = solution_generators * repetition_counts *
+                               makeValueArgument({std::ref(value_generator)});
+
+  foreach
+    <TesterMultiplyFactorizeSolveCorrectRepeating, ^^test_set_types>(
+        test_set_values);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

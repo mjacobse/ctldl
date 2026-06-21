@@ -1,236 +1,150 @@
 #pragma once
 
-#include "tests/utility/is_specialization_of.hpp"
-#include "tests/utility/test_arguments.hpp"
-#include "tests/utility/tuple.hpp"
-
-#include <algorithm>
-#include <cassert>
-#include <concepts>
+#include <cstddef>
+#include <meta>
+#include <ranges>
+#include <span>
 #include <tuple>
-#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace ctldl {
 
-template <typename T>
-concept TestSet = requires(T t) {
-  // static function sizeTypes returns the number of different type argument
-  // combinations contained in the test set
-  { T::sizeTypes() } -> std::convertible_to<std::size_t>;
-  // member function sizeValues<i> returns the number of different value
-  // argument combinations contained in the test set for the i-th type argument
-  // combination
-  { t.template sizeValues<0>() } -> std::convertible_to<std::size_t>;
-  // member function get<i>(j) returns the i-th type argument combination
-  // together with the j-th value argument combination
-  requires is_specialization_of_v<decltype(t.template get<0>(0)),
-                                  TestArguments>;
+// Structural version of std::span<const std::meta::info> so that we can use
+// std::define_static_array for a range of such elements
+struct SpanConstMetaInfo {
+  consteval explicit(false)
+      SpanConstMetaInfo(const std::span<const std::meta::info> init)
+      : m_ptr(init.data()), m_size(init.size()) {}
+
+  consteval auto begin() const { return m_ptr; }
+  consteval auto end() const { return m_ptr + m_size; }
+
+  const std::meta::info* m_ptr;
+  std::size_t m_size;
 };
 
-template <TestSet Left, TestSet Right>
-class TestSetCombinationCartesian {
+class TestSetTypes {
  public:
-  TestSetCombinationCartesian(const Left& left, const Right& right)
-      : m_left(left), m_right(right) {}
+  consteval explicit TestSetTypes(const std::ranges::range auto& init)
+      : m_instances(std::define_static_array(init)) {}
 
-  static constexpr auto sizeTypes() {
-    return Left::sizeTypes() * Right::sizeTypes();
-  }
-
-  template <std::size_t i_types>
-  constexpr auto sizeValues() const {
-    constexpr auto i_left = indexTypesLeft<i_types>();
-    constexpr auto i_right = indexTypesRight<i_types>();
-    return m_left.template sizeValues<i_left>() *
-           m_right.template sizeValues<i_right>();
-  }
-
-  template <std::size_t i_types>
-  constexpr auto get(const std::size_t i_values) const {
-    constexpr auto i_types_left = indexTypesLeft<i_types>();
-    constexpr auto i_types_right = indexTypesRight<i_types>();
-    const auto size_values = m_right.template sizeValues<i_types_right>();
-    const auto i_values_left = i_values / size_values;
-    const auto i_values_right = i_values % size_values;
-    return catTestArgs(m_left.template get<i_types_left>(i_values_left),
-                          m_right.template get<i_types_right>(i_values_right));
-  }
+  consteval auto begin() const { return m_instances.begin(); }
+  consteval auto end() const { return m_instances.end(); }
 
  private:
-  Left m_left;
-  Right m_right;
-
-  template <std::size_t i_types>
-  static constexpr auto indexTypesLeft() {
-    return i_types / Right::sizeTypes();
-  }
-
-  template <std::size_t i_types>
-  static constexpr auto indexTypesRight() {
-    return i_types % Right::sizeTypes();
-  }
-};
-
-template <TestSet Left, TestSet Right>
-class TestSetCombinationJoin {
- public:
-  TestSetCombinationJoin(const Left& left, const Right& right)
-      : m_left(left), m_right(right) {}
-
-  static constexpr auto sizeTypes() {
-    return Left::sizeTypes() + Right::sizeTypes();
-  }
-
-  template <std::size_t i_types>
-  constexpr auto sizeValues() const {
-    if constexpr (i_types < Left::sizeTypes()) {
-      constexpr auto i_types_left = indexTypesLeft<i_types>();
-      return m_left.template sizeValues<i_types_left>();
-    } else {
-      constexpr auto i_types_right = indexTypesRight<i_types>();
-      return m_right.template sizeValues<i_types_right>();
-    }
-  }
-
-  template <std::size_t i_types>
-  constexpr auto get(const std::size_t i_values) const {
-    if constexpr (i_types < Left::sizeTypes()) {
-      constexpr auto i_types_left = indexTypesLeft<i_types>();
-      return m_left.template get<i_types_left>(i_values);
-    } else {
-      constexpr auto i_types_right = indexTypesRight<i_types>();
-      return m_right.template get<i_types_right>(i_values);
-    }
-  }
-
- private:
-  Left m_left;
-  Right m_right;
-
-  template <std::size_t i_types>
-  static constexpr auto indexTypesLeft() {
-    return i_types;
-  }
-
-  template <std::size_t i_types>
-  static constexpr auto indexTypesRight() {
-    return i_types - Left::sizeTypes();
-  }
-};
-
-template <TestSet Left, TestSet Right>
-class TestSetCombinationZip {
- public:
-  TestSetCombinationZip(const Left& left, const Right& right)
-      : m_left(left), m_right(right) {}
-
-  static_assert(Left::sizeTypes() == Right::sizeTypes());
-  static constexpr auto sizeTypes() {
-    return Left::sizeTypes();
-  }
-
-  template <std::size_t i_types>
-  constexpr auto sizeValues() const {
-    assert(m_left.template sizeValues<i_types>() ==
-           m_right.template sizeValues<i_types>());
-    return m_left.template sizeValues<i_types>();
-  }
-
-  template <std::size_t i_types>
-  constexpr auto get(const std::size_t i_values) const {
-    return catTestArgs(m_left.template get<i_types>(i_values),
-                          m_right.template get<i_types>(i_values));
-  }
-
- private:
-  Left m_left;
-  Right m_right;
-};
-
-template <class Types>
-struct TypeArgument {
-  static constexpr auto sizeTypes() {
-    return std::tuple_size_v<Types>;
-  }
-
-  template <std::size_t i_types>
-  static constexpr auto sizeValues() {
-    return std::size_t{1};
-  }
-
-  template <std::size_t i_types>
-  static constexpr auto get(const std::size_t i_values) {
-    assert(i_values == 0);
-    static_cast<void>(i_values);
-    using TestTypes = Tuple<std::tuple_element_t<i_types, Types>>;
-    using TestValues = Tuple<>;
-    return TestArguments<TestTypes, TestValues>{};
-  }
+  std::span<const SpanConstMetaInfo> m_instances;
 };
 
 template <class... Types>
-auto makeTypeArgument() {
-  return TypeArgument<std::tuple<Types...>>{};
+consteval auto makeTypeArgument() {
+  return TestSetTypes{std::views::transform(
+      std::vector{^^Types...}, [](const std::meta::info& type) {
+        return SpanConstMetaInfo{std::define_static_array(std::vector{type})};
+      })};
 }
 
-template <class T>
-class ValueArgument {
- public:
-  ValueArgument(const std::initializer_list<T> init_list)
-      : m_values(init_list) {}
-
-  static constexpr auto sizeTypes() { return 1; }
-
-  template <std::size_t i_types>
-  constexpr auto sizeValues() const {
-    static_assert(i_types == 0);
-    return m_values.size();
-  }
-
-  template <std::size_t i_types>
-  constexpr auto get(const std::size_t i_values) const {
-    static_assert(i_types == 0);
-    assert(i_values < m_values.size());
-    return TestArguments<Tuple<>, Tuple<T>>{m_values[i_values]};
-  }
-
- private:
-  std::vector<T> m_values;
-};
-
-template <class T>
-auto makeValueArgument(const std::initializer_list<T> ts) {
-  return ValueArgument<T>{ts};
+template <class... Types>
+consteval auto makeTypeArgumentFromTuple(std::tuple<Types...>) {
+  return makeTypeArgument<Types...>();
 }
 
-template <TestSet Lhs, TestSet Rhs>
-auto cartesianProductTestSets(const Lhs& lhs, const Rhs& rhs) {
-  return TestSetCombinationCartesian<Lhs, Rhs>{lhs, rhs};
+consteval auto cartesianProductTestSets(const TestSetTypes& lhs,
+                                        const TestSetTypes& rhs) {
+  return TestSetTypes{std::views::cartesian_product(lhs, rhs) |
+                      std::views::transform([](const auto& tuple) {
+                        const auto& [... parts] = tuple;
+                        return SpanConstMetaInfo{std::define_static_array(
+                            std::views::concat(parts...))};
+                      })};
 }
 
-template <TestSet Lhs, TestSet Rhs>
-auto joinTestSets(const Lhs& lhs, const Rhs& rhs) {
-  return TestSetCombinationJoin<Lhs, Rhs>{lhs, rhs};
+consteval auto joinTestSets(const TestSetTypes& lhs, const TestSetTypes& rhs) {
+  return TestSetTypes{std::views::concat(lhs, rhs)};
 }
 
-template <TestSet Lhs, TestSet Rhs>
-auto zipTestSets(const Lhs& lhs, const Rhs& rhs) {
-  return TestSetCombinationZip<Lhs, Rhs>{lhs, rhs};
+consteval auto zipTestSets(const TestSetTypes& lhs, const TestSetTypes& rhs) {
+  return TestSetTypes{
+      std::views::zip(lhs, rhs) | std::views::transform([](const auto& tuple) {
+        const auto& [... parts] = tuple;
+        return SpanConstMetaInfo{
+            std::define_static_array(std::views::concat(parts...))};
+      })};
 }
 
-template <TestSet Lhs, TestSet Rhs>
-auto operator*(const Lhs& lhs, const Rhs& rhs) {
+consteval auto operator*(const TestSetTypes& lhs, const TestSetTypes& rhs) {
   return cartesianProductTestSets(lhs, rhs);
 }
 
-template <TestSet Lhs, TestSet Rhs>
-auto operator+(const Lhs& lhs, const Rhs& rhs) {
+consteval auto operator+(const TestSetTypes& lhs, const TestSetTypes& rhs) {
   return joinTestSets(lhs, rhs);
 }
 
-template <TestSet Lhs, TestSet Rhs>
-auto operator^(const Lhs& lhs, const Rhs& rhs) {
+consteval auto operator^(const TestSetTypes& lhs, const TestSetTypes& rhs) {
+  return zipTestSets(lhs, rhs);
+}
+
+template <typename... Args>
+class TestSetValues {
+ public:
+  TestSetValues(const std::ranges::range auto& init)
+      : m_instances(init | std::ranges::to<std::vector>()) {}
+
+  auto begin() const { return m_instances.begin(); }
+  auto end() const { return m_instances.end(); }
+
+ private:
+  std::vector<std::tuple<Args...>> m_instances;
+};
+
+template <class T>
+auto makeValueArgument(const std::initializer_list<T>& ts) {
+  return TestSetValues<T>{
+      std::views::transform(ts, [](const T& t) { return std::tuple<T>(t); })};
+}
+
+template <typename... ArgsLhs, typename... ArgsRhs>
+auto cartesianProductTestSets(const TestSetValues<ArgsLhs...>& lhs,
+                              const TestSetValues<ArgsRhs...>& rhs) {
+  return TestSetValues<ArgsLhs..., ArgsRhs...>{
+      std::views::cartesian_product(lhs, rhs) |
+      std::views::transform([](const auto& tuple) {
+        const auto& [... parts] = tuple;
+        return std::tuple_cat(parts...);
+      })};
+}
+
+template <typename... Args>
+auto joinTestSets(const TestSetValues<Args...>& lhs,
+                  const TestSetValues<Args...>& rhs) {
+  return TestSetValues{std::views::concat(lhs, rhs)};
+}
+
+template <typename... ArgsLhs, typename... ArgsRhs>
+auto zipTestSets(const TestSetValues<ArgsLhs...>& lhs,
+                 const TestSetValues<ArgsRhs...>& rhs) {
+  return TestSetValues{std::views::zip(lhs, rhs) |
+                       std::views::transform([](const auto& tuple) {
+                         const auto& [... parts] = tuple;
+                         return std::tuple_cat(parts...);
+                       })};
+}
+
+template <typename... ArgsLhs, typename... ArgsRhs>
+auto operator*(const TestSetValues<ArgsLhs...>& lhs,
+               const TestSetValues<ArgsRhs...>& rhs) {
+  return cartesianProductTestSets(lhs, rhs);
+}
+
+template <typename... Args>
+auto operator+(const TestSetValues<Args...>& lhs,
+               const TestSetValues<Args...>& rhs) {
+  return joinTestSets(lhs, rhs);
+}
+
+template <typename... ArgsLhs, typename... ArgsRhs>
+auto operator^(const TestSetValues<ArgsLhs...>& lhs,
+               const TestSetValues<ArgsRhs...>& rhs) {
   return zipTestSets(lhs, rhs);
 }
 
