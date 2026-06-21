@@ -51,11 +51,6 @@ consteval auto makeTemplateArgument(const std::ranges::range auto& r) {
   })};
 }
 
-template <class... Types>
-consteval auto makeTemplateArgumentFromTuple(std::tuple<Types...>) {
-  return makeTemplateArgument<Types...>();
-}
-
 consteval auto cartesianProductTestSets(const TestSetTemplate& lhs,
                                         const TestSetTemplate& rhs) {
   return TestSetTemplate{std::views::cartesian_product(lhs, rhs) |
